@@ -19,7 +19,7 @@ in order to change the app settings.
 
 The apps manager manages the allowed apps to connect to the WS and the API. Defaults to the local, array driver
 predefined by the `APP_DEFAULT_*` variables, but you can opt-in for example for an API driver which connects to an
-external API in order to retrieve an app, like [renoki-co/echo-server-core](https://github.com/renoki-co/echo-server-core) does.
+external API in order to retrieve an app, like [soketi/echo-server-core](https://github.com/soketi/echo-server-core) does.
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |

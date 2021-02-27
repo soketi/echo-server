@@ -1,11 +1,11 @@
 Echo Server
 ===========
 
-![CI](https://github.com/renoki-co/echo-server/workflows/CI/badge.svg?branch=master)
-[![codecov](https://codecov.io/gh/renoki-co/echo-server/branch/master/graph/badge.svg)](https://codecov.io/gh/renoki-co/echo-server/branch/master)
-[![Latest Stable Version](https://img.shields.io/github/v/release/renoki-co/echo-server)](https://www.npmjs.com/package/@renoki-co/echo-server)
-[![Total Downloads](https://img.shields.io/npm/dt/@renoki-co/echo-server)](https://www.npmjs.com/package/@renoki-co/echo-server)
-[![License](https://img.shields.io/npm/l/@renoki-co/echo-server)](https://www.npmjs.com/package/@renoki-co/echo-server)
+![CI](https://github.com/soketi/echo-server/workflows/CI/badge.svg?branch=master)
+[![codecov](https://codecov.io/gh/soketi/echo-server/branch/master/graph/badge.svg)](https://codecov.io/gh/soketi/echo-server/branch/master)
+[![Latest Stable Version](https://img.shields.io/github/v/release/soketi/echo-server)](https://www.npmjs.com/package/@soketi/echo-server)
+[![Total Downloads](https://img.shields.io/npm/dt/@soketi/echo-server)](https://www.npmjs.com/package/@soketi/echo-server)
+[![License](https://img.shields.io/npm/l/@soketi/echo-server)](https://www.npmjs.com/package/@soketi/echo-server)
 
 
 Echo Server is a Docker-ready, multi-scalable Node.js application used to host your own Socket.IO server for Laravel Broadcasting.
@@ -15,7 +15,7 @@ This is a fork of the original [Laravel Echo Server package](https://github.com/
 
 ## 🤝 Supporting
 
-Renoki Co. on GitHub aims on bringing a lot of open source projects and helpful projects to the world. Developing and maintaining projects everyday is a harsh work and tho, we love it.
+Renoki Co. and Soketi on GitHub aims on bringing a lot of open source projects and helpful projects to the world. Developing and maintaining projects everyday is a harsh work and tho, we love it.
 
 If you are using your application in your day-to-day job, on presentation demos, hobby projects or even school projects, spread some kind words about our work or sponsor our work. Kind words will touch our chakras and vibe, while the sponsorships will keep the open source projects alive.
 
@@ -41,7 +41,7 @@ Additional information on broadcasting with Laravel can be found in the official
 You can install the package via npm:
 
 ```bash
-npm install -g @renoki-co/echo-server
+npm install -g @soketi/echo-server
 ```
 
 ## 🙌 Usage
@@ -151,7 +151,7 @@ By default, the apps can be defined by passing an array, as explained earlier, u
 
 However, you might want to store multiple apps in a dynamic & controlled manner. The `api` driver comes in place to help with that. You can specify the host, endpoint and a verification token that can make requests on Echo Server's behalf and retrieve the apps.
 
-In Laravel, you can use [renoki-co/echo-server-core](https://github.com/renoki-co/echo-server-core), and extend the functionality for the `api` driver by storing the apps into database. It comes out-of-the-box with migrations and models, so you can immediately extend the core functionality for Echo Server.
+In Laravel, you can use [soketi/echo-server-core](https://github.com/soketi/echo-server-core), and extend the functionality for the `api` driver by storing the apps into database. It comes out-of-the-box with migrations and models, so you can immediately extend the core functionality for Echo Server.
 
 ## Local Drivers
 
@@ -167,7 +167,7 @@ This server is PM2-ready and [can scale to a lot of processes](docs/PM2.md).
 
 ## Docker Images
 
-Automatically, after each release, a Docker tag is created with an image that holds the app code. [Read about versions & usage on DockerHub](https://hub.docker.com/r/renokico/echo-server).
+Automatically, after each release, a Docker tag is created with an image that holds the app code. [Read about versions & usage on DockerHub](https://hub.docker.com/r/soketi/echo-server).
 
 ## 🤝 Contributing
 
