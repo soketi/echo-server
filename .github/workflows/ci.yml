@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node:
+          - 10.x
+          - 12.x
+          - 14.x
+
+    name: Node.js ${{ matrix.node }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-node@v1
+      name: Installing Node.js v${{ matrix.node }}
+      with:
+        node-version: ${{ matrix.node }}
+
+    - name: Installing dependencies
+      run: |
+        npm install
+
+    - name: Lint the code
+      run: |
+        npm run lint
+
+    - name: Compile TypeScript
+      run: |
+         npm run build
+
+    - name: Execute tests
+      run: |
+         npm run test
