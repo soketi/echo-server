@@ -132,11 +132,9 @@ window.io = require('socket.io-client');
 
 window.Soketi = new Soketi({
     host: window.location.hostname,
-    port: 6001,
     key: 'echo-app-key', // should be replaced with the App Key
     authHost: 'http://127.0.0.1',
     authEndpoint: '/broadcasting/auth',
-    transports: ['websocket'],
 });
 
 // for example
