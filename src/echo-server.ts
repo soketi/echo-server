@@ -168,7 +168,13 @@ export class EchoServer {
      */
     start(options: any = {}): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.options = Object.assign(this.options, options);
+            this.options = {
+                ...Object.assign(this.options, options),
+                ...{
+                    closingGracePeriod: this.options.stats.driver === 'local' ? 1 : this.options.closingGracePeriod,
+                },
+            };
+
             this.server = new Server(this.options);
 
             Log.title(`Echo Server v${packageFile.version}\n`);
