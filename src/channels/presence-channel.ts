@@ -1,12 +1,12 @@
-import { Database } from './../database';
+import { PresenceStorage } from './../presence-storage';
 import { Log } from './../log';
 import { PrivateChannel } from './private-channel';
 
 export class PresenceChannel extends PrivateChannel {
     /**
-     * Database instance.
+     * Database instance to store presence channel data.
      */
-    db: Database;
+     presenceStorage: PresenceStorage;
 
     /**
      * Create a new channel instance.
@@ -18,7 +18,7 @@ export class PresenceChannel extends PrivateChannel {
     constructor(protected io, protected stats, protected options) {
         super(io, stats, options);
 
-        this.db = new Database(options);
+        this.presenceStorage = new PresenceStorage(options);
     }
 
     /**
@@ -37,7 +37,7 @@ export class PresenceChannel extends PrivateChannel {
                     return clients.has(member.socketId);
                 });
 
-                this.db.set(`${this.getNspForSocket(socket)}:${channel}:members`, members);
+                this.presenceStorage.set(this.getNspForSocket(socket), channel, members);
 
                 resolve(members);
             }, error => Log.error(error));
@@ -83,7 +83,7 @@ export class PresenceChannel extends PrivateChannel {
                     if (!isMember) {
                         members.push(member);
 
-                        this.db.set(`${this.getNspForSocket(socket)}:${data.channel}:members`, members);
+                        this.presenceStorage.set(this.getNspForSocket(socket), data.channel, members);
 
                         members = [
                             ...members.reduce((map, member) => map.set(member.user_id, member), new Map).values()
@@ -118,7 +118,7 @@ export class PresenceChannel extends PrivateChannel {
 
                 delete currentMember.socketId;
 
-                this.db.set(`${this.getNspForSocket(socket)}:${channel}:members`, otherMembers);
+                this.presenceStorage.set(this.getNspForSocket(socket), channel, otherMembers);
                 this.onLeave(socket, channel, currentMember);
             }
         }, error => Log.error(error));
@@ -179,7 +179,7 @@ export class PresenceChannel extends PrivateChannel {
      * @return {Promise<any>}
      */
     getMembers(namespace: any, channel: string): Promise<any> {
-        return this.db.get(`${namespace}:${channel}:members`);
+        return this.presenceStorage.get(namespace, channel);
     }
 
     /**

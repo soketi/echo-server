@@ -44,10 +44,21 @@ in order to be able to scale up the Echo Server instances.
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
-| `DATABASE_DRIVER` | `database.driver` | `redis` | `redis`, `local` | The database driver for storing socket data. Use `redis` or other centralized method for storing data. |
+| `REPLICATION_DRIVER` | `replication.driver` | `local` | `redis`, `local` | The database driver for storing socket data. Use `local` only for single-node, single-process instances. |
 
-- `redis` - Enabled Pub/Sub communication between processes/nodes. Presence channels members are stored in key-value store.
-- `local` - There is no communication or Pub/Sub. Presence channels members are stored locally, in-memory.
+- `redis` - Enabled Pub/Sub communication between processes/nodes, can be scaled horizontally without issues.
+- `local` - There is no communication or Pub/Sub. Recommended for single-instance, single-process apps.
+
+# Presence Channel Storage
+
+When dealing with presence channel, connection details must be stored within the app.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `local` | `redis`, `local` | The database driver for storing socket data. Use `local` only for single-node, single-process instances. |
+
+- `redis` - Presence channels members are stored in key-value store.
+- `local` - Presence channels members are stored locally, in-memory.
 
 ## Debugging
 

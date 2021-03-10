@@ -57,7 +57,6 @@ export class EchoServer {
             ],
         },
         database: {
-            driver: 'redis',
             redis: {
                 host: '127.0.0.1',
                 port: 6379,
@@ -73,18 +72,16 @@ export class EchoServer {
         headers: [
             //
         ],
-        stats: {
-            enabled: true,
-            driver: 'local',
-            snapshots: {
-                interval: 60 * 60,
-            },
-            retention: {
-                period: 7 * 24 * 60 * 60, // 7 days
+        port: 6001,
+        presence: {
+            storage: {
+                database: 'local',
             },
         },
-        port: 6001,
         protocol: 'http',
+        replication: {
+            driver: 'local',
+        },
         secureOptions: constants.SSL_OP_NO_TLSv1,
         socketIoOptions: {
             //
@@ -94,6 +91,16 @@ export class EchoServer {
             keyPath: '',
             caPath: '',
             passphrase: '',
+        },
+        stats: {
+            enabled: true,
+            driver: 'local',
+            snapshots: {
+                interval: 60 * 60,
+            },
+            retention: {
+                period: 7 * 24 * 60 * 60, // 7 days
+            },
         },
     };
 
