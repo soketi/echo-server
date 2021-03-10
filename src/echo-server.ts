@@ -251,7 +251,7 @@ export class EchoServer {
      */
     async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log('Stopping the server...');
+            Log.warning('Stopping the server...');
 
             this.rejectNewConnections = true;
 
@@ -493,7 +493,6 @@ export class EchoServer {
             let appKey = this.getAppKey(socket);
 
             this.appManager.findByKey(appKey, socket, {}).then(app => {
-                console.log({ socket });
                 if (!app) {
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
