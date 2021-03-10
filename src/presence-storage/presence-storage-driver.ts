@@ -1,7 +1,7 @@
 /**
  * Interface for key/value data stores.
  */
-export interface DatabaseDriver {
+export interface PresenceStorageDriver {
     /**
      * Get a value from the database.
      *

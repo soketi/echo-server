@@ -1,6 +1,6 @@
-import { DatabaseDriver } from './database-driver';
+import { PresenceStorageDriver } from './presence-storage-driver';
 
-export class LocalDatabase implements DatabaseDriver {
+export class LocalStorage implements PresenceStorageDriver {
     /**
      * The key-value storage.
      *

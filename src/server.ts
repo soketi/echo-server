@@ -125,7 +125,7 @@ export class Server {
      * @return {void}
      */
     protected configureAdapters(): void {
-        if (this.options.database.driver === 'redis') {
+        if (this.options.replication.driver === 'redis') {
             let pubClient = new Redis(this.options.database.redis);
             let subClient = new Redis(this.options.database.redis);
 

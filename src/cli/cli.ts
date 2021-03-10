@@ -38,10 +38,8 @@ export class Cli {
         CORS_ALLOWED_ORIGINS: 'cors.origin',
         DATABASE_DRIVER: 'database.driver',
         DEBUG: 'development',
-        STATS_ENABLED: 'stats.enabled',
-        STATS_DRIVER: 'stats.driver',
-        STATS_SNAPSHOTS_INTERVAL: 'stats.snapshots.interval',
-        STATS_RETENTION_PERIOD: 'stats.retention.period',
+        PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
+        REPLICATION_DRIVER: 'replication.driver',
         REDIS_HOST: 'database.redis.host',
         REDIS_PORT: 'database.redis.port',
         REDIS_PASSWORD: 'database.redis.password',
@@ -53,6 +51,10 @@ export class Cli {
         SSL_KEY: 'ssl.keyPath',
         SSL_CA: 'ssl.caPath',
         SSL_PASS: 'ssl.passphrase',
+        STATS_ENABLED: 'stats.enabled',
+        STATS_DRIVER: 'stats.driver',
+        STATS_SNAPSHOTS_INTERVAL: 'stats.snapshots.interval',
+        STATS_RETENTION_PERIOD: 'stats.retention.period',
     };
 
     /**

@@ -1,18 +1,18 @@
-import { DatabaseDriver } from './database-driver';
+import { PresenceStorageDriver } from './presence-storage-driver';
 import { Log } from './../log';
-import { RedisDatabase } from './redis';
-import { LocalDatabase } from './local';
+import { RedisStorage } from './redis-storage';
+import { LocalStorage } from './local-storage';
 
 /**
  * Class that controls the key/value data store.
  */
-export class Database implements DatabaseDriver {
+export class PresenceStorage implements PresenceStorageDriver {
     /**
      * Database driver.
      *
      * @type {DatabaseDriver}
      */
-    protected driver: DatabaseDriver;
+    protected driver: PresenceStorageDriver;
 
     /**
      * Create a new database instance.
@@ -20,10 +20,10 @@ export class Database implements DatabaseDriver {
      * @param {any} options
      */
     constructor(protected options: any) {
-        if (options.database.driver === 'redis') {
-            this.driver = new RedisDatabase(options);
-        } else if (options.database.driver === 'local') {
-            this.driver = new LocalDatabase(options);
+        if (options.presence.storage.database === 'redis') {
+            this.driver = new RedisStorage(options);
+        } else if (options.presence.storage.database === 'local') {
+            this.driver = new LocalStorage(options);
         } else {
             Log.error('Database driver not set.');
         }

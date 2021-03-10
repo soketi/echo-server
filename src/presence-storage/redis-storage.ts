@@ -1,8 +1,8 @@
-import { DatabaseDriver } from './database-driver';
+import { PresenceStorageDriver } from './presence-storage-driver';
 
 const Redis = require('ioredis');
 
-export class RedisDatabase implements DatabaseDriver {
+export class RedisStorage implements PresenceStorageDriver {
     /**
      * Redis client.
      *
