@@ -430,9 +430,14 @@ export class EchoServer {
      * @return {void}
      */
     protected onDisconnecting(socket: any): void {
+        /**
+         * Make sure to store this before using stats.
+         */
+        let rooms = socket.rooms;
+
         socket.on('disconnecting', reason => {
             this.stats.markDisconnection(socket.echoApp, reason).then(() => {
-                socket.rooms.forEach(room => {
+                rooms.forEach(room => {
                     // Each socket has a list of channels defined by us and his own channel
                     // that has the same name as their unique socket ID. We don't want it to
                     // be disconnected from that one and instead disconnect it from our defined channels.
