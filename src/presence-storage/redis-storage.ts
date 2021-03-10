@@ -20,25 +20,29 @@ export class RedisStorage implements PresenceStorageDriver {
     }
 
     /**
-     * Retrieve data from redis.
+     * Get the members for a specific
+     * namespace and channel.
      *
-     * @param  {string}  key
+     * @param  {string}  nsp
+     * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(key: string): Promise<any> {
+    get(nsp: string, channel: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.redis.get(key).then(value => resolve(JSON.parse(value)));
+            this.redis.get(`${nsp}:${channel}:members`).then(value => resolve(JSON.parse(value)));
         });
     }
 
     /**
-     * Store data to cache.
+     * Set the new members in a specific
+     * namespace and channel.
      *
-     * @param {string} key
-     * @param {any} value
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  members
      * @return {void}
      */
-    set(key: string, value: any): void {
-        this.redis.set(key, JSON.stringify(value));
+    set(nsp: string, channel: string, members: any): void {
+        this.redis.set(`${nsp}:${channel}:members`, JSON.stringify(members));
     }
 }

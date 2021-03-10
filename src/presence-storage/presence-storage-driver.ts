@@ -3,19 +3,23 @@
  */
 export interface PresenceStorageDriver {
     /**
-     * Get a value from the database.
+     * Get the members for a specific
+     * namespace and channel.
      *
-     * @param  {string}  key
+     * @param  {string}  nsp
+     * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(key: string): Promise<any>;
+    get(nsp: string, channel: string): Promise<any>;
 
     /**
-     * Set a value to the database.
+     * Set the new members in a specific
+     * namespace and channel.
      *
-     * @param {string} key
-     * @param {any} value
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  members
      * @return {void}
      */
-    set(key: string, value: any): void;
+    set(nsp: string, channel: string, members: any): void;
 }

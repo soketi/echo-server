@@ -8,45 +8,49 @@ import { LocalStorage } from './local-storage';
  */
 export class PresenceStorage implements PresenceStorageDriver {
     /**
-     * Database driver.
+     * Storage driver for persistent channel.
      *
-     * @type {DatabaseDriver}
+     * @type {PresenceStorageDriver}
      */
-    protected driver: PresenceStorageDriver;
+    protected storage: PresenceStorageDriver;
 
     /**
-     * Create a new database instance.
+     * Create a new storage instance.
      *
      * @param {any} options
      */
     constructor(protected options: any) {
         if (options.presence.storage.database === 'redis') {
-            this.driver = new RedisStorage(options);
+            this.storage = new RedisStorage(options);
         } else if (options.presence.storage.database === 'local') {
-            this.driver = new LocalStorage(options);
+            this.storage = new LocalStorage(options);
         } else {
-            Log.error('Database driver not set.');
+            Log.error('Storage driver not set.');
         }
     }
 
     /**
-     * Get a value from the database.
+     * Get the members for a specific
+     * namespace and channel.
      *
-     * @param  {string}  key
+     * @param  {string}  nsp
+     * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(key: string): Promise<any> {
-        return this.driver.get(key);
+    get(nsp: string, channel: string): Promise<any> {
+        return this.storage.get(nsp, channel);
     }
 
     /**
-     * Set a value to the database.
+     * Set the new members in a specific
+     * namespace and channel.
      *
-     * @param {string} key
-     * @param {any} value
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  members
      * @return {void}
      */
-    set(key: string, value: any): void {
-        this.driver.set(key, value);
+    set(nsp: string, channel: string, members: any): void {
+        this.storage.set(nsp, channel, members);
     }
 }

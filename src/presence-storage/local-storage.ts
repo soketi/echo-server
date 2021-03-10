@@ -20,23 +20,27 @@ export class LocalStorage implements PresenceStorageDriver {
     }
 
     /**
-     * Retrieve data from redis.
+     * Get the members for a specific
+     * namespace and channel.
      *
-     * @param  {string}  key
+     * @param  {string}  nsp
+     * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(key: string): Promise<any> {
-        return new Promise(resolve => resolve(this.storage[key] || null));
+    get(nsp: string, channel: string): Promise<any> {
+        return new Promise(resolve => resolve(this.storage[`${nsp}:${channel}:members`] || null));
     }
 
     /**
-     * Store data to cache.
+     * Set the new members in a specific
+     * namespace and channel.
      *
-     * @param {string} key
-     * @param {any} value
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  members
      * @return {void}
      */
-    set(key: string, value: any): void {
-        this.storage[key] = value;
+     set(nsp: string, channel: string, members: any): void {
+        this.storage[`${nsp}:${channel}:members`] = members;
     }
 }
