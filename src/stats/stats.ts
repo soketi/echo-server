@@ -1,6 +1,7 @@
 import { App } from './../app';
 import { LocalStats } from './local-stats';
 import { RedisStats } from './redis-stats';
+import { RedisTimeSeriesStats } from './redis-ts-stats';
 import { StatsDriver } from './stats-driver';
 
 export class Stats implements StatsDriver {
@@ -21,6 +22,8 @@ export class Stats implements StatsDriver {
             this.driver = new LocalStats(options);
         } else if (options.stats.driver === 'redis') {
             this.driver = new RedisStats(options);
+        } else if (options.stats.driver === 'redis-ts') {
+            this.driver = new RedisTimeSeriesStats(options);
         }
     }
 

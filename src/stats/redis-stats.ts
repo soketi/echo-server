@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Log } from './../log';
 import { RedlockMutex } from 'redis-semaphore';
 import { StatsDriver } from './stats-driver';
 
@@ -26,6 +27,8 @@ export class RedisStats implements StatsDriver {
      * @param {any} options
      */
     constructor(protected options: any) {
+        Log.warning('Stats driver "redis" got deprecated in 2.1.0 and WILL BE REMOVED in 3.0.0.');
+
         this.redis = new Redis(options.database.redis);
     }
 
