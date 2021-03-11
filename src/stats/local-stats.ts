@@ -148,17 +148,34 @@ export class LocalStats implements StatsDriver {
         let appKey = app instanceof App ? app.key : app;
 
         if (!this.snapshots[appKey]) {
-            this.snapshots[appKey] = [];
+            this.snapshots[appKey] = {
+                connections: { points: [] },
+                api_messages: { points: [] },
+                ws_messages: { points: [] },
+            };
         }
 
         return this.getStats(app).then(stats => {
-            let record = {
-                time, stats,
+            this.snapshots[appKey].connections.points.push({
+                time,
+                avg: stats.connections,
+                max: stats.peak_connections,
+            });
+
+            this.snapshots[appKey].api_messages.points.push({
+                time,
+                value: stats.api_messages,
+            });
+
+            this.snapshots[appKey].ws_messages.points.push({
+                time,
+                value: stats.ws_messages,
+            });
+
+            return {
+                time,
+                stats,
             };
-
-            this.snapshots[appKey].push(record);
-
-            return record;
         }).then(record => {
             return this.hasActivity(app).then(hasActivity => {
                 if (!hasActivity) {
@@ -192,9 +209,7 @@ export class LocalStats implements StatsDriver {
         start = start ? start : dayjs().subtract(7, 'day').unix();
         end = end ? end : dayjs().unix();
 
-        return new Promise(resolve => resolve(
-            (this.snapshots[appKey] || []).filter(point => start <= point.time && point.time <= end)
-        ));
+        return new Promise(resolve => resolve(this.snapshots[appKey]));
     }
 
     /**
@@ -208,10 +223,14 @@ export class LocalStats implements StatsDriver {
     deleteStalePoints(app: App|string, time?: number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
 
+        let pointDeletionCheck = point => point.time >= (time - this.options.stats.retention.period);
+
         return this.getSnapshots(app, 0, Infinity).then(snapshots => {
-            return this.snapshots[appKey] = snapshots.filter(point => {
-                return point.time >= (time - this.options.stats.retention.period);
-            });
+            this.snapshots[appKey].connections.points = snapshots.connections.points.filter(pointDeletionCheck);
+            this.snapshots[appKey].api_messages.points = snapshots.api_messages.points.filter(pointDeletionCheck);
+            this.snapshots[appKey].ws_messages.points = snapshots.ws_messages.points.filter(pointDeletionCheck);
+
+            return true;
         }).then(() => true);
     }
 
@@ -350,15 +369,9 @@ export class LocalStats implements StatsDriver {
      */
     protected hasActivity(app: App|string): Promise<boolean> {
         return this.getSnapshots(app, 0, Infinity).then(snapshots => {
-            let activeSnapshots = snapshots.filter(point => {
-                /**
-                 * Check if the sum of all stats are > 0.
-                 * If it is, it means that the app still has activity.
-                 */
-                return Object.values(point.stats).reduce((sum: number, num: number) => sum += num, 0) > 0;
-            });
-
-            return activeSnapshots.length > 0;
+            return snapshots.connections.points.length > 0 ||
+                snapshots.api_messages.points.length > 0 ||
+                snapshots.ws_messages.points.length > 0;
         });
     }
 
