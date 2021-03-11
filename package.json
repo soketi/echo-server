@@ -36,6 +36,7 @@
     "ioredis": "^4.19.0",
     "pusher": "^4.0.2",
     "redis-semaphore": "^4.1.0",
+    "redis-time-series-ts": "^1.3.0",
     "request": "^2.88.2",
     "socket.io": "^3.0.4",
     "socket.io-redis": "^6.0.1",

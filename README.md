@@ -159,6 +159,10 @@ By default, Redis is used to store presence channels' data and communicate betwe
 $ DATABASE_DRIVER=local echo-server start
 ```
 
+## Per-application Statistics
+
+Statistics are available for each registered app, if opted-in. [Read more about statistics here](docs/STATISTICS.md).
+
 ## Deploying with PM2
 
 This server is PM2-ready and [can scale to a lot of processes](docs/PM2.md).

@@ -77,7 +77,7 @@ Statistics are globally enabled by default, but they are disabled on the default
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `STATS_ENABLED` | `stats.enabled` | `true` | `true`, `false` | Wether to enable the stats store. |
-| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `redis` | The stats driver used to store the stats to. |
+| `STATS_DRIVER` | `stats.driver` | `local` | `local`, ~~`redis`~~ (deprecated), `redis-ts` | The stats driver used to store the stats to. |
 | `STATS_SNAPSHOTS_INTERVAL` | `stats.snapshots.interval` | `60 * 60` | - | The amount of time to wait between taking stats snapshots, in seconds. |
 
 For non-distributed systems:
@@ -86,7 +86,8 @@ For non-distributed systems:
 
 For distributed systems:
 
-- `redis` - Stats are stored in Redis. Snapshots are stored in Redis.
+- ~~`redis` - Stats are stored in Redis. Snapshots are stored in Redis.~~ (deprecated)
+- `redis-ts` Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
 
 ## Redis
 
@@ -98,6 +99,15 @@ Configuration needed to connect to a Redis server.
 | `REDIS_PORT` | `database.redis.port` | `6379` | - | The Redis port used for `redis` driver. |
 | `REDIS_PASSWORD` | `database.redis.password` | `null` | - | The Redis password used for `redis` driver. |
 | `REDIS_PREFIX` | `database.redis.keyPrefix` | `echo-server` | - | The key prefix for Redis. Only for `redis` driver. |
+
+For [Redis Time Series](https://oss.redislabs.com/redistimeseries), you may use the following variables:
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `REDIS_TS_HOST` | `database.redisTs.host` | `127.0.0.1` | - | The Redis host used for `redis-ts` driver. |
+| `REDIS_TS_PORT` | `database.redisTs.port` | `6381` | - | The Redis port used for `redis-ts` driver. |
+| `REDIS_TS_PASSWORD` | `database.redisTs.password` | `null` | - | The Redis password used for `redis-ts` driver. |
+| `REDIS_TS_PREFIX` | `database.redisTs.keyPrefix` | `echo-server` | - | The key prefix for Redis. Only for `redis-ts` driver. |
 
 ## Socket.IO Settings
 
