@@ -193,7 +193,7 @@ export class Channel {
      * @return string
      */
     getNspForSocket(socket: any) {
-        return socket ? socket.nsp.name : '/';
+        return socket.nsp.name;
     }
 
     /**

@@ -147,12 +147,12 @@ export class HttpApi {
                 res.json({
                     ...result,
                     ...{
-                        user_count: members.size,
+                        user_count: members.length,
                     },
                 });
             });
         } else {
-            res.json({ result });
+            res.json(result);
         }
     }
 

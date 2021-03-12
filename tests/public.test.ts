@@ -19,4 +19,51 @@ describe('public channel test', () => {
             }
         });
     });
+
+    test('get app channels', done => {
+        let client = Connector.newClient();
+        let pusher = Connector.newPusherClient();
+
+        Connector.connectToPublicChannel(client, 'world');
+        Connector.connectToPublicChannel(client, 'usa');
+        Connector.connectToPublicChannel(client, 'uk');
+
+        client.connector.socket.onAny((event, ...args) => {
+            if (event === 'channel:joined') {
+                pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
+                    expect(body.channels.world.occupied).toBe(true);
+                    expect(body.channels.usa.occupied).toBe(true);
+                    expect(body.channels.uk.occupied).toBe(true);
+
+                    expect(body.channels.world.subscription_count).toBe(1);
+                    expect(body.channels.usa.subscription_count).toBe(1);
+                    expect(body.channels.uk.subscription_count).toBe(1);
+
+                    client.disconnect();
+                    done();
+                });
+            }
+        });
+    });
+
+    test('get app channel', done => {
+        let client = Connector.newClient();
+        let pusher = Connector.newPusherClient();
+
+        Connector.connectToPublicChannel(client, 'world');
+        Connector.connectToPublicChannel(client, 'usa');
+        Connector.connectToPublicChannel(client, 'uk');
+
+        client.connector.socket.onAny((event, ...args) => {
+            if (event === 'channel:joined' && args[0] === 'uk') {
+                pusher.get({ path: '/channels/uk' }).then(res => res.json()).then(body => {
+                    expect(body.subscription_count).toBe(1);
+                    expect(body.occupied).toBe(true);
+
+                    client.disconnect();
+                    done();
+                });
+            }
+        });
+    });
 });
