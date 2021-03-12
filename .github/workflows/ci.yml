@@ -26,7 +26,7 @@ jobs:
           - redis
           - local
 
-    name: Node.js ${{ matrix.node }}
+    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }})
 
     steps:
     - uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
       run: |
         npm run build
 
-    - name: Start Server with (presence:${{ matrix.presence_db }})
+    - name: Start Server
       run: |
         node bin/server.js start &
         sleep 5
