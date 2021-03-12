@@ -22,6 +22,9 @@ jobs:
           - 10.x
           - 12.x
           - 14.x
+        presence_db:
+          - redis
+          - local
 
     name: Node.js ${{ matrix.node }}
 
@@ -32,6 +35,12 @@ jobs:
       name: Installing Node.js v${{ matrix.node }}
       with:
         node-version: ${{ matrix.node }}
+
+    - uses: zhulik/redis-action@1.1.0
+      name: Installing Redis 6.x
+      with:
+        redis version: 6
+        number of databases: 100
 
     - name: Installing dependencies
       run: |
@@ -45,14 +54,14 @@ jobs:
       run: |
         npm run build
 
-    - name: Start Server
+    - name: Start Server with (presence:${{ matrix.presence_db }})
       run: |
         node bin/server.js start &
         sleep 5
         curl --silent -XGET --fail http://127.0.0.1:6001
-
       env:
         DEBUG: true
+        PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
 
     - name: Execute tests
       run: |
