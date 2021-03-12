@@ -566,7 +566,7 @@ export class EchoServer {
 
             let originIsAllowed = false;
             let allowedOrigins = socket.echoApp.allowedOrigins || ['*'];
-            let socketOrigin = socket.handshake.headers.origin || null;
+            let socketOrigin = socket.handshake.headers.origin || '*';
 
             if (!socketOrigin) {
                 return reject({ reason: 'The origin header is not existent' });

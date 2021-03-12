@@ -45,6 +45,12 @@ jobs:
       run: |
          npm run build
 
+    - name: Start Server
+      run: |
+        node bin/server.js start
+      env:
+        DEBUG: true
+
     - name: Execute tests
       run: |
          npm run test
