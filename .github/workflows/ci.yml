@@ -43,8 +43,21 @@ jobs:
 
     - name: Compile TypeScript
       run: |
-         npm run build
+        npm run build
+
+    - name: Start Server
+      run: |
+        node bin/server.js start &
+        sleep 5
+        curl --silent -XGET --fail http://127.0.0.1:6001
+
+      env:
+        DEBUG: true
 
     - name: Execute tests
       run: |
-         npm run test
+        npm run test
+
+    - uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: false
