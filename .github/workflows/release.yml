@@ -31,11 +31,11 @@ jobs:
 
     - name: Compile TypeScript
       run: |
-         npm run build
+        npm run build
 
     - name: Execute tests
       run: |
-         npm run test
+        npm run test
 
     - name: Compute GitHub tag
       id: tag
