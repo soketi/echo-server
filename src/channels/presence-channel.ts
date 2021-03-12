@@ -51,7 +51,6 @@ export class PresenceChannel extends PrivateChannel {
             }
 
             return this.presenceStorage.memberExistsInChannel(this.getNspForSocket(socket), data.channel, member).then(exists => {
-                console.log({ exists });
                 /**
                  * If member.user_id already exists, there is no way on connecting this socket to the same channel.
                  * This avoids duplicated tabs for users, as well as minimizing impact on the network.
