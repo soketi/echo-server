@@ -30,27 +30,49 @@ export class PresenceStorage implements PresenceStorageDriver {
     }
 
     /**
-     * Get the members for a specific
-     * namespace and channel.
+     * Get channel members.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(nsp: string, channel: string): Promise<any> {
-        return this.storage.get(nsp, channel);
+    getMembersFromChannel(nsp: string, channel: string): Promise<any> {
+        return this.storage.getMembersFromChannel(nsp, channel);
     }
 
     /**
-     * Set the new members in a specific
-     * namespace and channel.
+     * Add a new member to a given channel.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  members
-     * @return {void}
+     * @param  {any}  member
+     * @return {Promise<any>}
      */
-    set(nsp: string, channel: string, members: any): void {
-        this.storage.set(nsp, channel, members);
+    addMemberToChannel(nsp: string, channel: string, member: any): Promise<any> {
+        return this.storage.addMemberToChannel(nsp, channel, member);
+    }
+
+    /**
+     * Remove a member from a given channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<any>}
+     */
+    removeMemberFromChannel(nsp: string, channel: string, member: any): Promise<any> {
+        return this.storage.removeMemberFromChannel(nsp, channel, member);
+    }
+
+    /**
+     * Check if the given member exists in a channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<boolean>}
+     */
+    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+        return this.storage.memberExistsInChannel(nsp, channel, member);
     }
 }

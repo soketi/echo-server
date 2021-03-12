@@ -3,23 +3,41 @@
  */
 export interface PresenceStorageDriver {
     /**
-     * Get the members for a specific
-     * namespace and channel.
+     * Get channel members.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(nsp: string, channel: string): Promise<any>;
+    getMembersFromChannel(nsp: string, channel: string): Promise<any>;
 
     /**
-     * Set the new members in a specific
-     * namespace and channel.
+     * Add a new member to a given channel.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  members
-     * @return {void}
+     * @param  {any}  member
+     * @return {Promise<any>}
      */
-    set(nsp: string, channel: string, members: any): void;
+    addMemberToChannel(nsp: string, channel: string, member: any): Promise<any>;
+
+    /**
+     * Remove a member from a given channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<any>}
+     */
+    removeMemberFromChannel(nsp: string, channel: string, member: any): Promise<any>;
+
+    /**
+     * Check if the given member exists in a channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<boolean>}
+     */
+    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean>;
 }

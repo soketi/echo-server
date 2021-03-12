@@ -20,27 +20,69 @@ export class LocalStorage implements PresenceStorageDriver {
     }
 
     /**
-     * Get the members for a specific
-     * namespace and channel.
+     * Get channel members.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
      * @return {Promise<any>}
      */
-    get(nsp: string, channel: string): Promise<any> {
-        return new Promise(resolve => resolve(this.storage[`${nsp}:${channel}:members`] || null));
+    getMembersFromChannel(nsp: string, channel: string): Promise<any> {
+        return new Promise(resolve => resolve(this.storage[`${nsp}:${channel}:members`] || []));
     }
 
     /**
-     * Set the new members in a specific
-     * namespace and channel.
+     * Add a new member to a given channel.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  members
-     * @return {void}
+     * @param  {any}  member
+     * @return {Promise<any>}
      */
-     set(nsp: string, channel: string, members: any): void {
-        this.storage[`${nsp}:${channel}:members`] = members;
+    addMemberToChannel(nsp: string, channel: string, member: any): Promise<any> {
+        return this.getMembersFromChannel(nsp, channel).then(members => {
+            members.push(member);
+
+            this.storage[`${nsp}:${channel}:members`] = members;
+
+            return members;
+        });
+    }
+
+    /**
+     * Remove a member from a given channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<any>}
+     */
+    removeMemberFromChannel(nsp: string, channel: string, member: any): Promise<any> {
+        return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
+            let newMembers = existingMembers.filter(existingMember => {
+                return member.socket_id !== existingMember.socket_id;
+            });
+
+            this.storage[`${nsp}:${channel}:members`] = newMembers;
+
+            return newMembers;
+        });
+    }
+
+    /**
+     * Check if the given member exists in a channel.
+     *
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @param  {any}  member
+     * @return {Promise<boolean>}
+     */
+    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+        return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
+            let memberInChannel = existingMembers.find(existingMember => {
+                return existingMember.user_id === member.user_id;
+            });
+
+            return !!memberInChannel;
+        });
     }
 }

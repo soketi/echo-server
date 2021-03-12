@@ -144,12 +144,10 @@ export class HttpApi {
 
         if (channel instanceof PresenceChannel) {
             channel.getMembers(`/${appKey}`, channelName).then(members => {
-                members = members || [];
-
                 res.json({
                     ...result,
                     ...{
-                        user_count: members.reduce((map, member) => map.set(member.user_id, member), new Map).size
+                        user_count: members.size,
                     },
                 });
             });
@@ -179,10 +177,8 @@ export class HttpApi {
         }
 
         channel.getMembers(`/${appKey}`, channelName).then(members => {
-            members = members || [];
-
             res.json({
-                users: [...members.reduce((map, member) => map.set(member), new Map)][0].filter(user => !!user),
+                users: members,
             });
         }, error => Log.error(error));
     }
