@@ -22,29 +22,6 @@ export class PresenceChannel extends PrivateChannel {
     }
 
     /**
-     * Remove inactive channel members from the presence channel.
-     *
-     * @param  {string}  channel
-     * @param  {any[]}  members
-     * @param  {any}  socket
-     * @return {Promise<any>}
-     */
-    protected removeInactive(channel: string, members: any[], socket: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.io.of(this.getNspForSocket(socket)).in(channel).allSockets().then(clients => {
-                members = members || [];
-                members = members.filter(member => {
-                    return clients.has(member.socketId);
-                });
-
-                this.presenceStorage.set(this.getNspForSocket(socket), channel, members);
-
-                resolve(members);
-            }, error => Log.error(error));
-        });
-    }
-
-    /**
      * Join a given channel.
      *
      * @param  {any}  socket
@@ -73,28 +50,22 @@ export class PresenceChannel extends PrivateChannel {
                 return;
             }
 
-            socket.join(data.channel);
+            return this.presenceStorage.memberExistsInChannel(this.getNspForSocket(socket), data.channel, member).then(exists => {
+                /**
+                 * If member.user_id already exists, there is no way on connecting this socket to the same channel.
+                 * This avoids duplicated tabs for users, as well as minimizing impact on the network.
+                 */
+                if (!exists) {
+                    member.socket_id = socket.id;
 
-            this.isMember(data.channel, member, socket).then(isMember => {
-                this.getMembers(this.getNspForSocket(socket), data.channel).then(members => {
-                    members = members || [];
-                    member.socketId = socket.id;
-
-                    if (!isMember) {
-                        members.push(member);
-
-                        this.presenceStorage.set(this.getNspForSocket(socket), data.channel, members);
-
-                        members = [
-                            ...members.reduce((map, member) => map.set(member.user_id, member), new Map).values()
-                        ];
-
+                    this.presenceStorage.addMemberToChannel(this.getNspForSocket(socket), data.channel, member).then(members => {
+                        socket.join(data.channel);
                         this.onSubscribed(socket, data.channel, members);
                         this.onJoin(socket, data.channel, member);
-                    }
+                    });
+                }
 
-                    return member;
-                }, error => Log.error(error));
+                return member;
             }, () => Log.error('Error retrieving pressence channel members.'));
         });
     }
@@ -110,16 +81,18 @@ export class PresenceChannel extends PrivateChannel {
      */
     leave(socket: any, channel: string): void {
         this.getMembers(this.getNspForSocket(socket), channel).then(members => {
-            members = members || [];
-            let currentMember = members.find(member => member.socketId === socket.id);
+            let memberWhoLeft = members.find(member => member.socket_id === socket.id);
 
-            if (currentMember) {
-                let otherMembers = members.filter(member => member.socketId !== currentMember.socketId);
-
-                delete currentMember.socketId;
-
-                this.presenceStorage.set(this.getNspForSocket(socket), channel, otherMembers);
-                this.onLeave(socket, channel, currentMember);
+            /**
+             * Since in .join(), only the first connection that has a certain member.user_id is stored (the rest
+             * of the sockets that connect with the member.user_id are rejected), we check if the socket exists.
+             * If the socket leaves, then delete the user associated with it.
+             */
+            if (memberWhoLeft) {
+                this.presenceStorage.removeMemberFromChannel(this.getNspForSocket(socket), channel, memberWhoLeft).then(members => {
+                    socket.leave(channel);
+                    this.onLeave(socket, channel, memberWhoLeft);
+                });
             }
         }, error => Log.error(error));
     }
@@ -179,31 +152,7 @@ export class PresenceChannel extends PrivateChannel {
      * @return {Promise<any>}
      */
     getMembers(namespace: any, channel: string): Promise<any> {
-        return this.presenceStorage.get(namespace, channel);
-    }
-
-    /**
-     * Check if a user is on a presence channel.
-     *
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @param  {any}  socket
-     * @return {Promise<boolean>}
-     */
-    isMember(channel: string, member: any, socket: any): Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            this.getMembers(this.getNspForSocket(socket), channel).then(members => {
-                this.removeInactive(channel, members, socket).then(members => {
-                    let search = members.filter(m => m.user_id === member.user_id);
-
-                    if (search && search.length) {
-                        resolve(true);
-                    }
-
-                    resolve(false);
-                });
-            }, error => Log.error(error));
-        });
+        return this.presenceStorage.getMembersFromChannel(namespace, channel);
     }
 
     /**
