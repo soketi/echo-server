@@ -33,10 +33,6 @@ jobs:
       run: |
         npm run build
 
-    - name: Execute tests
-      run: |
-        npm run test
-
     - name: Compute GitHub tag
       id: tag
       uses: dawidd6/action-get-tag@v1
