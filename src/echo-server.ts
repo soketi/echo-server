@@ -33,7 +33,6 @@ export class EchoServer {
                         key: 'echo-app-key',
                         secret: 'echo-app-secret',
                         maxConnections: -1,
-                        allowedOrigins: ['*'],
                         enableStats: false,
                     },
                 ],
@@ -308,21 +307,7 @@ export class EchoServer {
             socket.id = this.generateSocketId();
 
             this.checkIfSocketHasValidEchoApp(socket).then(socket => {
-                this.checkIfSocketOriginIsAllowed(socket).then(socket => {
-                    next();
-                }, error => {
-                    if (this.options.development) {
-                        Log.error({
-                            time: new Date().toISOString(),
-                            socketId: socket ? socket.id : null,
-                            action: 'origin_check',
-                            status: 'failed',
-                            error,
-                        });
-                    }
-
-                    next(error);
-                });
+                next();
             }, error => {
                 if (this.options.development) {
                     Log.error({
@@ -550,43 +535,6 @@ export class EchoServer {
                 Log.error(error);
                 reject(error);
             });
-        });
-    }
-
-    /**
-     * Check if the socket origin is allowed
-     * @param  {any}  socket
-     * @return {Promise<any>}
-     */
-    protected checkIfSocketOriginIsAllowed(socket: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (socket.disconnected || !socket.echoApp) {
-                return reject({ reason: 'The origin cannot be checked because the socket is not authenticated.' });
-            }
-
-            let originIsAllowed = false;
-            let allowedOrigins = socket.echoApp.allowedOrigins || ['*'];
-            let socketOrigin = socket.handshake.headers.origin || '*';
-
-            if (!socketOrigin) {
-                return reject({ reason: 'The origin header is not existent' });
-            }
-
-            allowedOrigins.forEach(pattern => {
-                // Make sure to prepend the Regex special characters with a backslash, so that
-                // things from the origin like "/" or "." do not count as Regex characters.
-                let regex = new RegExp(pattern.replace(/(\.|\||\+|\?|\$|\/|\\)/g, '\\$1').replace('*', '.*'));
-
-                if (regex.test(socketOrigin)) {
-                    originIsAllowed = true;
-                }
-            });
-
-            if (originIsAllowed) {
-                resolve(socket);
-            } else {
-                reject({ reason: `The origin ${socketOrigin} is not allowed.` });
-            }
         });
     }
 
