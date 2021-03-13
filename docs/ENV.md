@@ -77,7 +77,7 @@ Statistics are globally enabled by default, but they are disabled on the default
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `STATS_ENABLED` | `stats.enabled` | `true` | `true`, `false` | Wether to enable the stats store. |
-| `STATS_DRIVER` | `stats.driver` | `local` | `local`, ~~`redis`~~ (deprecated), `redis-ts` | The stats driver used to store the stats to. |
+| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `redis-ts` | The stats driver used to store the stats to. |
 | `STATS_SNAPSHOTS_INTERVAL` | `stats.snapshots.interval` | `60 * 60` | - | The amount of time to wait between taking stats snapshots, in seconds. |
 
 For non-distributed systems:
@@ -86,7 +86,6 @@ For non-distributed systems:
 
 For distributed systems:
 
-- ~~`redis` - Stats are stored in Redis. Snapshots are stored in Redis.~~ (deprecated)
 - `redis-ts` Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
 
 ## Redis
