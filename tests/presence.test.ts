@@ -17,8 +17,15 @@ describe('presence channel test', () => {
 
         let client = Connector.newClientForPresenceUser(user);
         let pusher = Connector.newPusherClient();
+        let roomName = Connector.randomChannelName();
 
-        Connector.connectToPresenceChannel(client, 'room')
+        client.connector.socket.onAny((event, ...args) => {
+            if (event === 'channel:joined' && args[0] === roomName) {
+                Connector.sendEventToPublicChannel(pusher, roomName, 'message', { message: 'hello' });
+            }
+        });
+
+        Connector.connectToPresenceChannel(client, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([user.user_info]));
             })
@@ -29,12 +36,6 @@ describe('presence channel test', () => {
                 client.disconnect();
                 done();
             });
-
-        client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === 'presence-room') {
-                Connector.sendEventToPublicChannel(pusher, 'presence-room', 'message', { message: 'hello' });
-            }
-        });
     });
 
     test('handles joins and leaves', done => {
@@ -56,8 +57,15 @@ describe('presence channel test', () => {
 
         let johnClient = Connector.newClientForPresenceUser(john);
         let aliceClient = Connector.newClientForPresenceUser(alice);
+        let roomName = Connector.randomChannelName();
 
-        Connector.connectToPresenceChannel(johnClient, 'room')
+        aliceClient.connector.socket.onAny((event, ...args) => {
+            if (event === 'channel:joined') {
+                aliceClient.disconnect();
+            }
+        });
+
+        Connector.connectToPresenceChannel(johnClient, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([john.user_info]));
             })
@@ -70,13 +78,7 @@ describe('presence channel test', () => {
                 done();
             });
 
-        Connector.connectToPresenceChannel(aliceClient, 'room');
-
-        aliceClient.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined') {
-                aliceClient.disconnect();
-            }
-        });
+        Connector.connectToPresenceChannel(aliceClient, roomName);
     });
 
     test('connecting twice with same user does not duplicate members', done => {
@@ -90,8 +92,9 @@ describe('presence channel test', () => {
 
         let johnClient = Connector.newClientForPresenceUser(john);
         let johnSecondClient = Connector.newClientForPresenceUser(john);
+        let roomName = Connector.randomChannelName();
 
-        Connector.connectToPresenceChannel(johnClient, 'room')
+        Connector.connectToPresenceChannel(johnClient, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([john.user_info]));
             })
@@ -99,7 +102,7 @@ describe('presence channel test', () => {
                 expect(JSON.stringify(user)).not.toBe(JSON.stringify(john.user_info));
             });
 
-        Connector.connectToPresenceChannel(johnSecondClient, 'room');
+        Connector.connectToPresenceChannel(johnSecondClient, roomName);
 
         johnClient.disconnect();
         johnSecondClient.disconnect();
@@ -125,8 +128,9 @@ describe('presence channel test', () => {
 
         let johnClient = Connector.newClientForPresenceUser(john);
         let aliceClient = Connector.newClientForPresenceUser(alice);
+        let roomName = Connector.randomChannelName();
 
-        Connector.connectToPresenceChannel(johnClient, 'room')
+        Connector.connectToPresenceChannel(johnClient, roomName)
             .listenForWhisper('typing', whisper => {
                 expect(whisper.typing).toBe(true);
                 johnClient.disconnect();
@@ -134,7 +138,9 @@ describe('presence channel test', () => {
                 done();
             });
 
-        Connector.connectToPresenceChannel(aliceClient, 'room')
+        Connector.wait(2000);
+
+        Connector.connectToPresenceChannel(aliceClient, roomName)
             .whisper('typing', { typing: true });
     });
 
@@ -149,20 +155,21 @@ describe('presence channel test', () => {
 
         let client = Connector.newClientForPresenceUser(john);
         let pusher = Connector.newPusherClient();
-
-        Connector.connectToPresenceChannel(client, 'uk');
+        let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === 'presence-uk') {
+            if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
-                    expect(body.channels['presence-uk'].occupied).toBe(true);
-                    expect(body.channels['presence-uk'].subscription_count).toBe(1);
+                    expect(body.channels[`presence-${roomName}`].occupied).toBe(true);
+                    expect(body.channels[`presence-${roomName}`].subscription_count).toBe(1);
 
                     client.disconnect();
                     done();
                 });
             }
         });
+
+        Connector.connectToPresenceChannel(client, roomName);
     });
 
     test('get app channel', done => {
@@ -176,12 +183,11 @@ describe('presence channel test', () => {
 
         let client = Connector.newClientForPresenceUser(john);
         let pusher = Connector.newPusherClient();
-
-        Connector.connectToPresenceChannel(client, 'uk');
+        let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === 'presence-uk') {
-                pusher.get({ path: '/channels/presence-uk' }).then(res => res.json()).then(body => {
+            if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
+                pusher.get({ path: `/channels/presence-${roomName}` }).then(res => res.json()).then(body => {
                     expect(body.subscription_count).toBe(1);
                     expect(body.occupied).toBe(true);
                     expect(body.user_count).toBe(1);
@@ -191,5 +197,7 @@ describe('presence channel test', () => {
                 });
             }
         });
+
+        Connector.connectToPresenceChannel(client, roomName);
     });
 });

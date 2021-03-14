@@ -101,4 +101,8 @@ export class Connector {
     static wait(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+
+    static randomChannelName(): string {
+        return `channel-${Math.floor(Math.random() * 10000000)}`;
+    }
 }
