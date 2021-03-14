@@ -154,7 +154,7 @@ describe('presence channel test', () => {
         let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
+            if (event === 'channel:joined') {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
                     expect(body.channels[`presence-${roomName}`].occupied).toBe(true);
                     expect(body.channels[`presence-${roomName}`].subscription_count).toBe(1);
@@ -182,7 +182,7 @@ describe('presence channel test', () => {
         let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
+            if (event === 'channel:joined') {
                 pusher.get({ path: `/channels/presence-${roomName}` }).then(res => res.json()).then(body => {
                     expect(body.subscription_count).toBe(1);
                     expect(body.occupied).toBe(true);
