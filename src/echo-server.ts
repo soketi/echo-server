@@ -168,7 +168,7 @@ export class EchoServer {
      *
      * @type {boolean}
      */
-    protected rejectNewConnections = false;
+    rejectNewConnections = false;
 
     /**
      * The stats manager that will be used to store stats.

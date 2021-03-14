@@ -95,7 +95,12 @@ export class HttpApi {
      * @return {void}
      */
     protected getRoot(req: any, res: any): void {
-        res.send('OK');
+        if (this.server.rejectNewConnections) {
+            res.statusCode = 503;
+            res.send('CLOSING');
+        } else {
+            res.send('OK');
+        }
     }
 
     /**
