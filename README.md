@@ -57,14 +57,14 @@ $ echo-server start
 Since there is no configuration file, you may declare the parameters using environment variables directly passed in the CLI, either as key-value attributes in an `.env` file at the root of the project:
 
 ```bash
-$ DATABASE_DRIVER=redis echo-server start
+$ DEBUG=1 echo-server start
 ```
 
 When using .env, you shall prefix them with `ECHO_SERVER_` for ease of use:
 
 ```bash
 # Within your .env file
-ECHO_SERVER_DATABASE_DRIVER=redis
+ECHO_SERVER_DEBUG=1
 ```
 
 Check the [environment variables documentation file](docs/ENV.md) on how you can configure the server according to your use case.

@@ -35,7 +35,6 @@ export class Cli {
         APPS_MANAGER_TOKEN: 'appManager.api.token',
         CLOSING_GRACE_PERIOD: 'closingGracePeriod',
         CORS_ALLOWED_ORIGINS: 'cors.origin',
-        DATABASE_DRIVER: 'database.driver',
         DEBUG: 'development',
         PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
         PROMETHEUS_ENABLED: 'prometheus.enabled',
