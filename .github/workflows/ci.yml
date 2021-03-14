@@ -17,48 +17,71 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
+
       matrix:
         node:
           - 10.x
           - 12.x
           - 14.x
+        presence_db:
+          - redis
+          - local
+        replication_driver:
+          - redis
+          - local
+        apps_manager_driver:
+          - array
+          - api
 
-    name: Node.js ${{ matrix.node }}
+    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v1
-      name: Installing Node.js v${{ matrix.node }}
-      with:
-        node-version: ${{ matrix.node }}
+      - uses: actions/setup-node@v1
+        name: Installing Node.js v${{ matrix.node }}
+        with:
+          node-version: ${{ matrix.node }}
 
-    - name: Installing dependencies
-      run: |
-        npm install
+      - uses: zhulik/redis-action@1.1.0
+        name: Installing Redis 6.x
+        with:
+          redis version: 6
+          number of databases: 100
 
-    - name: Lint the code
-      run: |
-        npm run lint
+      - name: Installing dependencies
+        run: |
+          npm install
 
-    - name: Compile TypeScript
-      run: |
-        npm run build
+      - name: Lint the code
+        run: |
+          npm run lint
 
-    - name: Start Server
-      run: |
-        node bin/server.js start &
-        sleep 5
-        curl --silent -XGET --fail http://127.0.0.1:6001
-        curl --silent -XGET --fail http://127.0.0.1:6001/metrics
-      env:
-        DEBUG: true
-        PROMETHEUS_ENABLED: true
+      - name: Compile TypeScript
+        run: |
+          npm run build
 
-    - name: Execute tests
-      run: |
-        npm run test
+      - name: Start Servers
+        run: |
+          node bin/server.js start &
+          node tests/fixtures/api.js &
+          sleep 5
+          curl --silent -XGET --fail http://127.0.0.1:6001
+          curl --silent -XGET --fail http://127.0.0.1:6001/metrics
+        env:
+          DEBUG: true
+          PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
+          PROMETHEUS_ENABLED: true
+          REPLICATION_DRIVER: ${{ matrix.replication_driver }}
+          APPS_MANAGER_DRIVER: ${{ matrix.apps_manager_driver }}
+          APPS_MANAGER_HOST: http://127.0.0.1:3000
+          APPS_MANAGER_TOKEN: some-very-secret-token
 
-    - uses: codecov/codecov-action@v1
-      with:
-        fail_ci_if_error: false
+      - name: Execute tests
+        run: |
+          npm run test
+
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false

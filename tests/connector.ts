@@ -71,7 +71,7 @@ export class Connector {
         });
     }
 
-    static sendEventToPublicChannel(pusher, channel: string, event: string, body: any) {
+    static sendEventToChannel(pusher, channel: string, event: string, body: any) {
         return pusher.trigger(channel, event, body);
     }
 
@@ -100,5 +100,9 @@ export class Connector {
 
     static wait(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    static randomChannelName(): string {
+        return `channel-${Math.floor(Math.random() * 10000000)}`;
     }
 }

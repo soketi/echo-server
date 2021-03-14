@@ -176,7 +176,7 @@ export class PresenceChannel extends PrivateChannel {
      * @param  {string}  channel
      * @return {Promise<any>}
      */
-    getMembers(namespace: any, channel: string): Promise<any> {
+    getMembers(namespace: string, channel: string): Promise<any> {
         return this.presenceStorage.getMembersFromChannel(namespace, channel);
     }
 

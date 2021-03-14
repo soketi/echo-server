@@ -168,7 +168,7 @@ export class EchoServer {
      *
      * @type {boolean}
      */
-    protected rejectNewConnections = false;
+    rejectNewConnections = false;
 
     /**
      * The stats manager that will be used to store stats.
@@ -297,7 +297,7 @@ export class EchoServer {
      * @return string
      */
     getNspForSocket(socket: any) {
-        return socket ? socket.nsp.name : '/';
+        return socket.nsp.name;
     }
 
     /**
