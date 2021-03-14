@@ -2,6 +2,7 @@ import { AppManager } from './app-managers/app-manager';
 import { Channel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
 
@@ -83,6 +84,10 @@ export class EchoServer {
                 database: 'local',
             },
         },
+        prometheus: {
+            enabled: true,
+            prefix: 'echo_server_',
+        },
         protocol: 'http',
         replication: {
             driver: 'local',
@@ -149,7 +154,14 @@ export class EchoServer {
      *
      * @type {AppManager}
      */
-    protected appManager;
+    protected appManager: AppManager;
+
+    /**
+     * The Prometheus client that handles export.
+     *
+     * @type {Prometheus}
+     */
+     protected prometheus: Prometheus;
 
     /**
      * Let the server know to reject any new connections.
@@ -163,7 +175,7 @@ export class EchoServer {
      *
      * @type {Stats}
      */
-    protected stats;
+    protected stats: Stats;
 
     /**
      * Create a new Echo Server instance.
@@ -223,10 +235,11 @@ export class EchoServer {
         return new Promise((resolve, reject) => {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
+            this.prometheus = new Prometheus(io, this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -235,6 +248,7 @@ export class EchoServer {
                 this.options,
                 this.appManager,
                 this.stats,
+                this.prometheus,
             );
 
             this.httpApi.initialize();
@@ -333,6 +347,10 @@ export class EchoServer {
     protected registerConnectionCallbacks(nsp): void {
         nsp.on('connection', socket => {
             this.stats.markNewConnection(socket.echoApp);
+
+            if (this.options.prometheus.enabled) {
+                this.prometheus.markNewConnection(socket);
+            }
 
             if (this.rejectNewConnections) {
                 return socket.disconnect();
@@ -437,6 +455,12 @@ export class EchoServer {
                     }
                 });
             });
+        });
+
+        socket.on('disconnect', reason => {
+            if (this.options.prometheus.enabled) {
+                this.prometheus.markDisconnection(socket);
+            }
         });
     }
 
