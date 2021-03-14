@@ -1,12 +1,7 @@
 import { Connector } from './connector';
 
 describe('presence channel test', () => {
-    beforeEach(async done => {
-        await Connector.wait(1000);
-        done();
-    });
-
-    test('connects to presence channel', done => {
+    test('connects to presence channel', async done => {
         let user = {
             user_id: 1,
             user_info: {
@@ -21,7 +16,7 @@ describe('presence channel test', () => {
 
         client.connector.socket.onAny((event, ...args) => {
             if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
-                Connector.sendEventToPublicChannel(pusher, roomName, 'message', { message: 'hello' });
+                Connector.sendEventToChannel(pusher, `presence-${roomName}`, 'message', { message: 'hello' });
             }
         });
 
@@ -138,7 +133,7 @@ describe('presence channel test', () => {
                 done();
             });
 
-        Connector.wait(2000);
+        await Connector.wait(2000);
 
         Connector.connectToPresenceChannel(aliceClient, roomName)
             .whisper('typing', { typing: true });

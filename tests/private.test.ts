@@ -1,11 +1,6 @@
 import { Connector } from './connector';
 
 describe('private channel test', () => {
-    beforeEach(async done => {
-        await Connector.wait(1000);
-        done();
-    });
-
     test('connects to private channel', done => {
         let client = Connector.newClientForPrivateChannel();
         let pusher = Connector.newPusherClient();
@@ -13,7 +8,7 @@ describe('private channel test', () => {
 
         client.connector.socket.onAny((event, ...args) => {
             if (event === 'channel:joined' && args[0] === `private-${roomName}`) {
-                Connector.sendEventToPublicChannel(pusher, `private-${roomName}`, 'message', { message: 'hello' });
+                Connector.sendEventToChannel(pusher, `private-${roomName}`, 'message', { message: 'hello' });
             }
         });
 
@@ -26,7 +21,7 @@ describe('private channel test', () => {
         });
     });
 
-    test('whisper works', done => {
+    test('whisper works', async done => {
         let client1 = Connector.newClientForPrivateChannel();
         let client2 = Connector.newClientForPrivateChannel();
         let roomName = Connector.randomChannelName();
@@ -39,7 +34,7 @@ describe('private channel test', () => {
                 done();
             });
 
-        Connector.wait(2000);
+        await Connector.wait(2000);
 
         Connector.connectToPrivateChannel(client2, roomName)
             .whisper('typing', { typing: true });

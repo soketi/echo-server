@@ -1,11 +1,6 @@
 import { Connector } from './connector';
 
 describe('public channel test', () => {
-    beforeEach(async done => {
-        await Connector.wait(1000);
-        done();
-    });
-
     test('connects to public channel', done => {
         let client = Connector.newClient();
         let pusher = Connector.newPusherClient();
@@ -21,7 +16,7 @@ describe('public channel test', () => {
 
         client.connector.socket.onAny((event, ...args) => {
             if (event === 'channel:joined' && args[0] === roomName) {
-                Connector.sendEventToPublicChannel(pusher, roomName, 'greeting', { message: 'hello' });
+                Connector.sendEventToChannel(pusher, roomName, 'greeting', { message: 'hello' });
             }
         });
     });

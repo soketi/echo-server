@@ -71,7 +71,7 @@ export class Connector {
         });
     }
 
-    static sendEventToPublicChannel(pusher, channel: string, event: string, body: any) {
+    static sendEventToChannel(pusher, channel: string, event: string, body: any) {
         return pusher.trigger(channel, event, body);
     }
 
