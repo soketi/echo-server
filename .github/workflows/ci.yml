@@ -75,7 +75,6 @@ jobs:
           PROMETHEUS_ENABLED: true
           REPLICATION_DRIVER: ${{ matrix.replication_driver }}
           APPS_MANAGER_DRIVER: ${{ matrix.apps_manager_driver }}
-          APPS_MANAGER_ENDPOINT: /get-app
           APPS_MANAGER_HOST: http://127.0.0.1:3000
           APPS_MANAGER_TOKEN: some-very-secret-token
 
