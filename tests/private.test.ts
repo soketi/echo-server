@@ -45,19 +45,12 @@ describe('private channel test', () => {
         let client = Connector.newClientForPrivateChannel();
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPrivateChannel(client, 'world');
-        Connector.connectToPrivateChannel(client, 'usa');
         Connector.connectToPrivateChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined') {
+            if (event === 'channel:joined' && args[0] === 'private-uk') {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
-                    expect(body.channels['private-world'].occupied).toBe(true);
-                    expect(body.channels['private-usa'].occupied).toBe(true);
                     expect(body.channels['private-uk'].occupied).toBe(true);
-
-                    expect(body.channels['private-world'].subscription_count).toBe(1);
-                    expect(body.channels['private-usa'].subscription_count).toBe(1);
                     expect(body.channels['private-uk'].subscription_count).toBe(1);
 
                     client.disconnect();
@@ -71,8 +64,6 @@ describe('private channel test', () => {
         let client = Connector.newClientForPrivateChannel();
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPrivateChannel(client, 'world');
-        Connector.connectToPrivateChannel(client, 'usa');
         Connector.connectToPrivateChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {

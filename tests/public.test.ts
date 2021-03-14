@@ -29,12 +29,10 @@ describe('public channel test', () => {
         let client = Connector.newClient();
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPublicChannel(client, 'world');
-        Connector.connectToPublicChannel(client, 'usa');
         Connector.connectToPublicChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined') {
+            if (event === 'channel:joined' && args[0] === 'uk') {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
                     expect(body.channels.world.occupied).toBe(true);
                     expect(body.channels.usa.occupied).toBe(true);
@@ -55,8 +53,6 @@ describe('public channel test', () => {
         let client = Connector.newClient();
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPublicChannel(client, 'world');
-        Connector.connectToPublicChannel(client, 'usa');
         Connector.connectToPublicChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {

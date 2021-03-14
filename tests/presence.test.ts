@@ -150,8 +150,6 @@ describe('presence channel test', () => {
         let client = Connector.newClientForPresenceUser(john);
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPresenceChannel(client, 'world');
-        Connector.connectToPresenceChannel(client, 'usa');
         Connector.connectToPresenceChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {
@@ -184,8 +182,6 @@ describe('presence channel test', () => {
         let client = Connector.newClientForPresenceUser(john);
         let pusher = Connector.newPusherClient();
 
-        Connector.connectToPresenceChannel(client, 'world');
-        Connector.connectToPresenceChannel(client, 'usa');
         Connector.connectToPresenceChannel(client, 'uk');
 
         client.connector.socket.onAny((event, ...args) => {
