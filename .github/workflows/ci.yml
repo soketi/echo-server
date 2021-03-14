@@ -29,46 +29,46 @@ jobs:
     name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }})
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v1
-      name: Installing Node.js v${{ matrix.node }}
-      with:
-        node-version: ${{ matrix.node }}
+      - uses: actions/setup-node@v1
+        name: Installing Node.js v${{ matrix.node }}
+        with:
+          node-version: ${{ matrix.node }}
 
-    - uses: zhulik/redis-action@1.1.0
-      name: Installing Redis 6.x
-      with:
-        redis version: 6
-        number of databases: 100
+      - uses: zhulik/redis-action@1.1.0
+        name: Installing Redis 6.x
+        with:
+          redis version: 6
+          number of databases: 100
 
-    - name: Installing dependencies
-      run: |
-        npm install
+      - name: Installing dependencies
+        run: |
+          npm install
 
-    - name: Lint the code
-      run: |
-        npm run lint
+      - name: Lint the code
+        run: |
+          npm run lint
 
-    - name: Compile TypeScript
-      run: |
-        npm run build
+      - name: Compile TypeScript
+        run: |
+          npm run build
 
-    - name: Start Server
-      run: |
-        node bin/server.js start &
-        sleep 5
-        curl --silent -XGET --fail http://127.0.0.1:6001
-        curl --silent -XGET --fail http://127.0.0.1:6001/metrics
-      env:
-        DEBUG: true
-        PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
-        PROMETHEUS_ENABLED: true
+      - name: Start Server
+        run: |
+          node bin/server.js start &
+          sleep 5
+          curl --silent -XGET --fail http://127.0.0.1:6001
+          curl --silent -XGET --fail http://127.0.0.1:6001/metrics
+        env:
+          DEBUG: true
+          PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
+          PROMETHEUS_ENABLED: true
 
-    - name: Execute tests
-      run: |
-        npm run test
+      - name: Execute tests
+        run: |
+          npm run test
 
-    - uses: codecov/codecov-action@v1
-      with:
-        fail_ci_if_error: false
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false
