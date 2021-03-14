@@ -54,12 +54,6 @@ describe('presence channel test', () => {
         let aliceClient = Connector.newClientForPresenceUser(alice);
         let roomName = Connector.randomChannelName();
 
-        aliceClient.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined') {
-                aliceClient.disconnect();
-            }
-        });
-
         Connector.connectToPresenceChannel(johnClient, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([john.user_info]));
@@ -68,6 +62,7 @@ describe('presence channel test', () => {
             })
             .joining(user => {
                 expect(JSON.stringify(user)).toBe(JSON.stringify(alice.user_info));
+                aliceClient.disconnect();
             })
             .leaving(user => {
                 expect(JSON.stringify(user)).toBe(JSON.stringify(alice.user_info));
