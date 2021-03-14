@@ -1,6 +1,11 @@
 import { Connector } from './connector';
 
 describe('private channel test', () => {
+    beforeEach(async done => {
+        await Connector.wait(1000);
+        done();
+    });
+
     test('connects to private channel', done => {
         let client = Connector.newClientForPrivateChannel();
         let pusher = Connector.newPusherClient();

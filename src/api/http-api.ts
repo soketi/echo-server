@@ -11,11 +11,12 @@ export class HttpApi {
      * Create new instance of HTTP API.
      *
      * @param {any} server
-     * @param {any}  io
+     * @param {any} io
      * @param {any} express
      * @param {object} options
-     * @param {any}  appManager
-     * @param {any}  stats
+     * @param {any} appManager
+     * @param {any} stats
+     * @param {any} prometheus
      */
     constructor(
         protected server,
@@ -24,6 +25,7 @@ export class HttpApi {
         protected options,
         protected appManager,
         protected stats,
+        protected prometheus,
     ) {
         //
     }
@@ -46,6 +48,10 @@ export class HttpApi {
         if (this.options.stats.enabled) {
             this.express.get('/apps/:appId/stats', (req, res) => this.getStats(req, res));
             this.express.get('/apps/:appId/stats/current', (req, res) => this.getCurrentStats(req, res));
+        }
+
+        if (this.options.prometheus.enabled) {
+            this.express.get('/metrics', (req, res) => this.getPrometheusMetrics(req, res));
         }
     }
 
@@ -220,6 +226,10 @@ export class HttpApi {
             this.sendEventToChannels(`/${appKey}`, req);
         }
 
+        if (this.options.prometheus.enabled) {
+            this.prometheus.markApiMessage(`/${appKey}`, req, { message: 'ok' });
+        }
+
         res.json({ message: 'ok' });
 
         return true;
@@ -253,6 +263,23 @@ export class HttpApi {
     protected getCurrentStats(req, res): boolean {
         this.stats.getStats(req.echoApp).then(stats => {
             res.json({ stats });
+        });
+
+        return true;
+    }
+
+    /**
+     * Get the registered Prometheus metrics.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected getPrometheusMetrics(req, res): boolean {
+        res.set('Content-Type', this.prometheus.register.contentType);
+
+        this.prometheus.register.metrics().then(content => {
+            res.end(content);
         });
 
         return true;
@@ -316,6 +343,10 @@ export class HttpApi {
             }
 
             this.stats.markApiMessage(req.echoApp);
+
+            if (this.options.prometheus.enabled) {
+                this.prometheus.markWsMessage(namespace, req.body.name, channel, req.body.data);
+            }
         });
     }
 
