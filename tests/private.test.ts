@@ -34,7 +34,7 @@ describe('private channel test', () => {
                 done();
             });
 
-        await Connector.wait(2000);
+        await Connector.wait(5000);
 
         Connector.connectToPrivateChannel(client2, roomName)
             .whisper('typing', { typing: true });

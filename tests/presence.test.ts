@@ -133,7 +133,7 @@ describe('presence channel test', () => {
                 done();
             });
 
-        await Connector.wait(2000);
+        await Connector.wait(5000);
 
         Connector.connectToPresenceChannel(aliceClient, roomName)
             .whisper('typing', { typing: true });
