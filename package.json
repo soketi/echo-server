@@ -24,7 +24,7 @@
     "build": "./node_modules/.bin/tsc",
     "lint": "eslint --ext .js,.ts ./src ./tests",
     "prepublish": "npm run build",
-    "test": "jest --runInBand",
+    "test": "jest",
     "test:watch": "npm test -- --watch"
   },
   "dependencies": {
