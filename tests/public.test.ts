@@ -34,12 +34,7 @@ describe('public channel test', () => {
         client.connector.socket.onAny((event, ...args) => {
             if (event === 'channel:joined' && args[0] === 'uk') {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
-                    expect(body.channels.world.occupied).toBe(true);
-                    expect(body.channels.usa.occupied).toBe(true);
                     expect(body.channels.uk.occupied).toBe(true);
-
-                    expect(body.channels.world.subscription_count).toBe(1);
-                    expect(body.channels.usa.subscription_count).toBe(1);
                     expect(body.channels.uk.subscription_count).toBe(1);
 
                     client.disconnect();
