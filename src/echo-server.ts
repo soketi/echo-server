@@ -85,7 +85,7 @@ export class EchoServer {
             },
         },
         prometheus: {
-            enabled: true,
+            enabled: false,
             prefix: 'echo_server_',
         },
         protocol: 'http',

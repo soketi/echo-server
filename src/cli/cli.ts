@@ -38,6 +38,8 @@ export class Cli {
         DATABASE_DRIVER: 'database.driver',
         DEBUG: 'development',
         PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
+        PROMETHEUS_ENABLED: 'prometheus.enabled',
+        PROMETHEUS_PREFIX: 'prometheus.prefix',
         REPLICATION_DRIVER: 'replication.driver',
         REDIS_HOST: 'database.redis.host',
         REDIS_PORT: 'database.redis.port',

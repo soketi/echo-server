@@ -1,6 +1,11 @@
 import { Connector } from './connector';
 
 describe('presence channel test', () => {
+    beforeEach(async done => {
+        await Connector.wait(1000);
+        done();
+    });
+
     test('connects to presence channel', done => {
         let user = {
             user_id: 1,

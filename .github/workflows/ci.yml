@@ -50,9 +50,10 @@ jobs:
         node bin/server.js start &
         sleep 5
         curl --silent -XGET --fail http://127.0.0.1:6001
-
+        curl --silent -XGET --fail http://127.0.0.1:6001/metrics
       env:
         DEBUG: true
+        PROMETHEUS_ENABLED: true
 
     - name: Execute tests
       run: |
