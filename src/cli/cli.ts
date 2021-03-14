@@ -23,7 +23,6 @@ export class Cli {
      * @type {any}
      */
     envVariables: any = {
-        APP_DEFAULT_ALLOWED_ORIGINS: 'appManager.array.apps.0.allowedOrigins',
         APP_DEFAULT_ENABLE_STATS: 'appManager.array.apps.0.enableStats',
         APP_DEFAULT_ID: 'appManager.array.apps.0.id',
         APP_DEFAULT_KEY: 'appManager.array.apps.0.key',
@@ -39,6 +38,8 @@ export class Cli {
         DATABASE_DRIVER: 'database.driver',
         DEBUG: 'development',
         PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
+        PROMETHEUS_ENABLED: 'prometheus.enabled',
+        PROMETHEUS_PREFIX: 'prometheus.prefix',
         REPLICATION_DRIVER: 'replication.driver',
         REDIS_HOST: 'database.redis.host',
         REDIS_PORT: 'database.redis.port',

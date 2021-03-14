@@ -13,10 +13,11 @@ export class PresenceChannel extends PrivateChannel {
      *
      * @param {any} io
      * @param {any} stats
+     * @param {any} prometheus
      * @param {any} options
      */
-    constructor(protected io, protected stats, protected options) {
-        super(io, stats, options);
+    constructor(protected io, protected stats, protected prometheus, protected options) {
+        super(io, stats, prometheus, options);
 
         this.presenceStorage = new PresenceStorage(options);
     }
@@ -114,6 +115,14 @@ export class PresenceChannel extends PrivateChannel {
             .broadcast
             .to(channel)
             .emit('presence:joining', channel, member);
+
+        /**
+         * We can't intercept the socket.emit() function, so
+         * this one will be present here to mark an outgoing WS message.
+         */
+        if (this.options.prometheus.enabled) {
+            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:joining', channel, member);
+        }
     }
 
     /**
@@ -128,6 +137,14 @@ export class PresenceChannel extends PrivateChannel {
         this.io.of(this.getNspForSocket(socket))
             .to(channel)
             .emit('presence:leaving', channel, member);
+
+        /**
+         * We can't intercept the socket.emit() function, so
+         * this one will be present here to mark an outgoing WS message.
+         */
+        if (this.options.prometheus.enabled) {
+            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:leaving', channel, member);
+        }
     }
 
     /**
@@ -142,6 +159,14 @@ export class PresenceChannel extends PrivateChannel {
         this.io.of(this.getNspForSocket(socket))
             .to(socket.id)
             .emit('presence:subscribed', channel, members);
+
+        /**
+         * We can't intercept the socket.emit() function, so
+         * this one will be present here to mark an outgoing WS message.
+         */
+        if (this.options.prometheus.enabled) {
+            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:subscribed', channel, members);
+        }
     }
 
     /**

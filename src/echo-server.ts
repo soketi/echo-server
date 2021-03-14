@@ -2,6 +2,7 @@ import { AppManager } from './app-managers/app-manager';
 import { Channel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
 
@@ -33,7 +34,6 @@ export class EchoServer {
                         key: 'echo-app-key',
                         secret: 'echo-app-secret',
                         maxConnections: -1,
-                        allowedOrigins: ['*'],
                         enableStats: false,
                     },
                 ],
@@ -83,6 +83,10 @@ export class EchoServer {
             storage: {
                 database: 'local',
             },
+        },
+        prometheus: {
+            enabled: false,
+            prefix: 'echo_server_',
         },
         protocol: 'http',
         replication: {
@@ -150,7 +154,14 @@ export class EchoServer {
      *
      * @type {AppManager}
      */
-    protected appManager;
+    protected appManager: AppManager;
+
+    /**
+     * The Prometheus client that handles export.
+     *
+     * @type {Prometheus}
+     */
+     protected prometheus: Prometheus;
 
     /**
      * Let the server know to reject any new connections.
@@ -164,7 +175,7 @@ export class EchoServer {
      *
      * @type {Stats}
      */
-    protected stats;
+    protected stats: Stats;
 
     /**
      * Create a new Echo Server instance.
@@ -224,10 +235,11 @@ export class EchoServer {
         return new Promise((resolve, reject) => {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
+            this.prometheus = new Prometheus(io, this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -236,6 +248,7 @@ export class EchoServer {
                 this.options,
                 this.appManager,
                 this.stats,
+                this.prometheus,
             );
 
             this.httpApi.initialize();
@@ -308,21 +321,7 @@ export class EchoServer {
             socket.id = this.generateSocketId();
 
             this.checkIfSocketHasValidEchoApp(socket).then(socket => {
-                this.checkIfSocketOriginIsAllowed(socket).then(socket => {
-                    next();
-                }, error => {
-                    if (this.options.development) {
-                        Log.error({
-                            time: new Date().toISOString(),
-                            socketId: socket ? socket.id : null,
-                            action: 'origin_check',
-                            status: 'failed',
-                            error,
-                        });
-                    }
-
-                    next(error);
-                });
+                next();
             }, error => {
                 if (this.options.development) {
                     Log.error({
@@ -348,6 +347,10 @@ export class EchoServer {
     protected registerConnectionCallbacks(nsp): void {
         nsp.on('connection', socket => {
             this.stats.markNewConnection(socket.echoApp);
+
+            if (this.options.prometheus.enabled) {
+                this.prometheus.markNewConnection(socket);
+            }
 
             if (this.rejectNewConnections) {
                 return socket.disconnect();
@@ -453,6 +456,12 @@ export class EchoServer {
                 });
             });
         });
+
+        socket.on('disconnect', reason => {
+            if (this.options.prometheus.enabled) {
+                this.prometheus.markDisconnection(socket);
+            }
+        });
     }
 
     /**
@@ -550,43 +559,6 @@ export class EchoServer {
                 Log.error(error);
                 reject(error);
             });
-        });
-    }
-
-    /**
-     * Check if the socket origin is allowed
-     * @param  {any}  socket
-     * @return {Promise<any>}
-     */
-    protected checkIfSocketOriginIsAllowed(socket: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (socket.disconnected || !socket.echoApp) {
-                return reject({ reason: 'The origin cannot be checked because the socket is not authenticated.' });
-            }
-
-            let originIsAllowed = false;
-            let allowedOrigins = socket.echoApp.allowedOrigins || ['*'];
-            let socketOrigin = socket.handshake.headers.origin || '*';
-
-            if (!socketOrigin) {
-                return reject({ reason: 'The origin header is not existent' });
-            }
-
-            allowedOrigins.forEach(pattern => {
-                // Make sure to prepend the Regex special characters with a backslash, so that
-                // things from the origin like "/" or "." do not count as Regex characters.
-                let regex = new RegExp(pattern.replace(/(\.|\||\+|\?|\$|\/|\\)/g, '\\$1').replace('*', '.*'));
-
-                if (regex.test(socketOrigin)) {
-                    originIsAllowed = true;
-                }
-            });
-
-            if (originIsAllowed) {
-                resolve(socket);
-            } else {
-                reject({ reason: `The origin ${socketOrigin} is not allowed.` });
-            }
         });
     }
 

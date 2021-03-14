@@ -25,9 +25,10 @@ export class Channel {
      *
      * @param {any} io
      * @param {any} stats
+     * @param {any} prometheus
      * @param {any} options
      */
-    constructor(protected io, protected stats, protected options) {
+    constructor(protected io, protected stats, protected prometheus, protected options) {
         //
     }
 
@@ -82,6 +83,14 @@ export class Channel {
     onJoin(socket: any, channel: string, member: any): void {
         socket.emit('channel:joined', channel);
 
+        /**
+         * We can't intercept the socket.emit() function, so
+         * this one will be present here to mark an outgoing WS message.
+         */
+        if (this.options.prometheus.enabled) {
+            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', channel);
+        }
+
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),
@@ -130,6 +139,14 @@ export class Channel {
                     .emit(data.event, data.channel, data.data);
 
                 this.stats.markWsMessage(socket.echoApp);
+
+                /**
+                 * We can't intercept the socket.emit() function, so
+                 * this one will be present here to mark an outgoing WS message.
+                 */
+                if (this.options.prometheus.enabled) {
+                    this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                }
 
                 if (this.options.development) {
                     Log.info({
