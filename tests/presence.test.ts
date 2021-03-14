@@ -1,5 +1,7 @@
 import { Connector } from './connector';
 
+jest.retryTimes(5);
+
 describe('presence channel test', () => {
     test('connects to presence channel', async done => {
         let user = {

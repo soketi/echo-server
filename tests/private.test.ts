@@ -1,5 +1,7 @@
 import { Connector } from './connector';
 
+jest.retryTimes(5);
+
 describe('private channel test', () => {
     test('connects to private channel', done => {
         let client = Connector.newClientForPrivateChannel();

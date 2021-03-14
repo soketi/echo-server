@@ -5,4 +5,5 @@ module.exports = {
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     testTimeout: 30 * 1000,
     collectCoverage: true,
+    testRunner: 'jest-circus/runner',
 };

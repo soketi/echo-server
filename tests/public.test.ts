@@ -1,5 +1,7 @@
 import { Connector } from './connector';
 
+jest.retryTimes(5);
+
 describe('public channel test', () => {
     test('connects to public channel', done => {
         let client = Connector.newClient();
