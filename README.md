@@ -23,8 +23,8 @@ If you are using your application in your day-to-day job, on presentation demos,
 
 ## Current Milestones
 
-- Prometheus Exporting
-- Testing
+- MySQL Apps Manager
+- InfluxDB Stats Manager
 
 ## System Requirements
 
