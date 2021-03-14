@@ -36,10 +36,10 @@ describe('private channel test', () => {
                 done();
             });
 
-        await Connector.wait(5000);
-
-        Connector.connectToPrivateChannel(client2, roomName)
-            .whisper('typing', { typing: true });
+        Connector.wait(5000).then(() => {
+            Connector.connectToPrivateChannel(client2, roomName)
+                .whisper('typing', { typing: true });
+        });
     });
 
     test('get app channels', done => {

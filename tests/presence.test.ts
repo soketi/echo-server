@@ -3,7 +3,7 @@ import { Connector } from './connector';
 jest.retryTimes(5);
 
 describe('presence channel test', () => {
-    test('connects to presence channel', async done => {
+    test('connects to presence channel', done => {
         let user = {
             user_id: 1,
             user_info: {
@@ -136,10 +136,10 @@ describe('presence channel test', () => {
                 done();
             });
 
-        await Connector.wait(5000);
-
-        Connector.connectToPresenceChannel(aliceClient, roomName)
-            .whisper('typing', { typing: true });
+        Connector.wait(5000).then(() => {
+            Connector.connectToPresenceChannel(aliceClient, roomName)
+                .whisper('typing', { typing: true });
+        });
     });
 
     test('get app channels', done => {
