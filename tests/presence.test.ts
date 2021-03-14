@@ -63,6 +63,8 @@ describe('presence channel test', () => {
         Connector.connectToPresenceChannel(johnClient, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([john.user_info]));
+
+                Connector.connectToPresenceChannel(aliceClient, roomName);
             })
             .joining(user => {
                 expect(JSON.stringify(user)).toBe(JSON.stringify(alice.user_info));
@@ -72,8 +74,6 @@ describe('presence channel test', () => {
                 johnClient.disconnect();
                 done();
             });
-
-        Connector.connectToPresenceChannel(aliceClient, roomName);
     });
 
     test('connecting twice with same user does not duplicate members', done => {
@@ -92,12 +92,12 @@ describe('presence channel test', () => {
         Connector.connectToPresenceChannel(johnClient, roomName)
             .here(users => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([john.user_info]));
+
+                Connector.connectToPresenceChannel(johnSecondClient, roomName);
             })
             .joining(user => {
                 expect(JSON.stringify(user)).not.toBe(JSON.stringify(john.user_info));
             });
-
-        Connector.connectToPresenceChannel(johnSecondClient, roomName);
 
         johnClient.disconnect();
         johnSecondClient.disconnect();
