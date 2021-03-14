@@ -155,12 +155,7 @@ describe('presence channel test', () => {
         client.connector.socket.onAny((event, ...args) => {
             if (event === 'channel:joined' && args[0] === 'presence-uk') {
                 pusher.get({ path: '/channels' }).then(res => res.json()).then(body => {
-                    expect(body.channels['presence-world'].occupied).toBe(true);
-                    expect(body.channels['presence-usa'].occupied).toBe(true);
                     expect(body.channels['presence-uk'].occupied).toBe(true);
-
-                    expect(body.channels['presence-world'].subscription_count).toBe(1);
-                    expect(body.channels['presence-usa'].subscription_count).toBe(1);
                     expect(body.channels['presence-uk'].subscription_count).toBe(1);
 
                     client.disconnect();
