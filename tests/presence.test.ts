@@ -20,7 +20,7 @@ describe('presence channel test', () => {
         let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === roomName) {
+            if (event === 'channel:joined' && args[0] === `presence-${roomName}`) {
                 Connector.sendEventToPublicChannel(pusher, roomName, 'message', { message: 'hello' });
             }
         });

@@ -12,8 +12,8 @@ describe('private channel test', () => {
         let roomName = Connector.randomChannelName();
 
         client.connector.socket.onAny((event, ...args) => {
-            if (event === 'channel:joined' && args[0] === 'private-room') {
-                Connector.sendEventToPublicChannel(pusher, 'private-room', 'message', { message: 'hello' });
+            if (event === 'channel:joined' && args[0] === `private-${roomName}`) {
+                Connector.sendEventToPublicChannel(pusher, `private-${roomName}`, 'message', { message: 'hello' });
             }
         });
 
