@@ -23,7 +23,7 @@ describe('private channel test', () => {
         });
     });
 
-    test('whisper works', async done => {
+    test('whisper works', done => {
         let client1 = Connector.newClientForPrivateChannel();
         let client2 = Connector.newClientForPrivateChannel();
         let roomName = Connector.randomChannelName();

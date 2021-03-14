@@ -107,7 +107,7 @@ describe('presence channel test', () => {
         done();
     });
 
-    test('whisper works', async done => {
+    test('whisper works', done => {
         let john = {
             user_id: 1,
             user_info: {
