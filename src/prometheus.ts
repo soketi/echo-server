@@ -97,6 +97,7 @@ export class Prometheus {
         socket.onAny((event, ...args) => {
             this.metrics.clientToServerReceivedEventsTotal.inc({ namespace });
             this.metrics.socketBytesReceived.inc({ namespace }, this.dataToBytes(event, args));
+            this.metrics.serverToClientSentEventsTotal.inc({ namespace });
         });
     }
 
@@ -138,7 +139,6 @@ export class Prometheus {
      */
     markWsMessage(namespace: string, event: string, ...data: any): void {
         this.metrics.socketBytesTransmitted.inc({ namespace }, this.dataToBytes(namespace, event, ...data));
-        this.metrics.serverToClientSentEventsTotal.inc({ namespace });
     }
 
     /**

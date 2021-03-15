@@ -347,12 +347,12 @@ export class HttpApi {
                     .emit(req.body.name, channel, req.body.data);
             }
 
-            this.stats.markApiMessage(req.echoApp);
-
             if (this.options.prometheus.enabled) {
                 this.prometheus.markWsMessage(namespace, req.body.name, channel, req.body.data);
             }
         });
+
+        this.stats.markApiMessage(req.echoApp);
     }
 
     /**
