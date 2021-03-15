@@ -22,7 +22,6 @@ export class Prometheus {
             help: 'Total amount of Socket.IO disconnections.',
             labelNames: ['namespace'],
         }),
-
         clientToServerReceivedEventsTotal: new prom.Counter({
             name: 'socket_io_server_events_received_total',
             help: 'Total events received from the Socket.IO client.',
@@ -33,7 +32,6 @@ export class Prometheus {
             help: 'Total amount of sent events by Socket.IO.',
             labelNames: ['namespace'],
         }),
-
         socketBytesReceived: new prom.Counter({
             name: 'socket_io_socket_received_bytes',
             help: 'Total amount of bytes that Socket.IO received.',
@@ -44,7 +42,6 @@ export class Prometheus {
             help: 'Total amount of bytes that Socket.IO transmitted.',
             labelNames: ['namespace'],
         }),
-
         httpBytesReceived: new prom.Counter({
             name: 'socket_io_http_received_bytes',
             help: 'Total amount of bytes that Socket.IO\'s REST API received.',
