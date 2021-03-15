@@ -4,19 +4,12 @@ const request = require('request');
 
 export class SocketRequester {
     /**
-     * Request client that will be used.
-     *
-     * @type {any}
-     */
-    protected request: any;
-
-    /**
      * Initialize the requester.
      *
      * @param {any} options
      */
     constructor(protected options) {
-        this.request = request;
+        //
     }
 
     /**
@@ -36,7 +29,7 @@ export class SocketRequester {
                 },
             };
 
-            this.request(options, (error, response, body, next) => {
+            request(options, (error, response, body, next) => {
                 if (error) {
                     Log.error({
                         time: new Date().toISOString(),

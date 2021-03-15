@@ -1,5 +1,6 @@
 import { App } from './../app';
 import { LocalStats } from './local-stats';
+import { Log } from './../log';
 import { RedisTimeSeriesStats } from './redis-ts-stats';
 import { StatsDriver } from './stats-driver';
 
@@ -21,6 +22,8 @@ export class Stats implements StatsDriver {
             this.driver = new LocalStats(options);
         } else if (options.stats.driver === 'redis-ts') {
             this.driver = new RedisTimeSeriesStats(options);
+        } else {
+            Log.error('No stats driver specified.');
         }
     }
 
