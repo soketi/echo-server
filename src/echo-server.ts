@@ -2,6 +2,7 @@ import { AppManager } from './app-managers/app-manager';
 import { Channel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Options } from './options';
 import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
@@ -10,16 +11,13 @@ const { constants } = require('crypto');
 const dayjs = require('dayjs');
 const packageFile = require('../package.json');
 
-/**
- * Echo server class.
- */
 export class EchoServer {
     /**
      * Default server options.
      *
-     * @type {any}
+     * @type {Options}
      */
-    public options: any = {
+    options: Options = {
         appManager: {
             driver: 'array',
             api: {
@@ -68,9 +66,6 @@ export class EchoServer {
                 port: 6381,
                 password: null,
                 keyPrefix: '',
-            },
-            local: {
-                //
             },
         },
         development: false,
@@ -190,7 +185,7 @@ export class EchoServer {
      * @param  {any}  options
      * @return {Promise<any>}
      */
-    start(options: any = {}): Promise<any> {
+    start(options: Options = {}): Promise<any> {
         return new Promise((resolve, reject) => {
             this.options = {
                 ...Object.assign(this.options, options),

@@ -2,6 +2,7 @@ import { PresenceStorageDriver } from './presence-storage-driver';
 import { Log } from './../log';
 import { RedisStorage } from './redis-storage';
 import { LocalStorage } from './local-storage';
+import { Options } from '../options';
 
 /**
  * Class that controls the key/value data store.
@@ -17,9 +18,9 @@ export class PresenceStorage implements PresenceStorageDriver {
     /**
      * Create a new storage instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         if (options.presence.storage.database === 'redis') {
             this.storage = new RedisStorage(options);
         } else if (options.presence.storage.database === 'local') {

@@ -1,4 +1,5 @@
 import { Log } from './log';
+import { Options } from './options';
 
 const request = require('request');
 
@@ -17,10 +18,10 @@ export class SocketRequester {
      *
      * @param  {string}  method
      * @param  {any}  socket
-     * @param  {any}  options
+     * @param  {Options}  options
      * @return {Promise<any>}
      */
-    serverRequest(socket: any, options: any): Promise<any> {
+    serverRequest(socket: any, options: Options): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             options = {
                 ...options,
@@ -82,10 +83,10 @@ export class SocketRequester {
      * Prepare headers for request to app server.
      *
      * @param  {any}  socket
-     * @param  {any}  options
+     * @param  {Options}  options
      * @return {any}
      */
-    protected prepareHeaders(socket: any, options: any): any {
+    protected prepareHeaders(socket: any, options: Options): any {
         options.headers['X-Requested-With'] = 'XMLHttpRequest';
 
         if (socket) {

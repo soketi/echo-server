@@ -1,5 +1,6 @@
 import { App } from './../app';
 import { StatsDriver } from './stats-driver';
+import { Options } from '../options';
 import * as dot from 'dot-wild';
 
 const dayjs = require('dayjs');
@@ -35,9 +36,9 @@ export class LocalStats implements StatsDriver {
     /**
      * Initialize the local stats driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         //
     }
 

@@ -2,6 +2,7 @@ import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { ArrayAppManager } from './array-app-manager';
 import { Log } from './../log';
+import { Options } from '../options';
 import { ApiAppManager } from './api-app-manager';
 
 /**
@@ -16,9 +17,9 @@ export class AppManager implements AppManagerDriver {
     /**
      * Create a new database instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         if (options.appManager.driver === 'array') {
             this.driver = new ArrayAppManager(options);
         } else if (options.appManager.driver === 'api') {
