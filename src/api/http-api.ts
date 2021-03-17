@@ -350,6 +350,8 @@ export class HttpApi {
             if (this.options.prometheus.enabled) {
                 this.prometheus.markWsMessage(namespace, req.body.name, channel, req.body.data);
             }
+
+            this.stats.markWsMessage(socket.echoApp);
         });
 
         this.stats.markApiMessage(req.echoApp);
