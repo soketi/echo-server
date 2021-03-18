@@ -8,7 +8,7 @@ export class SocketRequester {
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         //
     }
 

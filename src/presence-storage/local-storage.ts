@@ -15,7 +15,7 @@ export class LocalStorage implements PresenceStorageDriver {
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         //
     }
 

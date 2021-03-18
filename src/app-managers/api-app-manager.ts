@@ -9,26 +9,26 @@ export class ApiAppManager implements AppManagerDriver {
      *
      * @type {SocketRequester}
      */
-    protected socketRequester;
+    protected socketRequester: SocketRequester;
 
     /**
      * Create a new app manager instance.
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         this.socketRequester = new SocketRequester(options);
     }
 
     /**
      * Find an app by given ID.
      *
-     * @param  {string}  id
+     * @param  {string|number}  id
      * @param  {any}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string, socket: any, data: any): Promise<App|null> {
+    findById(id: string|number, socket: any, data: any): Promise<App|null> {
         let options = {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appId=${id}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},
@@ -71,12 +71,12 @@ export class ApiAppManager implements AppManagerDriver {
     /**
      * Find an app by given key.
      *
-     * @param  {string}  key
+     * @param  {string|number}  key
      * @param  {any}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string, socket: any, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: any, data: any): Promise<App|null> {
         let options = {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appKey=${key}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},

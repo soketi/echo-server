@@ -6,16 +6,16 @@ export class RedisStorage implements PresenceStorageDriver {
     /**
      * Redis client.
      *
-     * @type {any}
+     * @type {Redis}
      */
-    protected redis: any;
+    protected redis: typeof Redis;
 
     /**
      * Create a new cache instance.
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         this.redis = new Redis(options.database.redis);
     }
 

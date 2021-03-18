@@ -1,5 +1,8 @@
+import { AppManager } from '../app-managers';
 import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
+import { Prometheus } from '../prometheus';
+import { Stats } from '../stats';
 
 const dayjs = require('dayjs');
 const pusherUtil = require('pusher/lib/util');
@@ -13,19 +16,19 @@ export class HttpApi {
      * @param {any} server
      * @param {any} io
      * @param {any} express
-     * @param {object} options
-     * @param {any} appManager
-     * @param {any} stats
-     * @param {any} prometheus
+     * @param {any} options
+     * @param {AppManager} appManager
+     * @param {Stats} stats
+     * @param {Prometheus} prometheus
      */
     constructor(
-        protected server,
-        protected io,
-        protected express,
-        protected options,
-        protected appManager,
-        protected stats,
-        protected prometheus,
+        protected server: any,
+        protected io: any,
+        protected express: any,
+        protected options: any,
+        protected appManager: AppManager,
+        protected stats: Stats,
+        protected prometheus: Prometheus,
     ) {
         //
     }

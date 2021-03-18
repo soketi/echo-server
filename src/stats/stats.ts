@@ -17,7 +17,7 @@ export class Stats implements StatsDriver {
      *
      * @param {any} options
      */
-    constructor(options: any) {
+    constructor(protected options: any) {
         if (options.stats.driver === 'local') {
             this.driver = new LocalStats(options);
         } else if (options.stats.driver === 'redis-ts') {

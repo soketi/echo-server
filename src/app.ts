@@ -1,13 +1,21 @@
+interface App {
+    id: string|number;
+    key: string|number;
+    secret: string;
+    maxConnections: number;
+    enableStats: boolean;
+}
+
 export class App {
     /**
-     * @type {string}
+     * @type {string|number}
      */
-    public id: string;
+    public id: string|number;
 
     /**
-     * @type {string}
+     * @type {string|number}
      */
-    public key: string;
+    public key: string|number;
 
     /**
      * @type {string}
@@ -27,15 +35,9 @@ export class App {
     /**
      * Create a new app from object.
      *
-     * @param {object} app
+     * @param {App} app
      */
-    constructor(app: {
-        id: string;
-        key: string;
-        secret: string;
-        maxConnections: number;
-        enableStats: boolean;
-    }) {
+    constructor(app: App) {
         this.id = app.id;
         this.key = app.key;
         this.secret = app.secret;

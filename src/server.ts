@@ -29,7 +29,7 @@ export class Server {
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         //
     }
 
@@ -97,7 +97,7 @@ export class Server {
      * @param  {boolean}  secure
      * @return {any}
      */
-    protected buildServer(secure: boolean) {
+    protected buildServer(secure: boolean): any {
         this.express = express();
 
         this.configureHeaders();
