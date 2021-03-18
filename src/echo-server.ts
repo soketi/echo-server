@@ -294,9 +294,9 @@ export class EchoServer {
      * Extract the namespace from socket.
      *
      * @param  {any}  socket
-     * @return string
+     * @return {string}
      */
-    getNspForSocket(socket: any) {
+    getNspForSocket(socket: any): string {
         return socket.nsp.name;
     }
 
@@ -344,7 +344,7 @@ export class EchoServer {
      * @param  {any}  nsp
      * @return {void}
      */
-    protected registerConnectionCallbacks(nsp): void {
+    protected registerConnectionCallbacks(nsp: any): void {
         nsp.on('connection', socket => {
             this.stats.markNewConnection(socket.echoApp);
 

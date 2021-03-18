@@ -1,4 +1,6 @@
 import { Log } from './../log';
+import { Prometheus } from '../prometheus';
+import { Stats } from '../stats';
 
 export class Channel {
     /**
@@ -24,11 +26,16 @@ export class Channel {
      * Create a new channel instance.
      *
      * @param {any} io
-     * @param {any} stats
-     * @param {any} prometheus
+     * @param {Stats} stats
+     * @param {Prometheus} prometheus
      * @param {any} options
      */
-    constructor(protected io, protected stats, protected prometheus, protected options) {
+    constructor(
+        protected io: any,
+        protected stats: Stats,
+        protected prometheus: Prometheus,
+        protected options: any,
+    ) {
         //
     }
 
@@ -209,9 +216,9 @@ export class Channel {
      * Extract the namespace from socket.
      *
      * @param  {any}  socket
-     * @return string
+     * @return {string}
      */
-    getNspForSocket(socket: any) {
+    getNspForSocket(socket: any): string {
         return socket.nsp.name;
     }
 
@@ -219,9 +226,9 @@ export class Channel {
      * Create alias for static.
      *
      * @param  {any}  socket
-     * @return string
+     * @return {string}
      */
-    static getNspForSocket(socket: any) {
+    static getNspForSocket(socket: any): string {
         return this.getNspForSocket(socket);
     }
 
@@ -231,7 +238,7 @@ export class Channel {
      * @param  {string}  channel
      * @return {boolean}
      */
-    static isPrivateChannel(channel): boolean {
+    static isPrivateChannel(channel: string): boolean {
         let isPrivate = false;
 
         this._privateChannelPatterns.forEach(pattern => {

@@ -72,7 +72,7 @@ export class Prometheus {
      * @param {any} io
      * @param {any} options
      */
-    constructor(protected io, protected options) {
+    constructor(protected io: any, protected options: any) {
         this.register = prom.register;
 
         prom.collectDefaultMetrics({

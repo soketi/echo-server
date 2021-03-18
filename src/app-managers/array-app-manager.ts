@@ -7,19 +7,19 @@ export class ArrayAppManager implements AppManagerDriver {
      *
      * @param {any} options
      */
-    constructor(protected options) {
+    constructor(protected options: any) {
         //
     }
 
     /**
      * Find an app by given ID.
      *
-     * @param  {string}  id
+     * @param  {string|number}  id
      * @param  {any}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string, socket: any, data: any): Promise<App|null> {
+    findById(id: string|number, socket: any, data: any): Promise<App|null> {
         return new Promise((resolve, reject) => {
             let app = this.options.appManager.array.apps.find(app => app.id === id);
 
@@ -34,12 +34,12 @@ export class ArrayAppManager implements AppManagerDriver {
     /**
      * Find an app by given key.
      *
-     * @param  {string}  key
+     * @param  {string|number}  key
      * @param  {any}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string, socket: any, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: any, data: any): Promise<App|null> {
         return new Promise((resolve, reject) => {
             let app = this.options.appManager.array.apps.find(app => app.key === key);
 

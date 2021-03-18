@@ -1,6 +1,8 @@
 import { PresenceStorage } from './../presence-storage';
 import { Log } from './../log';
 import { PrivateChannel } from './private-channel';
+import { Prometheus } from '../prometheus';
+import { Stats } from '../stats';
 
 export class PresenceChannel extends PrivateChannel {
     /**
@@ -12,11 +14,16 @@ export class PresenceChannel extends PrivateChannel {
      * Create a new channel instance.
      *
      * @param {any} io
-     * @param {any} stats
-     * @param {any} prometheus
+     * @param {Stats} stats
+     * @param {Prometheus} prometheus
      * @param {any} options
      */
-    constructor(protected io, protected stats, protected prometheus, protected options) {
+     constructor(
+        protected io: any,
+        protected stats: Stats,
+        protected prometheus: Prometheus,
+        protected options: any,
+    ) {
         super(io, stats, prometheus, options);
 
         this.presenceStorage = new PresenceStorage(options);
@@ -159,7 +166,7 @@ export class PresenceChannel extends PrivateChannel {
      * @param  {any[]}  members
      * @return {void}
      */
-    onSubscribed(socket: any, channel: string, members: any[]) {
+    onSubscribed(socket: any, channel: string, members: any[]): void {
         this.io.of(this.getNspForSocket(socket))
             .to(socket.id)
             .emit('presence:subscribed', channel, members);

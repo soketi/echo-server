@@ -3,7 +3,7 @@ import Soketi from '@soketi/soketi-js';
 const Pusher = require('pusher');
 
 export class Connector {
-    static newClient(authorizer = null, host = '127.0.0.1', port = 6001, key = 'echo-app-key') {
+    static newClient(authorizer = null, host = '127.0.0.1', port = 6001, key = 'echo-app-key'): Soketi {
         return new Soketi({
             host,
             key,
@@ -14,7 +14,7 @@ export class Connector {
         });
     }
 
-    static newClientForPresenceUser(user: any, host = '127.0.0.1', port = 6001, key = 'echo-app-key') {
+    static newClientForPresenceUser(user: any, host = '127.0.0.1', port = 6001, key = 'echo-app-key'): Soketi {
         return this.newClient((channel, options) => ({
             authorize: (socketId, callback) => {
                 callback(false, {
@@ -25,7 +25,7 @@ export class Connector {
         }), host, port, key);
     }
 
-    static newClientForPrivateChannel(host = '127.0.0.1', port = 6001, key = 'echo-app-key') {
+    static newClientForPrivateChannel(host = '127.0.0.1', port = 6001, key = 'echo-app-key'): Soketi {
         return this.newClient((channel, options) => ({
             authorize: (socketId, callback) => {
                 callback(false, {
@@ -36,15 +36,15 @@ export class Connector {
         }), host, port, key);
     }
 
-    static connectToPublicChannel(client, channel: string) {
+    static connectToPublicChannel(client, channel: string): any {
         return client.channel(channel);
     }
 
-    static connectToPrivateChannel(client, channel: string) {
+    static connectToPrivateChannel(client, channel: string): any {
         return client.private(channel);
     }
 
-    static connectToPresenceChannel(client, channel: string) {
+    static connectToPresenceChannel(client, channel: string): any {
         return client.join(channel);
     }
 
@@ -54,7 +54,7 @@ export class Connector {
         secret = 'echo-app-secret',
         host = '127.0.0.1',
         port = 6001
-    ) {
+    ): typeof Pusher {
         return new Pusher({
             appId,
             key,
@@ -71,7 +71,7 @@ export class Connector {
         });
     }
 
-    static sendEventToChannel(pusher, channel: string, event: string, body: any) {
+    static sendEventToChannel(pusher, channel: string, event: string, body: any): any {
         return pusher.trigger(channel, event, body);
     }
 
@@ -80,7 +80,7 @@ export class Connector {
         channel: any,
         key = 'echo-app-key',
         secret = 'echo-app-secret'
-    ) {
+    ): string {
         let token = new Pusher.Token(key, secret);
 
         return key + ':' + token.sign(`${socketId}:${channel.name}`);
@@ -92,13 +92,13 @@ export class Connector {
         channelData: any,
         key = 'echo-app-key',
         secret = 'echo-app-secret'
-    ) {
+    ): string {
         let token = new Pusher.Token(key, secret);
 
         return key + ':' + token.sign(`${socketId}:${channel.name}:${JSON.stringify(channelData)}`);
     }
 
-    static wait(ms) {
+    static wait(ms): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
