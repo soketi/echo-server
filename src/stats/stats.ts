@@ -75,10 +75,10 @@ export class Stats implements StatsDriver {
     /**
      * Get the compiled stats for a given app.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<any>}
      */
-    getStats(app: App|string): Promise<any> {
+    getStats(app: App|string|number): Promise<any> {
         return this.driver.getStats(app);
     }
 
@@ -86,11 +86,11 @@ export class Stats implements StatsDriver {
      * Take a snapshot of the current stats
      * for a given time.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  time
      * @return {Promise<any>}
      */
-    takeSnapshot(app: App|string, time?: number): Promise<any> {
+    takeSnapshot(app: App|string|number, time?: number): Promise<any> {
         return this.driver.takeSnapshot(app, time);
     }
 
@@ -99,12 +99,12 @@ export class Stats implements StatsDriver {
      * for a given interval.
      * Defaults to the last 7 days.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
      * @return {Promise<any>}
      */
-    getSnapshots(app: App|string, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any> {
         return this.driver.getSnapshots(app, start, end);
     }
 
@@ -112,21 +112,21 @@ export class Stats implements StatsDriver {
      * Delete points that are outside of the desired range
      * of keeping the history of.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  time
      * @return {Promise<boolean>}
      */
-    deleteStalePoints(app: App|string, time?: number): Promise<boolean> {
+    deleteStalePoints(app: App|string|number, time?: number): Promise<boolean> {
         return this.driver.deleteStalePoints(app, time);
     }
 
     /**
      * Register the app to know we have metrics for it.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<boolean>}
      */
-    registerApp(app: App|string): Promise<boolean>{
+    registerApp(app: App|string|number): Promise<boolean>{
         return this.driver.registerApp(app);
     }
 

@@ -1,4 +1,4 @@
-interface App {
+export interface App {
     id: string|number;
     key: string|number;
     secret: string;

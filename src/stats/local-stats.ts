@@ -120,10 +120,10 @@ export class LocalStats implements StatsDriver {
     /**
      * Get the compiled stats for a given app.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<any>}
      */
-    getStats(app: App|string): Promise<any> {
+    getStats(app: App|string|number): Promise<any> {
         let appKey = app instanceof App ? app.key : app;
 
         return new Promise(resolve => {
@@ -140,11 +140,11 @@ export class LocalStats implements StatsDriver {
      * Take a snapshot of the current stats
      * for a given time.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  time
      * @return {Promise<any>}
      */
-    takeSnapshot(app: App|string, time?: number): Promise<any> {
+    takeSnapshot(app: App|string|number, time?: number): Promise<any> {
         let appKey = app instanceof App ? app.key : app;
 
         if (!this.snapshots[appKey]) {
@@ -198,12 +198,12 @@ export class LocalStats implements StatsDriver {
      * for a given interval. Defaults to
      * the last 7 days.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
      * @return {Promise<any>}
      */
-    getSnapshots(app: App|string, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any> {
         let appKey = app instanceof App ? app.key : app;
 
         start = start ? start : dayjs().subtract(7, 'day').unix();
@@ -216,11 +216,11 @@ export class LocalStats implements StatsDriver {
      * Delete points that are outside of the desired range
      * of keeping the history of.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @param  {number|null}  time
      * @return {Promise<boolean>}
      */
-    deleteStalePoints(app: App|string, time?: number): Promise<boolean> {
+    deleteStalePoints(app: App|string|number, time?: number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
 
         let pointDeletionCheck = point => point.time >= (time - this.options.stats.retention.period);
@@ -237,15 +237,15 @@ export class LocalStats implements StatsDriver {
     /**
      * Register the app to know we have metrics for it.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<boolean>}
      */
-    registerApp(app: App|string): Promise<boolean> {
+    registerApp(app: App|string|number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
 
         return new Promise(resolve => {
-            if (this.registeredApps.indexOf(appKey) === -1) {
-                this.registeredApps.push(appKey);
+            if (this.registeredApps.indexOf(appKey.toString()) === -1) {
+                this.registeredApps.push(appKey.toString());
             }
 
             resolve(true);
@@ -330,10 +330,10 @@ export class LocalStats implements StatsDriver {
     /**
      * Reset the messages counters after each snapshot.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {void}
      */
-    protected resetMessagesStats(app: App|string): void {
+    protected resetMessagesStats(app: App|string|number): void {
         let appKey = app instanceof App ? app.key : app;
 
         this.stats[appKey]['api_messages'] = 0;
@@ -345,10 +345,10 @@ export class LocalStats implements StatsDriver {
     /**
      * Reset all app traces from the stats system.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<boolean>}
      */
-    protected resetAppTraces(app: App|string): Promise<boolean> {
+    protected resetAppTraces(app: App|string|number): Promise<boolean> {
         return new Promise(resolve => {
             let appKey = app instanceof App ? app.key : app;
 
@@ -364,10 +364,10 @@ export class LocalStats implements StatsDriver {
     /**
      * Check if the app still has activity.
      *
-     * @param  {App|string}  app
+     * @param  {App|string|number}  app
      * @return {Promise<boolean>}
      */
-    protected hasActivity(app: App|string): Promise<boolean> {
+    protected hasActivity(app: App|string|number): Promise<boolean> {
         return this.getSnapshots(app, 0, Infinity).then(snapshots => {
             return snapshots.connections.points.length > 0 ||
                 snapshots.api_messages.points.length > 0 ||
