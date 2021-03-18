@@ -1,36 +1,15 @@
+import { resolve } from 'path';
 import { PresenceStorageDriver } from './presence-storage-driver';
-import { LocalStorage } from './local-storage';
-import { Log } from './../log';
-import { RedisStorage } from './redis-storage';
-import { SocketStorage } from './socket-storage';
 
-/**
- * Class that controls the key/value data store.
- */
-export class PresenceStorage implements PresenceStorageDriver {
+export class SocketStorage implements PresenceStorageDriver {
     /**
-     * Storage driver for persistent channel.
-     *
-     * @type {PresenceStorageDriver}
-     */
-    protected storage: PresenceStorageDriver;
-
-    /**
-     * Create a new storage instance.
+     * Create a new cache instance.
      *
      * @param {any} options
      * @param {any} io
      */
     constructor(protected options: any, protected io: any) {
-        if (options.presence.storage.database === 'redis') {
-            this.storage = new RedisStorage(options, io);
-        } else if (options.presence.storage.database === 'local') {
-            this.storage = new LocalStorage(options, io);
-        } else if (options.presence.storage.database === 'socket') {
-            this.storage = new SocketStorage(options, io);
-        } else {
-            Log.error('Storage driver not set.');
-        }
+        //
     }
 
     /**
@@ -41,7 +20,18 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     getMembersFromChannel(nsp: string, channel: string): Promise<any> {
-        return this.storage.getMembersFromChannel(nsp, channel);
+        return new Promise(resolve => {
+            /**
+             * TODO: This works only for local, but not for distributed systems.
+             */
+            let members = [...this.io.of(nsp).sockets].map(socketMember => {
+                let [, socket] = socketMember;
+
+                return socket.presence ? (socket.presence[channel] || null) : null;
+            }).filter(member => !!member);
+
+            resolve(members);
+        });
     }
 
     /**
@@ -54,7 +44,13 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        return this.storage.addMemberToChannel(socket, nsp, channel, member);
+        if (!socket.presence) {
+            socket.presence = {};
+        }
+
+        socket.presence[channel] = member;
+
+        return this.getMembersFromChannel(nsp, channel);
     }
 
     /**
@@ -67,7 +63,11 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        return this.storage.removeMemberFromChannel(socket, nsp, channel, member);
+        if (socket.presence) {
+            delete socket.presence[channel];
+        }
+
+        return this.getMembersFromChannel(nsp, channel);
     }
 
     /**
@@ -79,7 +79,13 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @return {Promise<boolean>}
      */
     memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
-        return this.storage.memberExistsInChannel(nsp, channel, member);
+        return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
+            let memberInChannel = existingMembers.find(existingMember => {
+                return existingMember.user_id === member.user_id;
+            });
+
+            return !!memberInChannel;
+        });
     }
 
     /**
@@ -93,6 +99,8 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     whoLeft(socket: any, nsp: string, channel: string): Promise<any> {
-        return this.storage.whoLeft(socket, nsp, channel);
+        return new Promise(resolve => {
+            resolve(socket.presence[channel]);
+        });
     }
 }
