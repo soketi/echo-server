@@ -91,6 +91,8 @@ export class Channel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', channel);
         }
 
+        this.stats.markWsMessage(socket.echoApp);
+
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),
