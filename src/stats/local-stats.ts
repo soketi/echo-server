@@ -355,7 +355,7 @@ export class LocalStats implements StatsDriver {
             delete this.stats[appKey];
             delete this.snapshots[appKey];
 
-            this.registeredApps.splice(this.registeredApps.indexOf(appKey), 1);
+            this.registeredApps.splice(this.registeredApps.indexOf(appKey.toString()), 1);
 
             resolve(true);
         });
