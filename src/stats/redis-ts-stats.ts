@@ -134,7 +134,11 @@ export class RedisTimeSeriesStats implements StatsDriver {
      * @return {Promise<any>}
      */
     getStats(app: App|string|number): Promise<any> {
-        return new Promise(resolve => resolve([]));
+        return new Promise(resolve => resolve({
+            connections: { points: [] },
+            api_messages: { points: [] },
+            ws_messages: { points: [] },
+        }));
     }
 
     /**

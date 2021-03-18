@@ -338,7 +338,6 @@ export class LocalStats implements StatsDriver {
 
         this.stats[appKey]['api_messages'] = 0;
         this.stats[appKey]['ws_messages'] = 0;
-
         this.stats[appKey]['peak_connections'] = this.stats[appKey]['connections'] || 0;
     }
 
