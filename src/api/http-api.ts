@@ -254,6 +254,10 @@ export class HttpApi {
         let start = req.query.start || dayjs().subtract(7, 'day').unix();
         let end = req.query.end || dayjs().unix();
 
+        if (!req.echoApp.enableStats) {
+            return res.json({ stats: [] });
+        }
+
         this.stats.getSnapshots(req.echoApp, start, end).then(snapshots => {
             res.json({ stats: snapshots });
         });
@@ -269,6 +273,10 @@ export class HttpApi {
      * @return {boolean}
      */
     protected getCurrentStats(req, res): boolean {
+        if (!req.echoApp.enableStats) {
+            return res.json({ stats: [] });
+        }
+
         this.stats.getStats(req.echoApp).then(stats => {
             res.json({ stats });
         });
