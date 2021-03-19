@@ -3,6 +3,11 @@ import { AppManagerDriver } from './app-manager-driver';
 import { Knex, knex } from 'knex'
 
 export class MysqlAppManager implements AppManagerDriver {
+    /**
+     * The Knex connection.
+     *
+     * @type {Knex}
+     */
     protected connection: Knex;
 
     /**
