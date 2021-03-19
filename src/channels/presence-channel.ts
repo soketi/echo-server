@@ -124,7 +124,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:joining', channel, member);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**
@@ -148,7 +148,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:leaving', channel, member);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**
@@ -172,7 +172,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:subscribed', channel, members);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**

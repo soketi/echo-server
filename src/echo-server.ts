@@ -346,7 +346,7 @@ export class EchoServer {
      */
     protected registerConnectionCallbacks(nsp: any): void {
         nsp.on('connection', socket => {
-            this.stats.markNewConnection(socket.echoApp);
+            this.stats.markNewConnection(socket.data.echoApp);
 
             if (this.options.prometheus.enabled) {
                 this.prometheus.markNewConnection(socket);
@@ -445,7 +445,7 @@ export class EchoServer {
         let rooms = socket.rooms;
 
         socket.on('disconnecting', reason => {
-            this.stats.markDisconnection(socket.echoApp, reason).then(() => {
+            this.stats.markDisconnection(socket.data.echoApp, reason).then(() => {
                 rooms.forEach(room => {
                     // Each socket has a list of channels defined by us and his own channel
                     // that has the same name as their unique socket ID. We don't want it to
@@ -501,7 +501,7 @@ export class EchoServer {
      */
     protected checkIfSocketHasValidEchoApp(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (socket.echoApp) {
+            if (socket.data.echoApp) {
                 return resolve(socket);
             }
 
@@ -511,7 +511,7 @@ export class EchoServer {
                 if (!app) {
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
-                    socket.echoApp = app;
+                    socket.data.echoApp = app;
                     resolve(socket);
                 }
             }, error => {
@@ -539,12 +539,12 @@ export class EchoServer {
      */
     protected checkIfSocketDidNotReachedLimit(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (socket.disconnected || !socket.echoApp) {
+            if (socket.disconnected || !socket.data.echoApp) {
                 return reject({ reason: 'The app connection limit cannot be checked because the socket is not authenticated.' });
             }
 
             this.server.io.of(this.getNspForSocket(socket)).allSockets().then(clients => {
-                let maxConnections = parseInt(socket.echoApp.maxConnections) || -1;
+                let maxConnections = parseInt(socket.data.echoApp.maxConnections) || -1;
 
                 if (maxConnections < 0) {
                     return resolve(socket);
