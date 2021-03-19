@@ -43,7 +43,7 @@ jobs:
           - "8.0"
 
 
-    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }} mysql:${{ matrix.mysql.version }})
+    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }} mysql:${{ matrix.mysql_version }})
 
     steps:
       - uses: actions/checkout@v2
