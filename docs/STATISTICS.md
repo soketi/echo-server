@@ -15,11 +15,9 @@ Get the list of stats. Additional parameters may be used to narrow the results.
 
 Get the current stats (the latest ones). **This might not be available on all drivers!**
 
-# Drivers
+# Local & Redis Time Series
 
-Currently, there are two types of drivers, both which handle the data differently and format the data differently when retrieved via the REST API.
-
-When retrieving the stats, they are formatted like this:
+When retrieving the stats using `local` or `redis-ts` drivers, they are formatted like this:
 
 ```json
 {
@@ -54,3 +52,42 @@ When retrieving the stats, they are formatted like this:
 ```
 
 **Please note, this type will always have matching timestamps on either side of the stats array.**
+
+# Prometheus
+
+For Prometheus, the response is formatted differently because the server already buckets the data using given queries:
+
+```json
+{
+    "stats": {
+        "api_messages": [
+            {
+                "time": "2021-03-15T19:56:05.000Z",
+                "value": 2
+            },
+        ],
+        "ws_messages": [
+            {
+                "time": "2021-03-15T19:56:05.000Z",
+                "value": 28
+            },
+            {
+                "time": "2021-03-15T20:56:05.000Z",
+                "value": 4
+            },
+        ],
+        "connections": [
+            {
+                "time": "2021-03-19T16:56:05.000Z",
+                "value": 1
+            }
+        ],
+        "peak_connections": [
+            {
+                "time": "2021-03-19T16:56:05.000Z",
+                "value": 1
+            }
+        ]
+    }
+}
+```
