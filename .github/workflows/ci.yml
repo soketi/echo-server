@@ -38,12 +38,9 @@ jobs:
           - local
           # - redis-ts - WIP
           - prometheus
-        mysql_version:
-          - "5.7"
-          - "8.0"
 
 
-    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }} mysql:${{ matrix.mysql_version }})
+    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
 
     steps:
       - uses: actions/checkout@v2
@@ -66,7 +63,7 @@ jobs:
           container port: 3306
           character set server: utf8mb4
           collation server: utf8mb4_unicode_ci
-          mysql version: ${{ matrix.mysql_version }}
+          mysql version: 8.0
           mysql database: main
           mysql root password: password
 
