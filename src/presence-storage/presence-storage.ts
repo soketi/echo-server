@@ -1,5 +1,4 @@
 import { PresenceStorageDriver } from './presence-storage-driver';
-import { LocalStorage } from './local-storage';
 import { Log } from './../log';
 import { RedisStorage } from './redis-storage';
 import { SocketStorage } from './socket-storage';
@@ -24,8 +23,6 @@ export class PresenceStorage implements PresenceStorageDriver {
     constructor(protected options: any, protected io: any) {
         if (options.presence.storage.database === 'redis') {
             this.storage = new RedisStorage(options, io);
-        } else if (options.presence.storage.database === 'local') {
-            this.storage = new LocalStorage(options, io);
         } else if (options.presence.storage.database === 'socket') {
             this.storage = new SocketStorage(options, io);
         } else {

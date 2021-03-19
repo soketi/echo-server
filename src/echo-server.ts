@@ -81,7 +81,7 @@ export class EchoServer {
         port: 6001,
         presence: {
             storage: {
-                database: 'local',
+                database: 'socket',
             },
         },
         prometheus: {
