@@ -20,17 +20,10 @@ export class SocketStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     getMembersFromChannel(nsp: string, channel: string): Promise<any> {
-        return new Promise(resolve => {
-            /**
-             * TODO: This works only for local, but not for distributed systems.
-             */
-            let members = [...this.io.of(nsp).sockets].map(socketMember => {
-                let [, socket] = socketMember;
-
-                return socket.presence ? (socket.presence[channel] || null) : null;
+        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then(sockets => {
+            return sockets.map(socket => {
+                return socket?.data?.presence?.[channel];
             }).filter(member => !!member);
-
-            resolve(members);
         });
     }
 
@@ -44,11 +37,15 @@ export class SocketStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        if (!socket.presence) {
-            socket.presence = {};
+        if (!socket.data) {
+            socket.data = {};
         }
 
-        socket.presence[channel] = member;
+        if (!socket.data.presence) {
+            socket.data.presence = {};
+        }
+
+        socket.data.presence[channel] = member;
 
         return this.getMembersFromChannel(nsp, channel);
     }
@@ -63,8 +60,8 @@ export class SocketStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        if (socket.presence) {
-            delete socket.presence[channel];
+        if (socket.data && socket.data.presence) {
+            delete socket.data.presence[channel];
         }
 
         return this.getMembersFromChannel(nsp, channel);
@@ -100,7 +97,7 @@ export class SocketStorage implements PresenceStorageDriver {
      */
     whoLeft(socket: any, nsp: string, channel: string): Promise<any> {
         return new Promise(resolve => {
-            resolve(socket.presence[channel]);
+            resolve(socket.data.presence[channel]);
         });
     }
 }

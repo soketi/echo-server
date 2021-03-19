@@ -27,6 +27,7 @@ jobs:
         presence_db:
           - redis
           - local
+          - socket
         replication_driver:
           - redis
           - local

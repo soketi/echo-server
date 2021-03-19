@@ -140,12 +140,9 @@ export class Channel {
                 this.isClientEvent(data.event) &&
                 this.isInChannel(socket, data.channel)
             ) {
-                this.io.of(this.getNspForSocket(socket))
-                    .sockets
-                    .get(socket.id)
-                    .broadcast
-                    .to(data.channel)
-                    .emit(data.event, data.channel, data.data);
+                socket.to(data.channel).emit(
+                    data.event, data.channel, data.data
+                );
 
                 this.stats.markWsMessage(socket.echoApp);
 

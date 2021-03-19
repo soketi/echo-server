@@ -114,12 +114,7 @@ export class PresenceChannel extends PrivateChannel {
     onJoin(socket: any, channel: string, member: any): void {
         super.onJoin(socket, channel, member);
 
-        this.io.of(this.getNspForSocket(socket))
-            .sockets
-            .get(socket.id)
-            .broadcast
-            .to(channel)
-            .emit('presence:joining', channel, member);
+        socket.to(channel).emit('presence:joining', channel, member);
 
         /**
          * We can't intercept the socket.emit() function, so
