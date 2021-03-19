@@ -91,7 +91,7 @@ export class Prometheus {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 
-        this.metrics.connectedSockets.set(nsp.sockets.size, { namespace });
+        this.metrics.connectedSockets.set({ namespace }, nsp.sockets.size);
         this.metrics.newConnectionsTotal.inc({ namespace });
 
         socket.onAny((event, ...args) => {
@@ -111,7 +111,7 @@ export class Prometheus {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 
-        this.metrics.connectedSockets.set(nsp.sockets.size, { namespace });
+        this.metrics.connectedSockets.set({ namespace }, nsp.sockets.size);
         this.metrics.newDisconnectionsTotal.inc({ namespace });
     }
 
