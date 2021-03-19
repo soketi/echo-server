@@ -66,6 +66,10 @@ jobs:
           mysql database: main
           mysql root password: password
 
+      - name: Load SQL into databases
+        run: |
+          mysql -h 127.0.0.1 -u root -p password main  < tests/fixtures/app.sql
+
       - name: Installing dependencies
         run: |
           npm install
