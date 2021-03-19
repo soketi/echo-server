@@ -28,17 +28,13 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |
 | `APPS_MANAGER_TOKEN` | `appManager.api.token` | `echo-app-token` | - | The token used for any API app manager provider to know the request came from the Node.js server. |
 
-For MySQL, a table is needed with the following configuration:
+For SQL-related drivers, a table is needed with the following configuration:
 
-```php
-Schema::create('echo_apps', function (Blueprint $table) {
-    $table->bigIncrements('id');
-    $table->string('key')->index();
-    $table->string('secret');
-    $table->unsignedInteger('max_connections')->nullable();
-    $table->boolean('enable_stats')->default(false);
-});
-```
+- `id` - number or string
+- `key` - number or string
+- `secret` - string
+- `max_connections` - integer
+- `enable_stats` - boolean
 
 To configure the rest of the MySQL connection details, check [MySQL](#mysql).
 
