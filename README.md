@@ -161,14 +161,6 @@ To be able to scale it horizontally, you might want to use Redis as the replicat
 $ REPLICATION_DRIVER=redis echo-server start
 ```
 
-However, presence channels data will still be stored locally, so the users won't persist between processes. Redis is also available [to be used as a presence channel storage](docs/ENV.md#presence-channel-storage) by setting `PRESENCE_STORAGE_DATABASE` to Redis:
-
-```bash
-$ REPLICATION_DRIVER=redis PRESENCE_STORAGE_DATABASE=redis echo-server start
-```
-
-To configure Redis, [check Redis configuration](docs/ENV.md#redis).
-
 ## Per-application Statistics
 
 Statistics are available for each registered app, if opted-in. [Read more about statistics here](docs/STATISTICS.md).

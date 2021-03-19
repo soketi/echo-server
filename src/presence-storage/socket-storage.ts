@@ -1,15 +1,7 @@
+import { resolve } from 'path';
 import { PresenceStorageDriver } from './presence-storage-driver';
 
-const Redis = require('ioredis');
-
-export class RedisStorage implements PresenceStorageDriver {
-    /**
-     * Redis client.
-     *
-     * @type {Redis}
-     */
-    protected redis: typeof Redis;
-
+export class SocketStorage implements PresenceStorageDriver {
     /**
      * Create a new cache instance.
      *
@@ -17,7 +9,7 @@ export class RedisStorage implements PresenceStorageDriver {
      * @param {any} io
      */
     constructor(protected options: any, protected io: any) {
-        this.redis = new Redis(options.database.redis);
+        //
     }
 
     /**
@@ -28,7 +20,11 @@ export class RedisStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     getMembersFromChannel(nsp: string, channel: string): Promise<any> {
-        return this.redis.hget(`${nsp}:${channel}`, 'members').then(value => value ? JSON.parse(value) : []);
+        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then(sockets => {
+            return sockets.map(socket => {
+                return socket?.data?.presence?.[channel];
+            }).filter(member => !!member);
+        });
     }
 
     /**
@@ -41,13 +37,17 @@ export class RedisStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        return this.getMembersFromChannel(nsp, channel).then(members => {
-            members.push(member);
+        if (!socket.data) {
+            socket.data = {};
+        }
 
-            return this.redis.hset(`${nsp}:${channel}`, 'members', JSON.stringify(members)).then(() => {
-                return members;
-            });
-        });
+        if (!socket.data.presence) {
+            socket.data.presence = {};
+        }
+
+        socket.data.presence[channel] = member;
+
+        return this.getMembersFromChannel(nsp, channel);
     }
 
     /**
@@ -60,15 +60,11 @@ export class RedisStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
-        return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
-            let newMembers = existingMembers.filter(existingMember => {
-                return member.socket_id !== existingMember.socket_id;
-            });
+        if (socket.data && socket.data.presence) {
+            delete socket.data.presence[channel];
+        }
 
-            return this.redis.hset(`${nsp}:${channel}`, 'members', JSON.stringify(newMembers)).then(() => {
-                return newMembers;
-            });
-        });
+        return this.getMembersFromChannel(nsp, channel);
     }
 
     /**
@@ -100,8 +96,8 @@ export class RedisStorage implements PresenceStorageDriver {
      * @return {Promise<any>}
      */
     whoLeft(socket: any, nsp: string, channel: string): Promise<any> {
-        return this.getMembersFromChannel(nsp, channel).then(members => {
-            return members.find(member => member.socket_id === socket.id);
+        return new Promise(resolve => {
+            resolve(socket.data.presence[channel]);
         });
     }
 }

@@ -14,22 +14,24 @@ export interface PresenceStorageDriver {
     /**
      * Add a new member to a given channel.
      *
+     * @param  {any}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(nsp: string, channel: string, member: any): Promise<any>;
+    addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any>;
 
     /**
      * Remove a member from a given channel.
      *
+     * @param  {any}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(nsp: string, channel: string, member: any): Promise<any>;
+    removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any>;
 
     /**
      * Check if the given member exists in a channel.
@@ -40,4 +42,16 @@ export interface PresenceStorageDriver {
      * @return {Promise<boolean>}
      */
     memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean>;
+
+    /**
+     * Check for presence members that share the same socket_id
+     * as the given socket. Used to avoid doubling connections
+     * for same presence user (like in the case of multiple tabs).
+     *
+     * @param  {any}  socket
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @return {Promise<any>}
+     */
+    whoLeft(socket: any, nsp: string, channel: string): Promise<any>;
 }

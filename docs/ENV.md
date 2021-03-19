@@ -54,10 +54,10 @@ When dealing with presence channel, connection details must be stored within the
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
-| `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `local` | `redis`, `local` | The database driver for storing socket data. Use `local` only for single-node, single-process instances. |
+| `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `socket` | `redis`, `socket` | The database driver for storing presence channel data. |
 
 - `redis` - Presence channels members are stored in key-value store.
-- `local` - Presence channels members are stored locally, in-memory.
+- `socket` - Presence channels members are stored locally, in-memory, in each socket connection. Also works with the multi-node configuration.
 
 ## Debugging
 

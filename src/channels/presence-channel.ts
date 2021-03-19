@@ -26,7 +26,7 @@ export class PresenceChannel extends PrivateChannel {
     ) {
         super(io, stats, prometheus, options);
 
-        this.presenceStorage = new PresenceStorage(options);
+        this.presenceStorage = new PresenceStorage(options, io);
     }
 
     /**
@@ -66,7 +66,7 @@ export class PresenceChannel extends PrivateChannel {
                 if (!exists) {
                     member.socket_id = socket.id;
 
-                    this.presenceStorage.addMemberToChannel(this.getNspForSocket(socket), data.channel, member).then(members => {
+                    this.presenceStorage.addMemberToChannel(socket, this.getNspForSocket(socket), data.channel, member).then(members => {
                         socket.join(data.channel);
                         this.onSubscribed(socket, data.channel, members);
                         this.onJoin(socket, data.channel, member);
@@ -88,16 +88,14 @@ export class PresenceChannel extends PrivateChannel {
      * @return {void}
      */
     leave(socket: any, channel: string): void {
-        this.getMembers(this.getNspForSocket(socket), channel).then(members => {
-            let memberWhoLeft = members.find(member => member.socket_id === socket.id);
-
+        this.presenceStorage.whoLeft(socket, this.getNspForSocket(socket), channel).then(memberWhoLeft => {
             /**
              * Since in .join(), only the first connection that has a certain member.user_id is stored (the rest
              * of the sockets that connect with the member.user_id are rejected), we check if the socket exists.
              * If the socket leaves, then delete the user associated with it.
              */
             if (memberWhoLeft) {
-                this.presenceStorage.removeMemberFromChannel(this.getNspForSocket(socket), channel, memberWhoLeft).then(members => {
+                this.presenceStorage.removeMemberFromChannel(socket, this.getNspForSocket(socket), channel, memberWhoLeft).then(members => {
                     socket.leave(channel);
                     this.onLeave(socket, channel, memberWhoLeft);
                 });
@@ -116,12 +114,7 @@ export class PresenceChannel extends PrivateChannel {
     onJoin(socket: any, channel: string, member: any): void {
         super.onJoin(socket, channel, member);
 
-        this.io.of(this.getNspForSocket(socket))
-            .sockets
-            .get(socket.id)
-            .broadcast
-            .to(channel)
-            .emit('presence:joining', channel, member);
+        socket.to(channel).emit('presence:joining', channel, member);
 
         /**
          * We can't intercept the socket.emit() function, so
@@ -131,7 +124,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:joining', channel, member);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**
@@ -155,7 +148,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:leaving', channel, member);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**
@@ -179,7 +172,7 @@ export class PresenceChannel extends PrivateChannel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:subscribed', channel, members);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
     }
 
     /**

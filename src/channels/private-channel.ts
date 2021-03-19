@@ -42,10 +42,10 @@ export class PrivateChannel extends Channel {
      */
     protected getSignedToken(socket: any, data: any): Promise<string> {
         return new Promise((resolve, reject) => {
-            let token = new Pusher.Token(socket.echoApp.key, socket.echoApp.secret);
+            let token = new Pusher.Token(socket.data.echoApp.key, socket.data.echoApp.secret);
 
             resolve(
-                socket.echoApp.key + ':' + token.sign(this.getDataToSignForToken(socket, data))
+                socket.data.echoApp.key + ':' + token.sign(this.getDataToSignForToken(socket, data))
             );
         });
     }

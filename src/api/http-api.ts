@@ -349,9 +349,9 @@ export class HttpApi {
 
         channels.forEach(channel => {
             if (socket) {
-                socket.broadcast
-                    .to(channel)
-                    .emit(req.body.name, channel, req.body.data);
+                socket.to(channel).emit(
+                    req.body.name, channel, req.body.data
+                );
             } else {
                 this.io.of(namespace)
                     .to(channel)

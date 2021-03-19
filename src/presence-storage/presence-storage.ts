@@ -1,7 +1,7 @@
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Log } from './../log';
 import { RedisStorage } from './redis-storage';
-import { LocalStorage } from './local-storage';
+import { SocketStorage } from './socket-storage';
 
 /**
  * Class that controls the key/value data store.
@@ -18,12 +18,13 @@ export class PresenceStorage implements PresenceStorageDriver {
      * Create a new storage instance.
      *
      * @param {any} options
+     * @param {any} io
      */
-    constructor(protected options: any) {
+    constructor(protected options: any, protected io: any) {
         if (options.presence.storage.database === 'redis') {
-            this.storage = new RedisStorage(options);
-        } else if (options.presence.storage.database === 'local') {
-            this.storage = new LocalStorage(options);
+            this.storage = new RedisStorage(options, io);
+        } else if (options.presence.storage.database === 'socket') {
+            this.storage = new SocketStorage(options, io);
         } else {
             Log.error('Storage driver not set.');
         }
@@ -43,25 +44,27 @@ export class PresenceStorage implements PresenceStorageDriver {
     /**
      * Add a new member to a given channel.
      *
+     * @param  {any}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(nsp: string, channel: string, member: any): Promise<any> {
-        return this.storage.addMemberToChannel(nsp, channel, member);
+    addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
+        return this.storage.addMemberToChannel(socket, nsp, channel, member);
     }
 
     /**
      * Remove a member from a given channel.
      *
+     * @param  {any}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(nsp: string, channel: string, member: any): Promise<any> {
-        return this.storage.removeMemberFromChannel(nsp, channel, member);
+    removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
+        return this.storage.removeMemberFromChannel(socket, nsp, channel, member);
     }
 
     /**
@@ -74,5 +77,19 @@ export class PresenceStorage implements PresenceStorageDriver {
      */
     memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
         return this.storage.memberExistsInChannel(nsp, channel, member);
+    }
+
+    /**
+     * Check for presence members that share the same socket_id
+     * as the given socket. Used to avoid doubling connections
+     * for same presence user (like in the case of multiple tabs).
+     *
+     * @param  {any}  socket
+     * @param  {string}  nsp
+     * @param  {string}  channel
+     * @return {Promise<any>}
+     */
+    whoLeft(socket: any, nsp: string, channel: string): Promise<any> {
+        return this.storage.whoLeft(socket, nsp, channel);
     }
 }

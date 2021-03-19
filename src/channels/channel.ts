@@ -98,7 +98,7 @@ export class Channel {
             this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', channel);
         }
 
-        this.stats.markWsMessage(socket.echoApp);
+        this.stats.markWsMessage(socket.data.echoApp);
 
         if (this.options.development) {
             Log.info({
@@ -140,14 +140,11 @@ export class Channel {
                 this.isClientEvent(data.event) &&
                 this.isInChannel(socket, data.channel)
             ) {
-                this.io.of(this.getNspForSocket(socket))
-                    .sockets
-                    .get(socket.id)
-                    .broadcast
-                    .to(data.channel)
-                    .emit(data.event, data.channel, data.data);
+                socket.to(data.channel).emit(
+                    data.event, data.channel, data.data
+                );
 
-                this.stats.markWsMessage(socket.echoApp);
+                this.stats.markWsMessage(socket.data.echoApp);
 
                 /**
                  * We can't intercept the socket.emit() function, so
