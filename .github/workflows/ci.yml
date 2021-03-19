@@ -33,13 +33,17 @@ jobs:
         apps_manager_driver:
           - array
           - api
+          - mysql
         stats_driver:
           - local
           # - redis-ts - WIP
           - prometheus
+        mysql_version:
+          - "5.7"
+          - "8.0"
 
 
-    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
+    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }} mysql:${{ matrix.mysql.version }})
 
     steps:
       - uses: actions/checkout@v2
@@ -54,6 +58,17 @@ jobs:
         with:
           redis version: 6
           number of databases: 100
+
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          character set server: utf8mb4
+          collation server: utf8mb4_unicode_ci
+          mysql version: ${{ matrix.mysql_version }}
+          mysql database: main
+          mysql root password: password
 
       - name: Installing dependencies
         run: |

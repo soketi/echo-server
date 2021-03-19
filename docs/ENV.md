@@ -23,10 +23,28 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false}]'` | - | The list of apps to be used for authentication. |
-| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
+| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api`, `mysql` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
 | `APPS_MANAGER_ENDPOINT` | `appManager.api.endpoint` | `/echo-server/app` | - | The endpoint used to retrieve an app. This is for `api` driver. |
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |
 | `APPS_MANAGER_TOKEN` | `appManager.api.token` | `echo-app-token` | - | The token used for any API app manager provider to know the request came from the Node.js server. |
+
+For MySQL, a table is needed with the following configuration:
+
+```php
+Schema::create('echo_apps', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->string('key')->index();
+    $table->string('secret');
+    $table->unsignedInteger('max_connections')->nullable();
+    $table->boolean('enable_stats')->default(false);
+});
+```
+
+To configure the rest of the MySQL connection details, check [MySQL](#mysql).
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `APPS_MANAGER_MYSQL_TABLE` | `appManager.mysql.table` | `echo_apps` | - | The table name where the apps will be stored in MySQL. |
 
 ## CORS Settings
 
@@ -48,7 +66,7 @@ in order to be able to scale up the Echo Server instances.
 - `redis` - Enabled Pub/Sub communication between processes/nodes, can be scaled horizontally without issues.
 - `local` - There is no communication or Pub/Sub. Recommended for single-instance, single-process apps.
 
-# Presence Channel Storage
+## Presence Channel Storage
 
 When dealing with presence channel, connection details must be stored within the app.
 
@@ -122,6 +140,17 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 | `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |
 
+## MySQL
+
+Configuration needed to connect to a MySQL server.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `MYSQL_HOST` | `database.mysql.host` | `127.0.0.1` | - | The MySQL host used for `mysql` driver. |
+| `MYSQL_PORT` | `database.mysql.port` | `3306` | - | The MySQL port used for `mysql` driver. |
+| `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
+| `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
+| `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
 
 ## Socket.IO Settings
 

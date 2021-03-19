@@ -38,6 +38,9 @@ export class EchoServer {
                     },
                 ],
             },
+            mysql: {
+                table: 'echo_apps',
+            },
         },
         closingGracePeriod: 60,
         cors: {
@@ -68,6 +71,13 @@ export class EchoServer {
                 port: 6381,
                 password: null,
                 keyPrefix: '',
+            },
+            mysql: {
+                host: '127.0.0.1',
+                port: 3306,
+                user: 'root',
+                password: 'password',
+                database: 'main',
             },
             local: {
                 //
