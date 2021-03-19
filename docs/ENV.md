@@ -76,7 +76,7 @@ Statistics are globally enabled by default, but they are disabled on the default
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `STATS_ENABLED` | `stats.enabled` | `true` | `true`, `false` | Wether to enable the stats store. |
-| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `redis-ts` | The stats driver used to store the stats to. |
+| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `redis-ts`, `promethus` | The stats driver used to store the stats to. |
 | `STATS_SNAPSHOTS_INTERVAL` | `stats.snapshots.interval` | `60 * 60` | - | The amount of time to wait between taking stats snapshots, in seconds. |
 
 For non-distributed systems:
@@ -85,7 +85,10 @@ For non-distributed systems:
 
 For distributed systems:
 
-- `redis-ts` Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
+- `redis-ts` - Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
+- `prometheus` - Stats are read from a Prometheus server REST API (`PROMETHEUS_ENABLED` should be `true` and you should have the Prometheus server scrape metrics from the `/metrics` endpoint); [see Prometheus configuration](#prometheus))
+
+**The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
 
 ## Redis
 
@@ -115,6 +118,10 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 | - | - | - | - | - |
 | `PROMETHEUS_ENABLED` | `prometheus.enabled` | `false` | `true`, `false` | Wether to enable `/metrics` endpoint. |
 | `PROMETHEUS_PREFIX` | `prometheus.prefix` | `echo_server_` | - | The prefix to append to Prometheus metrics names. |
+| `PROMETHEUS_HOST` | `prometheus.host` | `127.0.0.1` | - | The host of the Prometheus server to read statistics from. |
+| `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
+| `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |
+
 
 ## Socket.IO Settings
 

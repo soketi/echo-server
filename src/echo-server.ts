@@ -72,6 +72,11 @@ export class EchoServer {
             local: {
                 //
             },
+            prometheus: {
+                host: '127.0.0.1',
+                port: 9090,
+                protocol: 'http',
+            },
         },
         development: false,
         host: null,
@@ -195,7 +200,7 @@ export class EchoServer {
             this.options = {
                 ...Object.assign(this.options, options),
                 ...{
-                    closingGracePeriod: this.options.stats.driver === 'local' ? 1 : this.options.closingGracePeriod,
+                    closingGracePeriod: ['local', 'prometheus'].includes(this.options.stats.driver) ? 1 : this.options.closingGracePeriod,
                 },
             };
 
