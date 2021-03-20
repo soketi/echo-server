@@ -78,8 +78,6 @@ export class PresenceChannel extends PrivateChannel {
                 return member;
             }, error => {
                 socket.emit('socket:error', { message: 'There is an internal problem.', code: 4304 });
-
-                socket.emit()
             });
         });
     }
