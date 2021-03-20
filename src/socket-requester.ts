@@ -35,37 +35,27 @@ export class SocketRequester {
                         time: new Date().toISOString(),
                         socketId: socket ? socket.id : null,
                         options,
-                        action: 'auth',
+                        action: 'request',
                         status: 'failed',
                         error,
                     });
 
-                    reject({ reason: 'Error sending authentication request.', status: 0 });
+                    reject({ reason: 'Error sending authentication request.', status: null });
                 } else if (response.statusCode !== 200) {
                     if (this.options.development) {
                         Log.warning({
                             time: new Date().toISOString(),
                             socketId: socket ? socket.id : null,
                             options,
-                            action: 'auth',
+                            action: 'request',
                             status: 'non_200',
                             body: response.body,
                             error,
                         });
                     }
 
-                    reject({ reason: 'Client can not be authenticated, got HTTP status ' + response.statusCode, status: response.statusCode });
+                    reject({ reason: `The HTTP request got status ${response.statusCode}` });
                 } else {
-                    if (this.options.development) {
-                        Log.info({
-                            time: new Date().toISOString(),
-                            socketId: socket ? socket.id : null,
-                            options,
-                            action: 'auth',
-                            status: 'success',
-                        });
-                    }
-
                     try {
                         body = JSON.parse(response.body);
                     } catch (e) {

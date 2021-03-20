@@ -52,8 +52,10 @@ export class PresenceChannel extends PrivateChannel {
 
             if (!member) {
                 if (this.options.development) {
-                    Log.error('Unable to join channel. Member data for presence channel missing. Maybe the authentication host and/or url is not right?');
+                    Log.error('Member format is not JSONable.');
                 }
+
+                socket.emit('socket:error', { message: 'The member received from the HTTP API request is not JSONable.', code: 4303 });
 
                 return;
             }
@@ -74,7 +76,11 @@ export class PresenceChannel extends PrivateChannel {
                 }
 
                 return member;
-            }, () => Log.error('Error retrieving pressence channel members.'));
+            }, error => {
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4304 });
+
+                socket.emit()
+            });
         });
     }
 
@@ -100,7 +106,11 @@ export class PresenceChannel extends PrivateChannel {
                     this.onLeave(socket, channel, memberWhoLeft);
                 });
             }
-        }, error => Log.error(error));
+        }, error => {
+            Log.error(error);
+
+            socket.emit('socket:error', { message: 'There is an internal problem.', code: 4305 });
+        });
     }
 
     /**

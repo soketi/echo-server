@@ -191,10 +191,12 @@ export class HttpApi {
         }
 
         channel.getMembers(`/${appKey}`, channelName).then(members => {
-            res.json({
-                users: members,
-            });
-        }, error => Log.error(error));
+            res.json({ users: members });
+        }, error => {
+            res.json({ users: [] });
+
+            Log.error(error);
+        });
     }
 
     /**
@@ -219,16 +221,6 @@ export class HttpApi {
         if (socketId) {
             this.findSocketInNamespace(`/${appKey}`, socketId).then(socket => {
                 this.sendEventToChannels(`/${appKey}`, req, socket);
-            }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId,
-                        action: 'socket_find',
-                        status: 'failed',
-                        error,
-                    });
-                }
             });
         } else {
             this.sendEventToChannels(`/${appKey}`, req);
@@ -315,6 +307,15 @@ export class HttpApi {
             if (socket) {
                 resolve(socket);
             } else {
+                if (this.options.development) {
+                    Log.error({
+                        time: new Date().toISOString(),
+                        socketId,
+                        action: 'socket_find',
+                        status: 'failed',
+                    });
+                }
+
                 reject({ reason: `The socket ${socketId} does not exist.`});
             }
         });
@@ -337,7 +338,7 @@ export class HttpApi {
             Log.info({
                 time: new Date().toISOString(),
                 socket: socket ? socket : null,
-                action: 'sendEvent',
+                action: 'send_event',
                 status: 'success',
                 namespace,
                 channels,
