@@ -36,35 +36,10 @@ export class ApiAppManager implements AppManagerDriver {
             rejectUnauthorized: false,
         };
 
-        if (this.options.development) {
-            Log.info({
-                time: new Date().toISOString(),
-                options,
-                action: 'find_app',
-                status: 'preparing',
-            });
-        }
-
         return new Promise((resolve, reject) => {
             this.socketRequester.serverRequest(socket, options).then(body => {
-                if (this.options.development) {
-                    Log.info({
-                        time: new Date().toISOString(),
-                        options,
-                        action: 'find_app',
-                        status: 'found',
-                        app: body.app,
-                    });
-                }
-
                 resolve(new App(body.app));
-            }, error => {
-                if (this.options.development) {
-                    Log.error(error);
-                }
-
-                reject(error);
-            });
+            }, error => reject(error));
         });
     }
 
@@ -84,35 +59,10 @@ export class ApiAppManager implements AppManagerDriver {
             rejectUnauthorized: false,
         };
 
-        if (this.options.development) {
-            Log.info({
-                time: new Date().toISOString(),
-                options,
-                action: 'find_app',
-                status: 'preparing',
-            });
-        }
-
         return new Promise((resolve, reject) => {
             this.socketRequester.serverRequest(socket, options).then(body => {
-                if (this.options.development) {
-                    Log.info({
-                        time: new Date().toISOString(),
-                        options,
-                        action: 'find_app',
-                        status: 'found',
-                        app: body.app,
-                    });
-                }
-
                 resolve(new App(body.app));
-            }, error => {
-                if (this.options.development) {
-                    Log.error(error);
-                }
-
-                reject(error);
-            });
+            }, error => reject(error));
         });
     }
 }

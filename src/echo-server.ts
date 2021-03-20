@@ -206,8 +206,6 @@ export class EchoServer {
 
             this.server = new Server(this.options);
 
-            Log.title(`Echo Server v${packageFile.version}\n`);
-
             if (this.options.development) {
                 Log.warning('Starting the server in development mode...\n');
             } else {
@@ -328,16 +326,6 @@ export class EchoServer {
             this.checkIfSocketHasValidEchoApp(socket).then(socket => {
                 next();
             }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId: socket ? socket.id : null,
-                        action: 'app_check',
-                        status: 'failed',
-                        error,
-                    });
-                }
-
                 next(error);
             });
         });
@@ -367,16 +355,6 @@ export class EchoServer {
                 this.onDisconnecting(socket);
                 this.onClientEvent(socket);
             }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId: socket ? socket.id : null,
-                        action: 'max_connections_check',
-                        status: 'failed',
-                        error,
-                    });
-                }
-
                 socket.disconnect();
             });
         });
@@ -514,6 +492,17 @@ export class EchoServer {
 
             this.appManager.findByKey(appKey, socket, {}).then(app => {
                 if (!app) {
+                    if (this.options.development) {
+                        Log.error({
+                            time: new Date().toISOString(),
+                            socketId: socket ? socket.id : null,
+                            action: 'app_check',
+                            status: 'failed',
+                        });
+                    }
+
+                    socket.emit('socket:error', { message: 'The app trying to reach does not exist.', code: 4001 });
+
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
                     socket.data.echoApp = app;
@@ -530,6 +519,8 @@ export class EchoServer {
                     });
                 }
 
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4001 });
+
                 reject(error);
             });
         });
@@ -545,6 +536,19 @@ export class EchoServer {
     protected checkIfSocketDidNotReachedLimit(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
+                if (this.options.development) {
+                    Log.error({
+                        time: new Date().toISOString(),
+                        socketId: socket ? socket.id : null,
+                        action: 'max_connections_check',
+                        status: 'failed',
+                        reason: 'disconnected or not valid app',
+                        reached: false,
+                    });
+                }
+
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4004 });
+
                 return reject({ reason: 'The app connection limit cannot be checked because the socket is not authenticated.' });
             }
 
@@ -558,10 +562,25 @@ export class EchoServer {
                 if (maxConnections >= clients.size) {
                     resolve(socket);
                 } else {
+                    if (this.options.development) {
+                        Log.error({
+                            time: new Date().toISOString(),
+                            socketId: socket ? socket.id : null,
+                            action: 'max_connections_check',
+                            status: 'failed',
+                            reached: true,
+                        });
+                    }
+
+                    socket.emit('socket:error', { message: 'The app has reached the connection quota.', code: 4100 });
+
                     reject({ reason: 'The current app reached connections limit.' });
                 }
             }, error => {
                 Log.error(error);
+
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4302 });
+
                 reject(error);
             });
         });
