@@ -1,4 +1,39 @@
-# Available Environment Variables
+- [Basic Environment Variables](#basic-environment-variables)
+  - [Socket.IO Settings](#socketio-settings)
+  - [SSL Settings](#ssl-settings)
+  - [Default Application](#default-application)
+  - [Apps Manager](#apps-manager)
+  - [CORS Settings](#cors-settings)
+  - [Replication](#replication)
+  - [Presence Channel Storage](#presence-channel-storage)
+  - [Debugging](#debugging)
+  - [Statsitics](#statsitics)
+- [Databases](#databases)
+  - [Redis](#redis)
+  - [Prometheus](#prometheus)
+
+# Basic Environment Variables
+
+## Socket.IO Settings
+
+Configuration needed to specify the protocol, port and host for the server.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `SOCKET_HOST` | `host` | `null` | - |The host used for Socket.IO |
+| `SOCKET_PORT` | `port` | `6001` | - | The port used for Socket.IO |
+| `SOCKET_PROTOCOL` | `protocol` | `http` | `http`, `https` | The protocol used for the Socket.IO. |
+
+## SSL Settings
+
+If the Socket.IO protocol is `https`, SSL settings can be applied with the following variables.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `SSL_CERT` | `ssl.certPath` | `''` | - | The path for SSL certificate file. |
+| `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
+| `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
+| `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |
 
 ## Default Application
 
@@ -48,7 +83,7 @@ in order to be able to scale up the Echo Server instances.
 - `redis` - Enabled Pub/Sub communication between processes/nodes, can be scaled horizontally without issues.
 - `local` - There is no communication or Pub/Sub. Recommended for single-instance, single-process apps.
 
-# Presence Channel Storage
+## Presence Channel Storage
 
 When dealing with presence channel, connection details must be stored within the app.
 
@@ -90,6 +125,8 @@ For distributed systems:
 
 **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
 
+# Databases
+
 ## Redis
 
 Configuration needed to connect to a Redis server.
@@ -121,25 +158,3 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 | `PROMETHEUS_HOST` | `prometheus.host` | `127.0.0.1` | - | The host of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |
-
-
-## Socket.IO Settings
-
-Configuration needed to specify the protocol, port and host for the server.
-
-| Environment variable | Object dot-path | Default | Available values | Description |
-| - | - | - | - | - |
-| `SOCKET_HOST` | `host` | `null` | - |The host used for Socket.IO |
-| `SOCKET_PORT` | `port` | `6001` | - | The port used for Socket.IO |
-| `SOCKET_PROTOCOL` | `protocol` | `http` | `http`, `https` | The protocol used for the Socket.IO. |
-
-## SSL Settings
-
-If the Socket.IO protocol is `https`, SSL settings can be applied with the following variables.
-
-| Environment variable | Object dot-path | Default | Available values | Description |
-| - | - | - | - | - |
-| `SSL_CERT` | `ssl.certPath` | `''` | - | The path for SSL certificate file. |
-| `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
-| `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
-| `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |
