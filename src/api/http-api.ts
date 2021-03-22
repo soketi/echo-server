@@ -286,9 +286,15 @@ export class HttpApi {
     protected getPrometheusMetrics(req, res): boolean {
         res.set('Content-Type', this.prometheus.register.contentType);
 
-        this.prometheus.register.metrics().then(content => {
-            res.end(content);
-        });
+        if (req.query.json) {
+            this.prometheus.register.getMetricsAsJSON().then(metrics => {
+                res.json({ data: metrics });
+            });
+        } else {
+            this.prometheus.register.metrics().then(content => {
+                res.end(content);
+            });
+        }
 
         return true;
     }
