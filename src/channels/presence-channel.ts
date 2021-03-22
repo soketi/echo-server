@@ -66,13 +66,24 @@ export class PresenceChannel extends PrivateChannel {
                  * This avoids duplicated tabs for users, as well as minimizing impact on the network.
                  */
                 if (!exists) {
-                    member.socket_id = socket.id;
+                    if (this.dataToKilobytes(member) > this.options.presence.maxMemberSizeInKb) {
+                        socket.emit('socket:error', { message: `The member size exceeds ${this.options.presence.maxMemberSizeInKb} KB.`, code: 4100 });
+                    } else {
+                        member.socket_id = socket.id;
 
-                    this.presenceStorage.addMemberToChannel(socket, this.getNspForSocket(socket), data.channel, member).then(members => {
-                        socket.join(data.channel);
-                        this.onSubscribed(socket, data.channel, members);
-                        this.onJoin(socket, data.channel, member);
-                    });
+                        this.presenceStorage.addMemberToChannel(socket, this.getNspForSocket(socket), data.channel, member).then(members => {
+                            if (members.size > this.options.presence.maxMembersPerChannel) {
+                                socket.emit('socket:error', { message: 'The maximum channel members amount has been reached.', code: 4100 });
+                                socket.disconnect();
+                            } else {
+                                socket.join(data.channel);
+                                this.onSubscribed(socket, data.channel, members);
+                                this.onJoin(socket, data.channel, member);
+                            }
+                        });
+                    }
+                } else {
+                    socket.emit('socket:info', { message: 'The member you are trying to connect to is already connected on another connection.' });
                 }
 
                 return member;
@@ -203,5 +214,23 @@ export class PresenceChannel extends PrivateChannel {
      */
     protected getDataToSignForToken(socket: any, data: any): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;
+    }
+
+    /**
+     * Get the amount of kb from given parameters.
+     *
+     * @param  {any}  data
+     * @return {number}
+     */
+    protected dataToKilobytes(...data: any): number {
+        return data.reduce((totalKilobytes, element) => {
+            element = typeof element === 'string' ? element : JSON.stringify(element);
+
+            try {
+                return totalKilobytes += Buffer.byteLength(element, 'utf8') / 1024;
+            } catch (e) {
+                return totalKilobytes;
+            }
+        }, 0);
     }
 }
