@@ -72,7 +72,7 @@ export class PresenceChannel extends PrivateChannel {
                         member.socket_id = socket.id;
 
                         this.presenceStorage.addMemberToChannel(socket, this.getNspForSocket(socket), data.channel, member).then(members => {
-                            if (members.size > this.options.presence.maxMembersPerChannel) {
+                            if (members.length > this.options.presence.maxMembersPerChannel) {
                                 socket.emit('socket:error', { message: 'The maximum channel members amount has been reached.', code: 4100 });
                                 socket.disconnect();
                             } else {
