@@ -36,6 +36,8 @@ export class Cli {
         CLOSING_GRACE_PERIOD: 'closingGracePeriod',
         CORS_ALLOWED_ORIGINS: 'cors.origin',
         DEBUG: 'development',
+        NETWORK_PROBES_API_ENABLED: 'network.probesApi.enabled',
+        NETWORK_PROBES_API_TOKEN: 'network.probesApi.token',
         PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
         PROMETHEUS_ENABLED: 'prometheus.enabled',
         PROMETHEUS_PREFIX: 'prometheus.prefix',
