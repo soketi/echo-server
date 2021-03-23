@@ -42,7 +42,9 @@ export class HttpApi {
         this.registerCorsMiddleware();
         this.configurePusherAuthentication();
 
-        this.express.get('/', (req, res) => this.getRoot(req, res));
+        this.express.get('/', (req, res) => this.getHealth(req, res));
+        this.express.get('/health', (req, res) => this.getHealth(req, res));
+        this.express.get('/ready', (req, res) => this.getReadiness(req, res));
         this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
         this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
         this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
@@ -97,10 +99,21 @@ export class HttpApi {
      * @param  {any}  res
      * @return {void}
      */
-    protected getRoot(req: any, res: any): void {
+    protected getHealth(req: any, res: any): void {
+        res.send('OK');
+    }
+
+    /**
+     * Outputs a simple message to check if the server accepts new connections.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {void}
+     */
+     protected getReadiness(req: any, res: any): void {
         if (this.server.rejectNewConnections) {
             res.statusCode = 503;
-            res.send('CLOSING');
+            res.send('UNAVAILABLE');
         } else {
             res.send('OK');
         }
