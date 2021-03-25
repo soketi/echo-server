@@ -38,6 +38,8 @@ export class Cli {
         DEBUG: 'development',
         NETWORK_PROBES_API_ENABLED: 'network.probesApi.enabled',
         NETWORK_PROBES_API_TOKEN: 'network.probesApi.token',
+        NODE_ID: 'instance.node_id',
+        POD_ID: 'instance.pod_id',
         PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
         PROMETHEUS_ENABLED: 'prometheus.enabled',
         PROMETHEUS_PREFIX: 'prometheus.prefix',

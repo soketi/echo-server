@@ -5,6 +5,7 @@ import { Log } from './log';
 import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
+import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
@@ -83,6 +84,11 @@ export class EchoServer {
         headers: [
             //
         ],
+        instance: {
+            node_id: null,
+            process_id: process.pid || uuidv4(),
+            pod_id: null,
+        },
         network: {
             probesApi: {
                 enabled: false,

@@ -1,6 +1,7 @@
 - [Basic Environment Variables](#basic-environment-variables)
   - [Socket.IO Settings](#socketio-settings)
   - [SSL Settings](#ssl-settings)
+  - [Node Settings](#node-settings)
   - [Default Application](#default-application)
   - [Apps Manager](#apps-manager)
   - [CORS Settings](#cors-settings)
@@ -35,6 +36,16 @@ If the Socket.IO protocol is `https`, SSL settings can be applied with the follo
 | `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
 | `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
 | `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |
+
+
+## Node Settings
+
+Node settings include assigning identifiers for the running node.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `NODE_ID` | `instance.node_id` | random UUIDv4 string | - | An unique ID given to the node in which the process runs. Used by other features to label data. |
+| `POD_ID` | `instance.pod_id` | `null` | - | The Pod name if the app runs in Kubernetes. Used by other features to label data. |
 
 ## Default Application
 
