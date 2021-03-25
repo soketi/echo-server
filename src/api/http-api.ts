@@ -42,7 +42,9 @@ export class HttpApi {
         this.registerCorsMiddleware();
         this.configurePusherAuthentication();
 
-        this.express.get('/', (req, res) => this.getRoot(req, res));
+        this.express.get('/', (req, res) => this.getHealth(req, res));
+        this.express.get('/health', (req, res) => this.getHealth(req, res));
+        this.express.get('/ready', (req, res) => this.getReadiness(req, res));
         this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
         this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
         this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
@@ -55,6 +57,11 @@ export class HttpApi {
 
         if (this.options.prometheus.enabled) {
             this.express.get('/metrics', (req, res) => this.getPrometheusMetrics(req, res));
+        }
+
+        if (this.options.network.probesApi.enabled) {
+            this.express.post('/probes/reject-new-connections', (req, res) => this.rejectNewConnections(req, res));
+            this.express.post('/probes/accept-new-connections', (req, res) => this.acceptNewConnections(req, res));
         }
     }
 
@@ -97,10 +104,20 @@ export class HttpApi {
      * @param  {any}  res
      * @return {void}
      */
-    protected getRoot(req: any, res: any): void {
-        if (this.server.rejectNewConnections) {
-            res.statusCode = 503;
-            res.send('CLOSING');
+    protected getHealth(req: any, res: any): void {
+        res.send('OK');
+    }
+
+    /**
+     * Outputs a simple message to check if the server accepts new connections.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {void}
+     */
+     protected getReadiness(req: any, res: any): void {
+        if (this.server.closing || this.server.rejectNewConnections) {
+            this.serviceUnavailableResponse(req, res);
         } else {
             res.send('OK');
         }
@@ -186,7 +203,7 @@ export class HttpApi {
             return this.badResponse(
                 req,
                 res,
-                'User list is only possible for Presence Channels'
+                'User list is only possible for Presence Channels.'
             );
         }
 
@@ -286,8 +303,62 @@ export class HttpApi {
     protected getPrometheusMetrics(req, res): boolean {
         res.set('Content-Type', this.prometheus.register.contentType);
 
-        this.prometheus.register.metrics().then(content => {
-            res.end(content);
+        if (req.query.json) {
+            this.prometheus.register.getMetricsAsJSON().then(metrics => {
+                res.json({ data: metrics });
+            });
+        } else {
+            this.prometheus.register.metrics().then(content => {
+                res.end(content);
+            });
+        }
+
+        return true;
+    }
+
+    /**
+     * Reject new connections from external clients.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected rejectNewConnections(req, res): boolean {
+        this.probesApiTokenIsValid(req.query.token).then(isValid => {
+            if (isValid) {
+                if (this.server.closing) {
+                    return res.json({ acknowledged: true });
+                }
+
+                this.server.rejectNewConnections = true;
+                res.json({ acknowledged: true });
+            } else {
+                this.unauthorizedResponse(req, res);
+            }
+        });
+
+        return true;
+    }
+
+    /**
+     * Accept new connections from external clients.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected acceptNewConnections(req, res): boolean {
+        this.probesApiTokenIsValid(req.query.token).then(isValid => {
+            if (isValid) {
+                if (this.server.closing) {
+                    return res.json({ acknowledged: true });
+                }
+
+                this.server.rejectNewConnections = false;
+                res.json({ acknowledged: true });
+            } else {
+                this.unauthorizedResponse(req, res);
+            }
         });
 
         return true;
@@ -456,7 +527,17 @@ export class HttpApi {
     }
 
     /**
-     * Handle bad requests.
+     * Check if the given Probes API token is valid.
+     *
+     * @param  {string}  token
+     * @return {Promise<boolean>}
+     */
+    protected probesApiTokenIsValid(token: string): Promise<boolean> {
+        return new Promise(resolve => resolve(this.options.network.probesApi.token === token));
+    }
+
+    /**
+     * Throw 400 response.
      *
      * @param  {any}  req
      * @param  {any}  res
@@ -471,27 +552,29 @@ export class HttpApi {
     }
 
     /**
-     * Handle unauthorized requests.
+     * Throw 403 response.
      *
      * @param  {any}  req
      * @param  {any}  res
      * @return {boolean}
      */
     protected unauthorizedResponse(req: any, res: any): boolean {
-        if (this.options.development) {
-            Log.error({
-                time: new Date().toISOString(),
-                action: 'pusher_auth',
-                status: 'failed',
-                params: req.params,
-                query: req.query,
-                body: req.body,
-                givenToken: req.query.auth_signature,
-            });
-        }
-
         res.statusCode = 403;
         res.json({ error: 'Unauthorized' });
+
+        return false;
+    }
+
+    /**
+     * Throw 503 response.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected serviceUnavailableResponse(req, res): boolean {
+        res.statusCode = 503;
+        res.json({ error: 'Service unavailable' });
 
         return false;
     }

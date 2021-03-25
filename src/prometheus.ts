@@ -78,6 +78,10 @@ export class Prometheus {
         prom.collectDefaultMetrics({
             prefix: options.prometheus.prefix,
             register: this.register,
+            labels: {
+                node_id: options.instance.node_id,
+                pod_id: options.instance.pod_id,
+            },
         });
     }
 

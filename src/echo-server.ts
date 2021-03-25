@@ -5,6 +5,7 @@ import { Log } from './log';
 import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
+import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
@@ -83,6 +84,17 @@ export class EchoServer {
         headers: [
             //
         ],
+        instance: {
+            node_id: null,
+            process_id: process.pid || uuidv4(),
+            pod_id: null,
+        },
+        network: {
+            probesApi: {
+                enabled: false,
+                token: 'probe-token',
+            },
+        },
         port: 6001,
         presence: {
             storage: {
@@ -178,6 +190,13 @@ export class EchoServer {
     rejectNewConnections = false;
 
     /**
+     * Let the plugins know if the server is closing.
+     *
+     * @type {boolean}
+     */
+    closing = false;
+
+    /**
      * The stats manager that will be used to store stats.
      *
      * @type {Stats}
@@ -217,6 +236,7 @@ export class EchoServer {
             this.server.initialize().then(io => {
                 this.initialize(io).then(() => {
                     this.rejectNewConnections = false;
+                    this.closing = false;
 
                     Log.info('\nServer ready!\n');
 
@@ -278,6 +298,7 @@ export class EchoServer {
             Log.warning('Stopping the server...');
 
             this.rejectNewConnections = true;
+            this.closing = true;
 
             this.server.io.close(async () => {
                 /**
@@ -347,7 +368,7 @@ export class EchoServer {
                 this.prometheus.markNewConnection(socket);
             }
 
-            if (this.rejectNewConnections) {
+            if (this.rejectNewConnections || this.closing) {
                 return socket.disconnect();
             }
 

@@ -1,6 +1,7 @@
 - [Basic Environment Variables](#basic-environment-variables)
   - [Socket.IO Settings](#socketio-settings)
   - [SSL Settings](#ssl-settings)
+  - [Node Settings](#node-settings)
   - [Default Application](#default-application)
   - [Apps Manager](#apps-manager)
   - [CORS Settings](#cors-settings)
@@ -8,6 +9,7 @@
   - [Presence Channel Storage](#presence-channel-storage)
   - [Debugging](#debugging)
   - [Statsitics](#statsitics)
+  - [Probes API](#probes-api)
 - [Databases](#databases)
   - [Redis](#redis)
   - [Prometheus](#prometheus)
@@ -34,6 +36,16 @@ If the Socket.IO protocol is `https`, SSL settings can be applied with the follo
 | `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
 | `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
 | `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |
+
+
+## Node Settings
+
+Node settings include assigning identifiers for the running node.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `NODE_ID` | `instance.node_id` | random UUIDv4 string | - | An unique ID given to the node in which the process runs. Used by other features to label data. |
+| `POD_ID` | `instance.pod_id` | `null` | - | The Pod name if the app runs in Kubernetes. Used by other features to label data. |
 
 ## Default Application
 
@@ -124,6 +136,20 @@ For distributed systems:
 - `prometheus` - Stats are read from a Prometheus server REST API (`PROMETHEUS_ENABLED` should be `true` and you should have the Prometheus server scrape metrics from the `/metrics` endpoint); [see Prometheus configuration](#prometheus))
 
 **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
+
+## Probes API
+
+Probes API allows you to change the network state for probing on `/health` and `/ready` endpoint from external sources. For example, you can toggle on or off the rejection for new connections:
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `NETWORK_PROBES_API_ENABLED` | `network.probesApi.enabled` | `false` | `true`, `false` | Wether to enable the network probes API. |
+| `NETWORK_PROBES_API_TOKEN` | `network.probesApi.token` | `probe-token` | - | The API token for network probes API authentication. |
+
+To call the probes API on rejecting connections, call the following endpoints:
+
+- `POST` `/probes/reject-new-connections?token=[your_token]` - make the server reject new connections
+- `POST` `/probes/accept-new-connections?token=[your_token]` - make the server accept new connections
 
 # Databases
 
