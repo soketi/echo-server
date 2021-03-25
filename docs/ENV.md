@@ -101,6 +101,8 @@ When dealing with presence channel, connection details must be stored within the
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
+| `PRESENCE_MAX_MEMBER_SIZE` | `presence.maxMemberSizeInKb` | `2` | - | The maximum member size, in KB, for each member in a presence channel. |
+| `PRESENCE_MAX_MEMBERS` | `presence.maxMembersPerChannel` | `100` | - | The maximum amount of members that can simultaneously be connected in a presence channel. |
 | `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `socket` | `redis`, `socket` | The database driver for storing presence channel data. |
 
 - `redis` - Presence channels members are stored in key-value store.
