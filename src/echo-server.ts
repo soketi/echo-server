@@ -100,6 +100,8 @@ export class EchoServer {
             storage: {
                 database: 'socket',
             },
+            maxMembersPerChannel: 100,
+            maxMemberSizeInKb: 2,
         },
         prometheus: {
             enabled: false,
