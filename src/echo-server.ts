@@ -85,7 +85,7 @@ export class EchoServer {
             //
         ],
         instance: {
-            node_id: uuidv4(),
+            node_id: null,
             process_id: process.pid || uuidv4(),
             pod_id: null,
         },
