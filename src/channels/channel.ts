@@ -129,7 +129,7 @@ export class Channel {
             Log.info({
                 time: new Date().toISOString(),
                 socketId: socket.id,
-                action: 'client event',
+                action: 'client_event',
                 status: 'received',
                 data,
             });
@@ -158,7 +158,7 @@ export class Channel {
                     Log.info({
                         time: new Date().toISOString(),
                         socketId: socket.id,
-                        action: 'client event',
+                        action: 'client_event',
                         status: 'success',
                         data,
                     });

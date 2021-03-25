@@ -1,4 +1,52 @@
-# Available Environment Variables
+- [Basic Environment Variables](#basic-environment-variables)
+  - [Socket.IO Settings](#socketio-settings)
+  - [SSL Settings](#ssl-settings)
+  - [Node Settings](#node-settings)
+  - [Default Application](#default-application)
+  - [Apps Manager](#apps-manager)
+  - [CORS Settings](#cors-settings)
+  - [Replication](#replication)
+  - [Presence Channel Storage](#presence-channel-storage)
+  - [Debugging](#debugging)
+  - [Statsitics](#statsitics)
+  - [Probes API](#probes-api)
+- [Databases](#databases)
+  - [Redis](#redis)
+  - [Prometheus](#prometheus)
+  - [MySQL](#mysql)
+
+# Basic Environment Variables
+
+## Socket.IO Settings
+
+Configuration needed to specify the protocol, port and host for the server.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `SOCKET_HOST` | `host` | `null` | - |The host used for Socket.IO |
+| `SOCKET_PORT` | `port` | `6001` | - | The port used for Socket.IO |
+| `SOCKET_PROTOCOL` | `protocol` | `http` | `http`, `https` | The protocol used for the Socket.IO. |
+
+## SSL Settings
+
+If the Socket.IO protocol is `https`, SSL settings can be applied with the following variables.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `SSL_CERT` | `ssl.certPath` | `''` | - | The path for SSL certificate file. |
+| `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
+| `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
+| `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |
+
+
+## Node Settings
+
+Node settings include assigning identifiers for the running node.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `NODE_ID` | `instance.node_id` | random UUIDv4 string | - | An unique ID given to the node in which the process runs. Used by other features to label data. |
+| `POD_ID` | `instance.pod_id` | `null` | - | The Pod name if the app runs in Kubernetes. Used by other features to label data. |
 
 ## Default Application
 
@@ -68,6 +116,8 @@ When dealing with presence channel, connection details must be stored within the
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
+| `PRESENCE_MAX_MEMBER_SIZE` | `presence.maxMemberSizeInKb` | `2` | - | The maximum member size, in KB, for each member in a presence channel. |
+| `PRESENCE_MAX_MEMBERS` | `presence.maxMembersPerChannel` | `100` | - | The maximum amount of members that can simultaneously be connected in a presence channel. |
 | `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `socket` | `redis`, `socket` | The database driver for storing presence channel data. |
 
 - `redis` - Presence channels members are stored in key-value store.
@@ -103,6 +153,22 @@ For distributed systems:
 - `prometheus` - Stats are read from a Prometheus server REST API (`PROMETHEUS_ENABLED` should be `true` and you should have the Prometheus server scrape metrics from the `/metrics` endpoint); [see Prometheus configuration](#prometheus))
 
 **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
+
+## Probes API
+
+Probes API allows you to change the network state for probing on `/health` and `/ready` endpoint from external sources. For example, you can toggle on or off the rejection for new connections:
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `NETWORK_PROBES_API_ENABLED` | `network.probesApi.enabled` | `false` | `true`, `false` | Wether to enable the network probes API. |
+| `NETWORK_PROBES_API_TOKEN` | `network.probesApi.token` | `probe-token` | - | The API token for network probes API authentication. |
+
+To call the probes API on rejecting connections, call the following endpoints:
+
+- `POST` `/probes/reject-new-connections?token=[your_token]` - make the server reject new connections
+- `POST` `/probes/accept-new-connections?token=[your_token]` - make the server accept new connections
+
+# Databases
 
 ## Redis
 
@@ -147,24 +213,3 @@ Configuration needed to connect to a MySQL server.
 | `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
 | `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
 | `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
-
-## Socket.IO Settings
-
-Configuration needed to specify the protocol, port and host for the server.
-
-| Environment variable | Object dot-path | Default | Available values | Description |
-| - | - | - | - | - |
-| `SOCKET_HOST` | `host` | `null` | - |The host used for Socket.IO |
-| `SOCKET_PORT` | `port` | `6001` | - | The port used for Socket.IO |
-| `SOCKET_PROTOCOL` | `protocol` | `http` | `http`, `https` | The protocol used for the Socket.IO. |
-
-## SSL Settings
-
-If the Socket.IO protocol is `https`, SSL settings can be applied with the following variables.
-
-| Environment variable | Object dot-path | Default | Available values | Description |
-| - | - | - | - | - |
-| `SSL_CERT` | `ssl.certPath` | `''` | - | The path for SSL certificate file. |
-| `SSL_KEY` | `ssl.keyPath` | `''` | - | The path for SSL key file. |
-| `SSL_CA` | `ssl.caPath` | `''` | - | The path for CA certificate file. |
-| `SSL_PASS` | `ssl.passphrase` | `''` | - | The passphrase for the SSL key file. |

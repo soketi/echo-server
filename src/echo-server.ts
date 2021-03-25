@@ -5,6 +5,7 @@ import { Log } from './log';
 import { Prometheus } from './prometheus';
 import { Server } from './server';
 import { Stats } from './stats';
+import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
@@ -93,11 +94,24 @@ export class EchoServer {
         headers: [
             //
         ],
+        instance: {
+            node_id: null,
+            process_id: process.pid || uuidv4(),
+            pod_id: null,
+        },
+        network: {
+            probesApi: {
+                enabled: false,
+                token: 'probe-token',
+            },
+        },
         port: 6001,
         presence: {
             storage: {
                 database: 'socket',
             },
+            maxMembersPerChannel: 100,
+            maxMemberSizeInKb: 2,
         },
         prometheus: {
             enabled: false,
@@ -186,6 +200,13 @@ export class EchoServer {
     rejectNewConnections = false;
 
     /**
+     * Let the plugins know if the server is closing.
+     *
+     * @type {boolean}
+     */
+    closing = false;
+
+    /**
      * The stats manager that will be used to store stats.
      *
      * @type {Stats}
@@ -216,8 +237,6 @@ export class EchoServer {
 
             this.server = new Server(this.options);
 
-            Log.title(`Echo Server v${packageFile.version}\n`);
-
             if (this.options.development) {
                 Log.warning('Starting the server in development mode...\n');
             } else {
@@ -227,6 +246,7 @@ export class EchoServer {
             this.server.initialize().then(io => {
                 this.initialize(io).then(() => {
                     this.rejectNewConnections = false;
+                    this.closing = false;
 
                     Log.info('\nServer ready!\n');
 
@@ -288,6 +308,7 @@ export class EchoServer {
             Log.warning('Stopping the server...');
 
             this.rejectNewConnections = true;
+            this.closing = true;
 
             this.server.io.close(async () => {
                 /**
@@ -338,16 +359,6 @@ export class EchoServer {
             this.checkIfSocketHasValidEchoApp(socket).then(socket => {
                 next();
             }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId: socket ? socket.id : null,
-                        action: 'app_check',
-                        status: 'failed',
-                        error,
-                    });
-                }
-
                 next(error);
             });
         });
@@ -367,7 +378,7 @@ export class EchoServer {
                 this.prometheus.markNewConnection(socket);
             }
 
-            if (this.rejectNewConnections) {
+            if (this.rejectNewConnections || this.closing) {
                 return socket.disconnect();
             }
 
@@ -377,16 +388,6 @@ export class EchoServer {
                 this.onDisconnecting(socket);
                 this.onClientEvent(socket);
             }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId: socket ? socket.id : null,
-                        action: 'max_connections_check',
-                        status: 'failed',
-                        error,
-                    });
-                }
-
                 socket.disconnect();
             });
         });
@@ -524,6 +525,17 @@ export class EchoServer {
 
             this.appManager.findByKey(appKey, socket, {}).then(app => {
                 if (!app) {
+                    if (this.options.development) {
+                        Log.error({
+                            time: new Date().toISOString(),
+                            socketId: socket ? socket.id : null,
+                            action: 'app_check',
+                            status: 'failed',
+                        });
+                    }
+
+                    socket.emit('socket:error', { message: 'The app trying to reach does not exist.', code: 4001 });
+
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
                     socket.data.echoApp = app;
@@ -540,6 +552,8 @@ export class EchoServer {
                     });
                 }
 
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4001 });
+
                 reject(error);
             });
         });
@@ -555,6 +569,19 @@ export class EchoServer {
     protected checkIfSocketDidNotReachedLimit(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
+                if (this.options.development) {
+                    Log.error({
+                        time: new Date().toISOString(),
+                        socketId: socket ? socket.id : null,
+                        action: 'max_connections_check',
+                        status: 'failed',
+                        reason: 'disconnected or not valid app',
+                        reached: false,
+                    });
+                }
+
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4004 });
+
                 return reject({ reason: 'The app connection limit cannot be checked because the socket is not authenticated.' });
             }
 
@@ -568,10 +595,25 @@ export class EchoServer {
                 if (maxConnections >= clients.size) {
                     resolve(socket);
                 } else {
+                    if (this.options.development) {
+                        Log.error({
+                            time: new Date().toISOString(),
+                            socketId: socket ? socket.id : null,
+                            action: 'max_connections_check',
+                            status: 'failed',
+                            reached: true,
+                        });
+                    }
+
+                    socket.emit('socket:error', { message: 'The app has reached the connection quota.', code: 4100 });
+
                     reject({ reason: 'The current app reached connections limit.' });
                 }
             }, error => {
                 Log.error(error);
+
+                socket.emit('socket:error', { message: 'There is an internal problem.', code: 4302 });
+
                 reject(error);
             });
         });
