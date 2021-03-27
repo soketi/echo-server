@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `echo_apps` (
    PRIMARY KEY  (`id`)
 );
 
-INSERT INTO echo_apps (id, key, secret, max_connections, enable_stats) VALUES ('echo-app', 'echo-app-key', 'echo-app-secret', 200, 1);
+INSERT INTO echo_apps (id, `key`, secret, max_connections, enable_stats) VALUES ('echo-app', 'echo-app-key', 'echo-app-secret', 200, 1);
