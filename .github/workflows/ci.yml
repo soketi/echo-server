@@ -68,8 +68,8 @@ jobs:
 
       - name: Load SQL into databases
         run: |
-          mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
           sleep 15
+          mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
 
       - name: Installing dependencies
         run: |
