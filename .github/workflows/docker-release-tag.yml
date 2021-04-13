@@ -28,12 +28,12 @@ jobs:
 
       - name: Docker meta
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
+        uses: crazy-max/ghaction-docker-meta@v2.3.0
         with:
           images: soketi/echo-server
-          tag-semver: |
-            {{version}}-${{ matrix.node }}
-            {{major}}.{{minor}}-${{ matrix.node }}
+          tags: |
+            type=semver,pattern={{version}}-${{ matrix.node }}
+            type=semver,pattern={{major}}.{{minor}}-${{ matrix.node }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
