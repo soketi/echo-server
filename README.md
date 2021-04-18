@@ -187,6 +187,10 @@ This server is PM2-ready and [can scale to a lot of processes](docs/PM2.md).
 
 Automatically, after each release, a Docker tag is created with an image that holds the app code. [Read about versions & usage on DockerHub](https://hub.docker.com/r/soketi/echo-server).
 
+### ⚓ Deploy with Helm
+
+Echo Server can also be deployed as Helm v3 chart using [charts/echo-server](https://github.com/soketi/charts/tree/master/charts/echo-server). You will find complete installation steps to configure the app on any Kubernetes cluster.
+
 ## 🤝 Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
