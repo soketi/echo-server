@@ -73,3 +73,5 @@ jobs:
         with:
           push: true
           tags: soketi/echo-server:latest-${{ matrix.node }}
+          build-args: |
+            VERSION=${{ matrix.node }}

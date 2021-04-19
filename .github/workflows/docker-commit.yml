@@ -71,3 +71,5 @@ jobs:
         with:
           push: true
           tags: soketi/echo-server:${{ github.sha }}-${{ matrix.node }}
+          build-args: |
+            VERSION=${{ matrix.node }}
