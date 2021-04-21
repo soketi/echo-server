@@ -11,7 +11,12 @@ RUN cd /app && \
     npm install && \
     npm run lint && \
     npm run build && \
-    rm -rf src/ tests/
+    npm install modclean -g && \
+    rm -rf docs/ coverage/ src/ tests/ typings/ .git/ .github/ *.md && \
+    rm -rf node_modules/*/test/ node_modules/*/tests/ && \
+    npm prune && \
+    modclean -n default:safe --run && \
+    npm uninstall -g modclean
 
 EXPOSE 6001
 
