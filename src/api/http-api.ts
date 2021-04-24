@@ -372,23 +372,20 @@ export class HttpApi {
      * @return {Promise<any>}
      */
     protected findSocketInNamespace(namespace: string, socketId: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            let socket = this.io.of(namespace).sockets.get(socketId);
+        return this.io.of(namespace).fetchSockets().then(sockets => {
+            let socket = sockets.find(socket => socket.id === socketId);
 
-            if (socket) {
-                resolve(socket);
-            } else {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        socketId,
-                        action: 'socket_find',
-                        status: 'failed',
-                    });
-                }
-
-                reject({ reason: `The socket ${socketId} does not exist.`});
+            if (this.options.development) {
+                Log.info({
+                    time: new Date().toISOString(),
+                    socketId,
+                    socket,
+                    action: 'socket_find',
+                    status: socket ? 'success' : 'failed',
+                });
             }
+
+            return socket;
         });
     }
 
@@ -421,9 +418,10 @@ export class HttpApi {
 
         channels.forEach(channel => {
             if (socket) {
-                socket.to(channel).emit(
-                    req.body.name, channel, req.body.data
-                );
+                this.io.of(namespace)
+                    .to(channel)
+                    .except(socket.id)
+                    .emit(req.body.name, channel, req.body.data);
             } else {
                 this.io.of(namespace)
                     .to(channel)
