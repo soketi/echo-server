@@ -15,8 +15,6 @@ describe('private channel test', () => {
         });
 
         Connector.connectToPrivateChannel(client, roomName).listen('.message', e => {
-            e = JSON.parse(e);
-
             expect(e.message).toBe('hello');
             client.disconnect();
             done();
