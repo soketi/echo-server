@@ -122,6 +122,8 @@ SOCKETIO_APP_ID=echo-app
 SOCKETIO_APP_KEY=echo-app-key
 SOCKETIO_APP_SECRET=echo-app-secret
 
+MIX_SOCKETIO_APP_KEY="${SOCKETIO_APP_KEY}"
+
 # These are the default values to connect to. It's recommended to specify the server an `APPS_LIST`
 # or override these values using `APP_DEFAULT_*` keys.
 # For production workloads, it's a MUST to change the default values.
@@ -150,7 +152,7 @@ window.io = require('socket.io-client');
 
 window.Soketi = new Soketi({
     host: window.location.hostname,
-    key: 'echo-app-key', // should be replaced with the App Key
+    key: process.env.MIX_SOCKETIO_APP_KEY, // should be replaced with the App Key
     authHost: 'http://127.0.0.1',
     authEndpoint: '/broadcasting/auth',
 });
