@@ -421,11 +421,11 @@ export class HttpApi {
                 this.io.of(namespace)
                     .to(channel)
                     .except(socket.id)
-                    .emit(req.body.name, channel, req.body.data);
+                    .emit(req.body.name, channel, JSON.parse(req.body.data));
             } else {
                 this.io.of(namespace)
                     .to(channel)
-                    .emit(req.body.name, channel, req.body.data);
+                    .emit(req.body.name, channel, JSON.parse(req.body.data));
             }
 
             if (this.options.prometheus.enabled) {
