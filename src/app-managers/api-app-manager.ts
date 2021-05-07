@@ -1,7 +1,7 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { Log } from './../log';
-import { SocketHttpClient } from '../socket-http-client';
+import { SocketHttpClient } from './../socket-http-client';
 
 export class ApiAppManager implements AppManagerDriver {
     /**

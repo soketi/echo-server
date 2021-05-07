@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-const { Cli } = require('../dist/cli/cli');
+const { Cli } = require('./../dist/cli/cli');
 
 process.title = 'echo-server';
 

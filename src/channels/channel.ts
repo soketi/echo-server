@@ -1,6 +1,6 @@
 import { Log } from './../log';
-import { Prometheus } from '../prometheus';
-import { Stats } from '../stats';
+import { Prometheus } from './../prometheus';
+import { Stats } from './../stats';
 
 export class Channel {
     /**

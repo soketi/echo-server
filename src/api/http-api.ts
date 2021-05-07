@@ -1,8 +1,8 @@
-import { AppManager } from '../app-managers';
+import { AppManager } from './../app-managers';
 import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
-import { Prometheus } from '../prometheus';
-import { Stats } from '../stats';
+import { Prometheus } from './../prometheus';
+import { Stats } from './../stats';
 
 const dayjs = require('dayjs');
 const pusherUtil = require('pusher/lib/util');

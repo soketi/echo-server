@@ -9,7 +9,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
-const packageFile = require('../package.json');
 
 /**
  * Echo server class.

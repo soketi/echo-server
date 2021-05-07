@@ -1,8 +1,8 @@
 import { PresenceStorage } from './../presence-storage';
 import { Log } from './../log';
 import { PrivateChannel } from './private-channel';
-import { Prometheus } from '../prometheus';
-import { Stats } from '../stats';
+import { Prometheus } from './../prometheus';
+import { Stats } from './../stats';
 
 export class PresenceChannel extends PrivateChannel {
     /**
