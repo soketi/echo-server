@@ -27,6 +27,7 @@ This is a fork of the original [Laravel Echo Server package](https://github.com/
   - [📈 Per-application Statistics](#-per-application-statistics)
   - [🚢 Deploying with PM2](#-deploying-with-pm2)
   - [🐳 Docker Images](#-docker-images)
+    - [⚓ Deploy with Helm](#-deploy-with-helm)
   - [🤝 Contributing](#-contributing)
   - [🔒  Security](#--security)
   - [🎉 Credits](#-credits)
@@ -41,7 +42,6 @@ If you are using your application in your day-to-day job, on presentation demos,
 ## Current Milestones
 
 - MySQL Apps Manager
-- InfluxDB Stats Manager
 
 ## System Requirements
 
