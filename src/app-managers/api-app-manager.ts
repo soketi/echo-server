@@ -1,15 +1,15 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { Log } from './../log';
-import { SocketRequester } from '../socket-requester';
+import { SocketHttpClient } from '../socket-http-client';
 
 export class ApiAppManager implements AppManagerDriver {
     /**
      * The request client to authenticate on.
      *
-     * @type {SocketRequester}
+     * @type {SocketHttpClient}
      */
-    protected socketRequester: SocketRequester;
+    protected socketHttpClient: SocketHttpClient;
 
     /**
      * Create a new app manager instance.
@@ -17,7 +17,7 @@ export class ApiAppManager implements AppManagerDriver {
      * @param {any} options
      */
     constructor(protected options: any) {
-        this.socketRequester = new SocketRequester(options);
+        this.socketHttpClient = new SocketHttpClient(options);
     }
 
     /**
@@ -37,7 +37,7 @@ export class ApiAppManager implements AppManagerDriver {
         };
 
         return new Promise((resolve, reject) => {
-            this.socketRequester.serverRequest(socket, options).then(body => {
+            this.socketHttpClient.request(socket, options).then(body => {
                 resolve(new App(body.app));
             }, error => reject(error));
         });
@@ -60,7 +60,7 @@ export class ApiAppManager implements AppManagerDriver {
         };
 
         return new Promise((resolve, reject) => {
-            this.socketRequester.serverRequest(socket, options).then(body => {
+            this.socketHttpClient.request(socket, options).then(body => {
                 resolve(new App(body.app));
             }, error => reject(error));
         });

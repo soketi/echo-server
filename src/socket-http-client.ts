@@ -2,7 +2,7 @@ import { Log } from './log';
 
 const request = require('request');
 
-export class SocketRequester {
+export class SocketHttpClient {
     /**
      * Initialize the requester.
      *
@@ -20,7 +20,7 @@ export class SocketRequester {
      * @param  {any}  options
      * @return {Promise<any>}
      */
-    serverRequest(socket: any, options: any): Promise<any> {
+    request(socket: any, options: any): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             options = {
                 ...options,
