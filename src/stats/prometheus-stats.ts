@@ -3,7 +3,6 @@ import { PrometheusDriver } from 'prometheus-query';
 import { StatsDriver } from './stats-driver';
 
 const dayjs = require('dayjs');
-const request = require('request');
 
 export class PrometheusStats implements StatsDriver {
     /**
