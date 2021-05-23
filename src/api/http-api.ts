@@ -58,11 +58,6 @@ export class HttpApi {
         if (this.options.prometheus.enabled) {
             this.express.get('/metrics', (req, res) => this.getPrometheusMetrics(req, res));
         }
-
-        if (this.options.network.probesApi.enabled) {
-            this.express.post('/probes/reject-new-connections', (req, res) => this.rejectNewConnections(req, res));
-            this.express.post('/probes/accept-new-connections', (req, res) => this.acceptNewConnections(req, res));
-        }
     }
 
     /**
@@ -317,54 +312,6 @@ export class HttpApi {
     }
 
     /**
-     * Reject new connections from external clients.
-     *
-     * @param  {any}  req
-     * @param  {any}  res
-     * @return {boolean}
-     */
-    protected rejectNewConnections(req, res): boolean {
-        this.probesApiTokenIsValid(req.query.token).then(isValid => {
-            if (isValid) {
-                if (this.server.closing) {
-                    return res.json({ acknowledged: true });
-                }
-
-                this.server.rejectNewConnections = true;
-                res.json({ acknowledged: true });
-            } else {
-                this.unauthorizedResponse(req, res);
-            }
-        });
-
-        return true;
-    }
-
-    /**
-     * Accept new connections from external clients.
-     *
-     * @param  {any}  req
-     * @param  {any}  res
-     * @return {boolean}
-     */
-    protected acceptNewConnections(req, res): boolean {
-        this.probesApiTokenIsValid(req.query.token).then(isValid => {
-            if (isValid) {
-                if (this.server.closing) {
-                    return res.json({ acknowledged: true });
-                }
-
-                this.server.rejectNewConnections = false;
-                res.json({ acknowledged: true });
-            } else {
-                this.unauthorizedResponse(req, res);
-            }
-        });
-
-        return true;
-    }
-
-    /**
      * Find a Socket by Id in a given namespace.
      *
      * @param  {string}  namespace
@@ -522,16 +469,6 @@ export class HttpApi {
                 }
             });
         });
-    }
-
-    /**
-     * Check if the given Probes API token is valid.
-     *
-     * @param  {string}  token
-     * @return {Promise<boolean>}
-     */
-    protected probesApiTokenIsValid(token: string): Promise<boolean> {
-        return new Promise(resolve => resolve(this.options.network.probesApi.token === token));
     }
 
     /**
