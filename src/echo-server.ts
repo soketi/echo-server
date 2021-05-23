@@ -88,12 +88,6 @@ export class EchoServer {
             process_id: process.pid || uuidv4(),
             pod_id: null,
         },
-        network: {
-            probesApi: {
-                enabled: false,
-                token: 'probe-token',
-            },
-        },
         port: 6001,
         presence: {
             storage: {
