@@ -83,6 +83,9 @@ export class EchoServer {
         headers: [
             //
         ],
+        httpPayload: {
+            maxSizeInKb: 100,
+        },
         instance: {
             node_id: null,
             process_id: process.pid || uuidv4(),

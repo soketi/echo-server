@@ -4,6 +4,7 @@ import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { Stats } from './../stats';
 
+const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
 const pusherUtil = require('pusher/lib/util');
 const Pusher = require('pusher');
@@ -40,6 +41,8 @@ export class HttpApi {
      */
     initialize(): void {
         this.registerCorsMiddleware();
+        this.configureHeaders();
+        this.configureJsonBody();
         this.configurePusherAuthentication();
 
         this.express.get('/', (req, res) => this.getHealth(req, res));
@@ -73,6 +76,36 @@ export class HttpApi {
 
             next();
         });
+    }
+
+    /**
+     * Configure the headers from the settings.
+     *
+     * @return {void}
+     */
+     protected configureHeaders(): void {
+        this.express.use((req, res, next) => {
+            for (let header in this.options.headers) {
+                res.setHeader(header, this.options.headers[header]);
+            }
+
+            next();
+        });
+    }
+
+    /**
+     * Configure the JSON body parser.
+     *
+     * @return {void}
+     */
+    protected configureJsonBody(): void {
+        this.express.use(bodyParser.json({
+            strict: true,
+            limit: this.options.httpPayload.maxSizeInKb * 1024,
+            verify: (req, res, buffer) => {
+                req.rawBody = buffer.toString();
+            },
+        }));
     }
 
     /**
