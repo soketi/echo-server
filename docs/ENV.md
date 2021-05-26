@@ -24,7 +24,8 @@ Configuration needed to specify the protocol, port and host for the server.
 | `SOCKET_HOST` | `host` | `null` | - |The host used for Socket.IO |
 | `SOCKET_PORT` | `port` | `6001` | - | The port used for Socket.IO |
 | `SOCKET_PROTOCOL` | `protocol` | `http` | `http`, `https` | The protocol used for the Socket.IO. |
-| `HTTP_MAX_PAYLOAD_SIZE` | `httpPayload.maxSizeInKb` | `100` | - | The maximum size, in KB, for the HTTP request payloads incoming from the clients. Set this according to your needs. |
+| `HTTP_MAX_PAYLOAD_SIZE` | `httpPayload.payloadLimitInKb` | `100` | - | The maximum size, in KB, for the broadcasted payloads incoming from the clients. Set this according to your needs. |
+| `HTTP_MAX_REQUEST_SIZE` | `httpPayload.requestLimitInMb` | `100` | - | The maximum size, in MB, for the total size of the request. A hard limit has been set to 100 MB. |
 
 ## SSL Settings
 

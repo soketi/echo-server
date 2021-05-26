@@ -103,7 +103,7 @@ export class HttpApi {
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
             strict: true,
-            limit: '100mb',
+            limit: `${this.options.httpPayload.requestLimitInMb}mb`,
             verify: (req, res, buffer) => {
                 req.rawBody = buffer.toString();
             },
@@ -117,10 +117,10 @@ export class HttpApi {
      */
     protected configureLimits(): void {
         this.express.use((req, res, next) => {
-            let requestSizeInKb = this.dataToBytes(req.body.data) / 1024;
+            let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
 
-            if (requestSizeInKb > parseFloat(this.options.httpPayload.maxSizeInKb)) {
-                return this.badResponse(req, res, `The maximum allowed payload is ${this.options.httpPayload.maxSizeInKb} KB.`);
+            if (payloadSizeInKb > parseFloat(this.options.httpPayload.payloadLimitInKb)) {
+                return this.badResponse(req, res, `The data should be less than ${this.options.httpPayload.payloadLimitInKb} KB.`);
             }
 
             next();

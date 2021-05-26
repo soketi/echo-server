@@ -84,7 +84,8 @@ export class EchoServer {
             //
         ],
         httpPayload: {
-            maxSizeInKb: 100,
+            payloadLimitInKb: 100,
+            requestLimitInMb: 100,
         },
         instance: {
             node_id: null,
