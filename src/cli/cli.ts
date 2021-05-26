@@ -36,6 +36,7 @@ export class Cli {
         CLOSING_GRACE_PERIOD: 'closingGracePeriod',
         CORS_ALLOWED_ORIGINS: 'cors.origin',
         DEBUG: 'development',
+        HTTP_MAX_PAYLOAD_SIZE: 'httpPayload.maxSizeInKb',
         NODE_ID: 'instance.node_id',
         POD_ID: 'instance.pod_id',
         PRESENCE_MAX_MEMBER_SIZE: 'presence.maxMemberSizeInKb',

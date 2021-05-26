@@ -1,6 +1,5 @@
 import { Log } from './log';
 
-const bodyParser = require('body-parser');
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
@@ -100,9 +99,6 @@ export class Server {
     protected buildServer(secure: boolean): any {
         this.express = express();
 
-        this.configureHeaders();
-        this.configureJsonBody();
-
         let httpServer = secure
             ? https.createServer(this.options, this.express)
             : http.createServer(this.express);
@@ -149,34 +145,5 @@ export class Server {
         let randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
         this.io.engine.generateId = req => randomNumber(min, max) + '.' + randomNumber(min, max);
-    }
-
-    /**
-     * Configure the headers from the settings.
-     *
-     * @return {void}
-     */
-    protected configureHeaders(): void {
-        this.express.use((req, res, next) => {
-            for (let header in this.options.headers) {
-                res.setHeader(header, this.options.headers[header]);
-            }
-
-            next();
-        });
-    }
-
-    /**
-     * Configure the JSON body parser.
-     *
-     * @return {void}
-     */
-    protected configureJsonBody(): void {
-        this.express.use(bodyParser.json({
-            strict: true,
-            verify: (req, res, buffer) => {
-                req.rawBody = buffer.toString();
-            },
-        }));
     }
 }
