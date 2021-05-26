@@ -3,6 +3,7 @@ import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { Stats } from './../stats';
+import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
@@ -43,6 +44,7 @@ export class HttpApi {
         this.registerCorsMiddleware();
         this.configureHeaders();
         this.configureJsonBody();
+        this.configureLimits();
         this.configurePusherAuthentication();
 
         this.express.get('/', (req, res) => this.getHealth(req, res));
@@ -101,11 +103,28 @@ export class HttpApi {
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
             strict: true,
-            limit: this.options.httpPayload.maxSizeInKb * 1024,
+            limit: '100mb',
             verify: (req, res, buffer) => {
                 req.rawBody = buffer.toString();
             },
         }));
+    }
+
+    /**
+     * Check if the incoming request exceeds the payload limit set.
+     *
+     * @return {void}
+     */
+    protected configureLimits(): void {
+        this.express.use((req, res, next) => {
+            let requestSizeInKb = this.dataToBytes(req.body.data) / 1024;
+
+            if (requestSizeInKb > parseFloat(this.options.httpPayload.maxSizeInKb)) {
+                return this.badResponse(req, res, `The maximum allowed payload is ${this.options.httpPayload.maxSizeInKb} KB.`);
+            }
+
+            next();
+        });
     }
 
     /**
@@ -257,7 +276,7 @@ export class HttpApi {
             !req.body.name ||
             !req.body.data
         ) {
-            return this.badResponse(req, res, 'Wrong format.');
+            return this.badResponse(req, res, 'The received data is incorrect.');
         }
 
         let appKey = req.echoApp.key;
@@ -545,5 +564,23 @@ export class HttpApi {
         res.json({ error: 'Service unavailable' });
 
         return false;
+    }
+
+    /**
+     * Get the amount of bytes from given parameters.
+     *
+     * @param  {any}  data
+     * @return {number}
+     */
+     protected dataToBytes(...data: any): number {
+        return data.reduce((totalBytes, element) => {
+            element = typeof element === 'string' ? element : JSON.stringify(element);
+
+            try {
+                return totalBytes += Buffer.byteLength(element, 'utf8');
+            } catch (e) {
+                return totalBytes;
+            }
+        }, 0);
     }
 }
