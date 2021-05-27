@@ -28,6 +28,7 @@ This is a fork of the original [Laravel Echo Server package](https://github.com/
   - [🚢 Deploying with PM2](#-deploying-with-pm2)
   - [🐳 Docker Images](#-docker-images)
     - [⚓ Deploy with Helm](#-deploy-with-helm)
+    - [Running at scale](#running-at-scale)
   - [🤝 Contributing](#-contributing)
   - [🔒  Security](#--security)
   - [🎉 Credits](#-credits)
@@ -192,6 +193,12 @@ Automatically, after each release, a Docker tag is created with an image that ho
 ### ⚓ Deploy with Helm
 
 Echo Server can also be deployed as Helm v3 chart using [charts/echo-server](https://github.com/soketi/charts/tree/master/charts/echo-server). You will find complete installation steps to configure the app on any Kubernetes cluster.
+
+### 🌍 Running at scale
+
+If you run Echo Server standalone in a cluster, at scale, you might run into capacity issues: RAM usage might be near the limit and even if you decide to horizontally scale the pods, new connections might still come to pods that are near-limit and run into OOM at some point.
+
+Running [Network Watcher](https://github.com/soketi/network-watcher) inside the same pod will solve the issues by continuously checking the current pod using the Prometheus client (**Prometheus Server is not needed!**), labeling the pods that get over a specified threshold.
 
 ## 🤝 Contributing
 
