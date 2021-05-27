@@ -7,6 +7,7 @@ import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
+const os = require('os-utils');
 const pusherUtil = require('pusher/lib/util');
 const Pusher = require('pusher');
 const url = require('url');
@@ -50,6 +51,7 @@ export class HttpApi {
         this.express.get('/', (req, res) => this.getHealth(req, res));
         this.express.get('/health', (req, res) => this.getHealth(req, res));
         this.express.get('/ready', (req, res) => this.getReadiness(req, res));
+        this.express.get('/usage', (req, res) => this.getUsage(req, res));
         this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
         this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
         this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
@@ -168,6 +170,23 @@ export class HttpApi {
         } else {
             res.send('OK');
         }
+    }
+
+    /**
+     * Get details regarding the process usage.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {void}
+     */
+     protected getUsage(req: any, res: any): void {
+        res.json({
+            memory: {
+                free: os.freemem() * 1024 * 1024,
+                total: os.totalmem() * 1024 * 1024,
+                percent: os.freememPercentage() * 100,
+            },
+        });
     }
 
     /**
