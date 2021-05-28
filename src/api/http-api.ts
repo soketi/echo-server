@@ -7,6 +7,7 @@ import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
+const os = require('os-utils');
 const pusherUtil = require('pusher/lib/util');
 const Pusher = require('pusher');
 const url = require('url');
@@ -51,6 +52,7 @@ export class HttpApi {
         this.express.get('/', (req, res) => this.getHealth(req, res));
         this.express.get('/health', (req, res) => this.getHealth(req, res));
         this.express.get('/ready', (req, res) => this.getReadiness(req, res));
+        this.express.get('/usage', (req, res) => this.getUsage(req, res));
         this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
         this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
         this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
