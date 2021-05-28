@@ -10,6 +10,7 @@ const dayjs = require('dayjs');
 const pusherUtil = require('pusher/lib/util');
 const Pusher = require('pusher');
 const url = require('url');
+const v8 = require('v8');
 
 export class HttpApi {
     /**
@@ -162,12 +163,37 @@ export class HttpApi {
      * @param  {any}  res
      * @return {void}
      */
-     protected getReadiness(req: any, res: any): void {
+    protected getReadiness(req: any, res: any): void {
         if (this.server.closing || this.server.rejectNewConnections) {
             this.serviceUnavailableResponse(req, res);
         } else {
             res.send('OK');
         }
+    }
+
+    /**
+     * Get details regarding the process usage.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {void}
+     */
+    protected getUsage(req: any, res: any): void {
+        let { rss, heapTotal, external, arrayBuffers } = process.memoryUsage();
+
+        let totalSize = v8.getHeapStatistics().total_available_size;
+        let usedSize = rss + heapTotal + external + arrayBuffers;
+        let freeSize = totalSize - usedSize;
+        let percentUsage = (usedSize / totalSize) * 100;
+
+        res.json({
+            memory: {
+                free: freeSize,
+                used: usedSize,
+                total: totalSize,
+                percent: percentUsage,
+            },
+        });
     }
 
     /**
