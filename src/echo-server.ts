@@ -80,12 +80,15 @@ export class EchoServer {
         },
         development: false,
         host: null,
-        headers: [
-            //
-        ],
-        httpPayload: {
-            payloadLimitInKb: 100,
-            requestLimitInMb: 100,
+        httpApi: {
+            extraHeaders: [
+                //
+            ],
+            payload: {
+                payloadLimitInKb: 100,
+                requestLimitInMb: 100,
+            },
+            protocol: 'http',
         },
         instance: {
             node_id: null,
@@ -104,7 +107,6 @@ export class EchoServer {
             enabled: false,
             prefix: 'echo_server_',
         },
-        protocol: 'http',
         replication: {
             driver: 'local',
         },

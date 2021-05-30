@@ -90,8 +90,8 @@ export class HttpApi {
      */
      protected configureHeaders(): void {
         this.express.use((req, res, next) => {
-            for (let header in this.options.headers) {
-                res.setHeader(header, this.options.headers[header]);
+            for (let header in this.options.httpApi.extraHeaders) {
+                res.setHeader(header, this.options.httpApi.extraHeaders[header]);
             }
 
             next();
@@ -106,7 +106,7 @@ export class HttpApi {
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
             strict: true,
-            limit: `${this.options.httpPayload.requestLimitInMb}mb`,
+            limit: `${this.options.httpApi.payload.requestLimitInMb}mb`,
             verify: (req, res, buffer) => {
                 req.rawBody = buffer.toString();
             },
@@ -122,8 +122,8 @@ export class HttpApi {
         this.express.use((req, res, next) => {
             let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
 
-            if (payloadSizeInKb > parseFloat(this.options.httpPayload.payloadLimitInKb)) {
-                return this.badResponse(req, res, `The data should be less than ${this.options.httpPayload.payloadLimitInKb} KB.`);
+            if (payloadSizeInKb > parseFloat(this.options.httpApi.payload.payloadLimitInKb)) {
+                return this.badResponse(req, res, `The data should be less than ${this.options.httpApi.payload.payloadLimitInKb} KB.`);
             }
 
             next();

@@ -58,7 +58,7 @@ export class Server {
      */
     protected serverProtocol(): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (this.options.protocol === 'https') {
+            if (this.options.httpApi.protocol === 'https') {
                 this.configureSecurity().then(() => {
                     resolve(this.buildServer(true));
                 }, error => reject(error));
