@@ -89,6 +89,10 @@ export class HttpApi {
      * @return {void}
      */
      protected configureHeaders(): void {
+        if (this.options.httpApi.trustProxies) {
+            this.express.set('trust proxy', 1);
+        }
+
         this.express.use((req, res, next) => {
             for (let header in this.options.httpApi.extraHeaders) {
                 res.setHeader(header, this.options.httpApi.extraHeaders[header]);

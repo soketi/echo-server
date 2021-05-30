@@ -89,6 +89,7 @@ export class EchoServer {
                 requestLimitInMb: 100,
             },
             protocol: 'http',
+            trustProxies: false,
         },
         instance: {
             node_id: null,

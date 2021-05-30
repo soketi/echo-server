@@ -40,6 +40,7 @@ export class Cli {
         HTTP_MAX_PAYLOAD_SIZE: 'httpApi.payload.payloadLimitInKb',
         HTTP_MAX_REQUEST_SIZE: 'httpApi.payload.requestLimitInMb',
         HTTP_PROTOCOL: 'httpApi.protocol',
+        HTTP_TRUST_PROXIES: 'httpApi.trustProxies',
         NODE_ID: 'instance.node_id',
         POD_ID: 'instance.pod_id',
         PRESENCE_MAX_MEMBER_SIZE: 'presence.maxMemberSizeInKb',
