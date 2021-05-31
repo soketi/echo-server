@@ -46,25 +46,26 @@ export class HttpApi {
         this.registerCorsMiddleware();
         this.configureHeaders();
         this.configureJsonBody();
+        this.configureAppAttachmentToRequest();
         this.configureLimits();
         this.configurePusherAuthentication();
 
-        this.express.get('/', (req, res) => this.getHealth(req, res));
-        this.express.get('/health', (req, res) => this.getHealth(req, res));
-        this.express.get('/ready', (req, res) => this.getReadiness(req, res));
-        this.express.get('/usage', (req, res) => this.getUsage(req, res));
-        this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
-        this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
-        this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
-        this.express.post('/apps/:appId/events', (req, res) => this.broadcastEvent(req, res));
+        this.express.get('/', this.getHealth);
+        this.express.get('/health', this.getHealth);
+        this.express.get('/ready', this.getReadiness);
+        this.express.get('/usage', this.getUsage);
+        this.express.get('/apps/:appId/channels', this.getChannels);
+        this.express.get('/apps/:appId/channels/:channelName', this.getChannel);
+        this.express.get('/apps/:appId/channels/:channelName/users', this.getChannelUsers);
+        this.express.post('/apps/:appId/events', this.eventsRateLimiter, this.broadcastEvent);
 
         if (this.options.stats.enabled) {
-            this.express.get('/apps/:appId/stats', (req, res) => this.getStats(req, res));
-            this.express.get('/apps/:appId/stats/current', (req, res) => this.getCurrentStats(req, res));
+            this.express.get('/apps/:appId/stats', this.getStats);
+            this.express.get('/apps/:appId/stats/current', this.getCurrentStats);
         }
 
         if (this.options.prometheus.enabled) {
-            this.express.get('/metrics', (req, res) => this.getPrometheusMetrics(req, res));
+            this.express.get('/metrics', this.getPrometheusMetrics);
         }
     }
 
@@ -115,6 +116,40 @@ export class HttpApi {
                 req.rawBody = buffer.toString();
             },
         }));
+    }
+
+    /**
+     * Attach the App instance to the request object.
+     *
+     * @return {void}
+     */
+    protected configureAppAttachmentToRequest(): void {
+        this.express.use((req, res, next) => {
+            let socketData = {
+                auth: {
+                    headers: req.headers,
+                },
+            };
+
+            this.appManager.findById(this.getAppId(req), null, socketData).then(app => {
+                if (!app) {
+                    if (this.options.development) {
+                        Log.error({
+                            time: new Date().toISOString(),
+                            action: 'find_app',
+                            status: 'failed',
+                            error: 'App not found when signing token.',
+                        });
+                    }
+
+                    return this.notFoundResponse(req, res);
+                }
+
+                req.echoApp = app;
+
+                next();
+            });
+        });
     }
 
     /**
@@ -500,58 +535,37 @@ export class HttpApi {
      * @return {Promise<string>}
      */
     protected getSignedToken(req: any): Promise<string> {
+        let app = req.echoApp;
+
         return new Promise((resolve, reject) => {
-            let socketData = {
-                auth: {
-                    headers: req.headers,
-                },
+            let key = req.query.auth_key;
+            let token = new Pusher.Token(key, app.secret);
+
+            const params = {
+                auth_key: app.key,
+                auth_timestamp: req.query.auth_timestamp,
+                auth_version: req.query.auth_version,
+                ...req.query,
+                ...req.params,
             };
 
-            this.appManager.findById(this.getAppId(req), null, socketData).then(app => {
-                if (!app) {
-                    reject({ reason: 'App not found when signing token.' });
-                }
+            delete params['auth_signature'];
+            delete params['body_md5']
+            delete params['appId'];
+            delete params['appKey'];
+            delete params['channelName'];
 
-                req.echoApp = app;
+            if (req.rawBody && Object.keys(req.body).length > 0) {
+                params['body_md5'] = pusherUtil.getMD5(req.rawBody);
+            }
 
-                let key = req.query.auth_key;
-                let token = new Pusher.Token(key, app.secret);
-
-                const params = {
-                    auth_key: app.key,
-                    auth_timestamp: req.query.auth_timestamp,
-                    auth_version: req.query.auth_version,
-                    ...req.query,
-                    ...req.params,
-                };
-
-                delete params['auth_signature'];
-                delete params['body_md5']
-                delete params['appId'];
-                delete params['appKey'];
-                delete params['channelName'];
-
-                if (req.rawBody && Object.keys(req.body).length > 0) {
-                    params['body_md5'] = pusherUtil.getMD5(req.rawBody);
-                }
-
-                resolve(
-                    token.sign([
-                        req.method.toUpperCase(),
-                        req.path,
-                        pusherUtil.toOrderedArray(params).join('&'),
-                    ].join("\n"))
-                );
-            }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        action: 'find_app',
-                        status: 'failed',
-                        error,
-                    });
-                }
-            });
+            resolve(
+                token.sign([
+                    req.method.toUpperCase(),
+                    req.path,
+                    pusherUtil.toOrderedArray(params).join('&'),
+                ].join("\n"))
+            );
         });
     }
 
@@ -580,6 +594,20 @@ export class HttpApi {
     protected unauthorizedResponse(req: any, res: any): boolean {
         res.statusCode = 403;
         res.json({ error: 'Unauthorized' });
+
+        return false;
+    }
+
+    /**
+     * Throw 404 response.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+     protected notFoundResponse(req: any, res: any): boolean {
+        res.statusCode = 404;
+        res.json({ error: 'The app does not exist' });
 
         return false;
     }
