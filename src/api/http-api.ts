@@ -89,7 +89,7 @@ export class HttpApi {
      *
      * @return {void}
      */
-     protected configureHeaders(): void {
+    protected configureHeaders(): void {
         if (this.options.httpApi.trustProxies) {
             this.express.set('trust proxy', 1);
         }
@@ -605,7 +605,7 @@ export class HttpApi {
      * @param  {any}  res
      * @return {boolean}
      */
-     protected notFoundResponse(req: any, res: any): boolean {
+    protected notFoundResponse(req: any, res: any): boolean {
         res.statusCode = 404;
         res.json({ error: 'The app does not exist' });
 
@@ -632,7 +632,7 @@ export class HttpApi {
      * @param  {any}  data
      * @return {number}
      */
-     protected dataToBytes(...data: any): number {
+    protected dataToBytes(...data: any): number {
         return data.reduce((totalBytes, element) => {
             element = typeof element === 'string' ? element : JSON.stringify(element);
 

@@ -180,7 +180,7 @@ export class EchoServer {
      *
      * @type {Prometheus}
      */
-     protected prometheus: Prometheus;
+    protected prometheus: Prometheus;
 
     /**
      * Let the server know to reject any new connections.

@@ -18,7 +18,7 @@ export class PresenceChannel extends PrivateChannel {
      * @param {Prometheus} prometheus
      * @param {any} options
      */
-     constructor(
+    constructor(
         protected io: any,
         protected stats: Stats,
         protected prometheus: Prometheus,
