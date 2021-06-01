@@ -1,5 +1,5 @@
 import { AppManager } from './app-managers/app-manager';
-import { Channel, PresenceChannel, PrivateChannel } from './channels';
+import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
 import { Prometheus } from './prometheus';
@@ -152,6 +152,13 @@ export class EchoServer {
     protected privateChannel: PrivateChannel;
 
     /**
+     * Encrypted private channel instance.
+     *
+     * @type {PrivateChannel}
+     */
+     protected encryptedPrivateChannel: EncryptedPrivateChannel;
+
+    /**
      * Presence channel instance.
      *
      * @type {PresenceChannel}
@@ -261,6 +268,7 @@ export class EchoServer {
 
             this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
             this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
+            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.options);
             this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
 
             this.httpApi = new HttpApi(
@@ -483,11 +491,13 @@ export class EchoServer {
      * Get the channel instance for a channel name.
      *
      * @param  {string}  channel
-     * @return {Channel|PrivateChannel|PresenceChannel}
+     * @return {Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel}
      */
-    getChannelInstance(channel): Channel|PrivateChannel|PresenceChannel {
+    getChannelInstance(channel): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
         if (Channel.isPresenceChannel(channel)) {
             return this.presenceChannel;
+        } else if (Channel.isEncryptedPrivateChannel(channel)) {
+            return this.encryptedPrivateChannel;
         } else if (Channel.isPrivateChannel(channel)) {
             return this.privateChannel;
         } else {

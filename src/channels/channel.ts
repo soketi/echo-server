@@ -19,6 +19,7 @@ export class Channel {
      */
     protected static _privateChannelPatterns: string[] = [
         'private-*',
+        'private-encrypted-*',
         'presence-*',
     ];
 
@@ -257,5 +258,15 @@ export class Channel {
      */
     static isPresenceChannel(channel: string): boolean {
         return channel.lastIndexOf('presence-', 0) === 0;
+    }
+
+    /**
+     * Check if the given channel name is a encrypted private channel.
+     *
+     * @param  {string}  channel
+     * @return {boolean}
+     */
+    static isEncryptedPrivateChannel(channel: string): boolean {
+        return channel.lastIndexOf('private-encrypted-', 0) === 0;
     }
 }
