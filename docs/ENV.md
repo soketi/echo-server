@@ -63,6 +63,9 @@ in order to change the app settings.
 | `APP_DEFAULT_ID` | `appManager.array.apps.0.id` | `echo-app` | - | The default app id for the array driver. Overrides the `APPS_LIST` if set. |
 | `APP_DEFAULT_KEY` | `appManager.array.apps.0.key` | `echo-app-key` | - | The default app key for the array driver. Overrides the `APPS_LIST` if set. |
 | `APP_DEFAULT_MAX_CONNS` | `apiManager.array.apps.0.maxConnections` | `NaN` | - | The default app's limit of concurrent connections. Overrides the `APPS_LIST` if set. |
+| `APP_DEFAULT_MAX_BACKEND_EVENTS_PER_MIN` | `apiManager.array.apps.0.maxBackendEventsPerMinute` | `NaN` | - | The default app's limit of `/events` endpoint events broadcasted per minute. Overrides the `APPS_LIST` if set. You can [configure rate limiting database store](#rate-limiting) |
+| `APP_DEFAULT_MAX_CLIENT_EVENTS_PER_MIN` | `apiManager.array.apps.0.maxClientEventsPerMinute` | `NaN` | - | The default app's limit of client events broadcasted per minute, by a single socket. Overrides the `APPS_LIST` if set. You can [configure rate limiting database store](#rate-limiting) |
+| `APP_DEFAULT_MAX_READ_REQ_PER_MIN` | `apiManager.array.apps.0.maxReadRequestsPerMinute` | `NaN` | - | The default app's limit of read endpoint calls per minute. Overrides the `APPS_LIST` if set.  You can [configure rate limiting database store](#rate-limiting) |
 | `APP_DEFAULT_SECRET` | `appManager.array.apps.0.secret` | `echo-app-secret` | - | The default app secret for the array driver. Overrides the `APPS_LIST` if set. |
 
 ## Apps Manager
@@ -73,7 +76,7 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
-| `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false}]'` | - | The list of apps to be used for authentication. |
+| `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false,"maxBackendEventsPerMinute":"-1","maxClientEventsPerMinute":"-1","maxReadRequestsPerMinute":"-1"}]'` | - | The list of apps to be used for authentication. |
 | `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
 | `APPS_MANAGER_ENDPOINT` | `appManager.api.endpoint` | `/echo-server/app` | - | The endpoint used to retrieve an app. This is for `api` driver. |
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |

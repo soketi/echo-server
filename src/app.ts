@@ -33,6 +33,21 @@ export class App {
     public enableStats: boolean;
 
     /**
+     * @type {number}
+     */
+    public maxBackendEventsPerMinute: number;
+
+    /**
+     * @type {number}
+     */
+    public maxClientEventsPerMinute: number;
+
+    /**
+     * @type {number}
+     */
+    public maxReadRequestsPerMinute: number;
+
+    /**
      * Create a new app from object.
      *
      * @param {App} app
@@ -43,5 +58,8 @@ export class App {
         this.secret = app.secret;
         this.maxConnections = app.maxConnections || -1;
         this.enableStats = app.enableStats || false;
+        this.maxBackendEventsPerMinute = app.maxBackendEventsPerMinute || -1;
+        this.maxClientEventsPerMinute = app.maxClientEventsPerMinute || -1;
+        this.maxReadRequestsPerMinute = app.maxReadRequestsPerMinute || -1;
     }
 }

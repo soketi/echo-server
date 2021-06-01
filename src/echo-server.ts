@@ -3,6 +3,7 @@ import { Channel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
 import { Prometheus } from './prometheus';
+import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
 import { Stats } from './stats';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,6 +36,9 @@ export class EchoServer {
                         secret: 'echo-app-secret',
                         maxConnections: -1,
                         enableStats: false,
+                        maxBackendEventsPerMinute: -1,
+                        maxClientEventsPerMinute: -1,
+                        maxReadRequestsPerMinute: -1,
                     },
                 ],
             },
@@ -107,6 +111,10 @@ export class EchoServer {
         prometheus: {
             enabled: false,
             prefix: 'echo_server_',
+        },
+        rateLimiter: {
+            driver: 'local',
+            //
         },
         replication: {
             driver: 'local',
@@ -181,6 +189,13 @@ export class EchoServer {
      * @type {Prometheus}
      */
     protected prometheus: Prometheus;
+
+     /**
+     * The RateLimiter client.
+     *
+     * @type {RateLimiter}
+     */
+    protected rateLimiter: RateLimiter;
 
     /**
      * Let the server know to reject any new connections.
@@ -261,10 +276,11 @@ export class EchoServer {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
+            this.rateLimiter = new RateLimiter(this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -274,6 +290,7 @@ export class EchoServer {
                 this.appManager,
                 this.stats,
                 this.prometheus,
+                this.rateLimiter,
             );
 
             this.httpApi.initialize();

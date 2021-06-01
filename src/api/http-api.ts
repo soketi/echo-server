@@ -1,9 +1,10 @@
+import { App } from './../app';
 import { AppManager } from './../app-managers';
 import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
+import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
-import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
@@ -33,6 +34,7 @@ export class HttpApi {
         protected appManager: AppManager,
         protected stats: Stats,
         protected prometheus: Prometheus,
+        protected rateLimiter: RateLimiter,
     ) {
         //
     }
@@ -50,22 +52,26 @@ export class HttpApi {
         this.configureLimits();
         this.configurePusherAuthentication();
 
-        this.express.get('/', this.getHealth);
-        this.express.get('/health', this.getHealth);
-        this.express.get('/ready', this.getReadiness);
-        this.express.get('/usage', this.getUsage);
-        this.express.get('/apps/:appId/channels', this.getChannels);
-        this.express.get('/apps/:appId/channels/:channelName', this.getChannel);
-        this.express.get('/apps/:appId/channels/:channelName/users', this.getChannelUsers);
-        this.express.post('/apps/:appId/events', this.eventsRateLimiter, this.broadcastEvent);
+        this.express.get('/', (req, res) => this.getHealth(req, res));
+        this.express.get('/health', (req, res) => this.getHealth(req, res));
+        this.express.get('/ready', (req, res) => this.getReadiness(req, res));
+        this.express.get('/usage', (req, res) => this.getUsage(req, res));
+
+        let readRateLimiter = (req, res, next) => this.readRateLimiter(req, res, next);
+        let broadccastEventRateLimiter = (req, res, next) => this.broadcastEventRateLimiter(req, res, next);
+
+        this.express.get('/apps/:appId/channels', readRateLimiter, (req, res) => this.getChannels(req, res));
+        this.express.get('/apps/:appId/channels/:channelName', readRateLimiter, (req, res) => this.getChannel(req, res));
+        this.express.get('/apps/:appId/channels/:channelName/users', readRateLimiter, (req, res) => this.getChannelUsers(req, res));
+        this.express.post('/apps/:appId/events', broadccastEventRateLimiter, (req, res) => this.broadcastEvent(req, res));
 
         if (this.options.stats.enabled) {
-            this.express.get('/apps/:appId/stats', this.getStats);
-            this.express.get('/apps/:appId/stats/current', this.getCurrentStats);
+            this.express.get('/apps/:appId/stats', readRateLimiter, (req, res) => this.getStats(req, res));
+            this.express.get('/apps/:appId/stats/current', readRateLimiter, (req, res) => this.getCurrentStats(req, res));
         }
 
         if (this.options.prometheus.enabled) {
-            this.express.get('/metrics', this.getPrometheusMetrics);
+            this.express.get('/metrics', (req, res) => this.getPrometheusMetrics(req, res));
         }
     }
 
@@ -131,23 +137,27 @@ export class HttpApi {
                 },
             };
 
-            this.appManager.findById(this.getAppId(req), null, socketData).then(app => {
-                if (!app) {
-                    if (this.options.development) {
-                        Log.error({
-                            time: new Date().toISOString(),
-                            action: 'find_app',
-                            status: 'failed',
-                            error: 'App not found when signing token.',
-                        });
-                    }
+            let appId = this.getAppId(req);
+            let appKey = this.getAppKey(req);
 
-                    return this.notFoundResponse(req, res);
+            let promise = appId
+                ? this.appManager.findById(appId, null, socketData)
+                : this.appManager.findByKey(appKey, null, socketData);
+
+            promise.then((app: App) => {
+                req.echoApp = app;
+                next();
+            }, error => {
+                if (this.options.development) {
+                    Log.error({
+                        time: new Date().toISOString(),
+                        action: 'find_app',
+                        status: 'failed',
+                        error,
+                    });
                 }
 
-                req.echoApp = app;
-
-                next();
+                this.notFoundResponse(req, res);
             });
         });
     }
@@ -183,6 +193,60 @@ export class HttpApi {
                     next()
                 }
             });
+        });
+    }
+
+    /**
+     * Create a rate limiter for the /events endpoint.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @param  {function}  next
+     * @return {any}
+     */
+    protected broadcastEventRateLimiter(req, res, next): any {
+        let app = req.echoApp;
+
+        if (app.maxBackendEventsPerMinute < 0) {
+            return next();
+        }
+
+        let channels = req.body.channels || [req.body.channel];
+
+        this.rateLimiter.forApp(app).consumeBackendEventPoints(channels.length).then(rateLimitData => {
+            for (let header in rateLimitData.headers) {
+                res.setHeader(header, rateLimitData.headers[header]);
+            }
+
+            next();
+        }, error => {
+            return this.tooManyRequestsResponse(req, res);
+        });
+    }
+
+    /**
+     * Create a rate limiter for any read-only endpoint.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @param  {function}  next
+     * @return {any}
+     */
+    protected readRateLimiter(req, res, next): any {
+        let app = req.echoApp;
+
+        if (app.maxReadRequestsPerMinute < 0) {
+            return next();
+        }
+
+        this.rateLimiter.forApp(app).consumeReadRequestsPoints(1).then(rateLimitData => {
+            for (let header in rateLimitData.headers) {
+                res.header(header, rateLimitData.headers[header]);
+            }
+
+            next();
+        }, error => {
+            return this.tooManyRequestsResponse(req, res);
         });
     }
 
@@ -511,7 +575,17 @@ export class HttpApi {
      * @return {string|null}
      */
     protected getAppId(req: any): string|null {
-        return req.params.appId ? req.params.appId : null;
+        return req.params.appId || null;
+    }
+
+    /**
+     * Get the app key from the request.
+     *
+     * @param  {any}  req
+     * @return {string|null}
+     */
+    protected getAppKey(req: any): string|null {
+        return req.query.auth_key || null;
     }
 
     /**
@@ -606,8 +680,24 @@ export class HttpApi {
      * @return {boolean}
      */
     protected notFoundResponse(req: any, res: any): boolean {
+        let appId = this.getAppId(req);
+
         res.statusCode = 404;
-        res.json({ error: 'The app does not exist' });
+        res.json({ error: `The app ${appId} does not exist` });
+
+        return false;
+    }
+
+    /**
+     * Throw 429 response.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected tooManyRequestsResponse(req: any, res: any): boolean {
+        res.statusCode = 429;
+        res.json({ error: 'Too many requests' });
 
         return false;
     }

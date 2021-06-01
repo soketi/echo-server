@@ -82,6 +82,9 @@ An example response looks like this, and the structure must be maintained:
         "secret": "echo-app-secret",
         "maxConnections": 100,
         "enableStats": false,
+        "maxBackendEventsPerMinute": -1,
+        "maxClientEventsPerMinute": -1,
+        "maxReadRequestsPerMinute": -1
     }
 }
 ```
