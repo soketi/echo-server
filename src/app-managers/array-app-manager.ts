@@ -21,7 +21,7 @@ export class ArrayAppManager implements AppManagerDriver {
      */
     findById(id: string|number, socket: any, data: any): Promise<App|null> {
         return new Promise((resolve, reject) => {
-            let app = this.options.appManager.array.apps.find(app => app.id === id);
+            let app = this.options.appManager.array.apps.find(app => app.id == id);
 
             if (typeof app !== 'undefined') {
                 resolve(new App(app));
@@ -41,7 +41,7 @@ export class ArrayAppManager implements AppManagerDriver {
      */
     findByKey(key: string|number, socket: any, data: any): Promise<App|null> {
         return new Promise((resolve, reject) => {
-            let app = this.options.appManager.array.apps.find(app => app.key === key);
+            let app = this.options.appManager.array.apps.find(app => app.key == key);
 
             if (typeof app !== 'undefined') {
                 resolve(new App(app));
