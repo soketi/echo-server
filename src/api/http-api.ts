@@ -58,12 +58,12 @@ export class HttpApi {
         this.express.get('/usage', (req, res) => this.getUsage(req, res));
 
         let readRateLimiter = (req, res, next) => this.readRateLimiter(req, res, next);
-        let broadccastEventRateLimiter = (req, res, next) => this.broadcastEventRateLimiter(req, res, next);
+        let broadcastEventRateLimiter = (req, res, next) => this.broadcastEventRateLimiter(req, res, next);
 
         this.express.get('/apps/:appId/channels', readRateLimiter, (req, res) => this.getChannels(req, res));
         this.express.get('/apps/:appId/channels/:channelName', readRateLimiter, (req, res) => this.getChannel(req, res));
         this.express.get('/apps/:appId/channels/:channelName/users', readRateLimiter, (req, res) => this.getChannelUsers(req, res));
-        this.express.post('/apps/:appId/events', broadccastEventRateLimiter, (req, res) => this.broadcastEvent(req, res));
+        this.express.post('/apps/:appId/events', broadcastEventRateLimiter, (req, res) => this.broadcastEvent(req, res));
 
         if (this.options.stats.enabled) {
             this.express.get('/apps/:appId/stats', readRateLimiter, (req, res) => this.getStats(req, res));
@@ -130,7 +130,7 @@ export class HttpApi {
      * @return {void}
      */
     protected configureAppAttachmentToRequest(): void {
-        this.express.use((req, res, next) => {
+        this.express.use('/apps/*', (req, res, next) => {
             let socketData = {
                 auth: {
                     headers: req.headers,
