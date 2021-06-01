@@ -107,6 +107,10 @@ export class LocalRateLimiter implements RateLimiterDriver {
      * @return {Promise<any>}
      */
     protected consumeForKey(key: string, points: number): Promise<any> {
+        if (this.rateLimiter.points < 0) {
+            return new Promise(resolve => resolve({ rateLimiterRes: null, headers: [] }));
+        }
+
         return new Promise((resolve, reject) => {
             let calculateHeaders = rateLimiterRes => ({
                 'Retry-After': rateLimiterRes.msBeforeNext / 1000,

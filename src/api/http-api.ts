@@ -235,10 +235,6 @@ export class HttpApi {
     protected readRateLimiter(req, res, next): any {
         let app = req.echoApp;
 
-        if (app.maxReadRequestsPerMinute < 0) {
-            return next();
-        }
-
         this.rateLimiter.forApp(app).consumeReadRequestsPoints(1).then(rateLimitData => {
             for (let header in rateLimitData.headers) {
                 res.header(header, rateLimitData.headers[header]);
