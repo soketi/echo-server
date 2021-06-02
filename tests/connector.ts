@@ -45,9 +45,7 @@ export class Connector {
                 callback(false, {
                     auth: this.signTokenForPrivateChannel(socketId, channel),
                     channel_data: null,
-                    shared_secret: crypto.createHash('sha256').update(
-                        Buffer.concat([Buffer.from(channel.name), decodeBase64('vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=')])
-                    ).digest(),
+                    shared_secret: this.newPusherClient().channelSharedSecret(channel.name).toString('base64'),
                 })
             },
         }), host, port, key);
