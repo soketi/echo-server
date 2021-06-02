@@ -7,7 +7,6 @@ import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
-const os = require('os-utils');
 const pusherUtil = require('pusher/lib/util');
 const Pusher = require('pusher');
 const url = require('url');
