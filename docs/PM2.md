@@ -1,6 +1,6 @@
 # Deploying with PM2
 
-The package supports pm2 out-of-the-box, so you can easily use it to scale processes:
+The package supports PM2 out-of-the-box, so you can easily use it to scale processes. However, this is still subject of a horizontal scaling environment and you should use the recommended tools, like Redis drivers for any feature, to avoid data duplication and have a better centralized dataset.
 
 ```bash
 $ pm2 start bin/pm2.js --name=echo-server -i max
@@ -24,4 +24,4 @@ $ pm2 scale echo-server 5
 └─────┴────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
 ```
 
-**Remember, if you are scaling processes or nodes, make sure to NOT use the local driver since it won't talk effectively between processes/nodes, and you should use a replicating driver like Redis. See [Environment Variables for replication](ENV.md#replication).**
+**Remember, if you are scaling processes or nodes, make sure to NOT use the local driver since it won't talk effectively between processes/nodes, and you should use a replicating driver like Redis. See [Environment Variables for running in replication mode](ENV.md#replication).**
