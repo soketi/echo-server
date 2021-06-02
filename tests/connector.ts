@@ -1,5 +1,7 @@
+import { decode as decodeBase64 } from '@stablelib/base64';
 import Soketi from '@soketi/soketi-js';
 
+const crypto = require('crypto');
 const Pusher = require('pusher');
 
 export class Connector {
@@ -11,6 +13,7 @@ export class Connector {
             authHost: `http://127.0.0.1:${port}`,
             authEndpoint: '/test/broadcasting/auth',
             authorizer,
+            encryptionMasterKeyBase64: 'vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=',
         });
     }
 
@@ -36,12 +39,30 @@ export class Connector {
         }), host, port, key);
     }
 
+    static newClientForEncryptedPrivateChannel(host = '127.0.0.1', port = 6001, key = 'echo-app-key'): Soketi {
+        return this.newClient((channel, options) => ({
+            authorize: (socketId, callback) => {
+                callback(false, {
+                    auth: this.signTokenForPrivateChannel(socketId, channel),
+                    channel_data: null,
+                    shared_secret: crypto.createHash('sha256').update(
+                        Buffer.concat([Buffer.from(channel), decodeBase64('vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=')])
+                    ).digest(),
+                })
+            },
+        }), host, port, key);
+    }
+
     static connectToPublicChannel(client, channel: string): any {
         return client.channel(channel);
     }
 
     static connectToPrivateChannel(client, channel: string): any {
         return client.private(channel);
+    }
+
+    static connectToEncryptedPrivateChannel(client, channel: string): any {
+        return client.encryptedPrivate(channel);
     }
 
     static connectToPresenceChannel(client, channel: string): any {
@@ -68,6 +89,7 @@ export class Connector {
             httpHost: host,
             httpPort: port,
             httpsPort: port,
+            encryptionMasterKeyBase64: 'vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=',
         });
     }
 
