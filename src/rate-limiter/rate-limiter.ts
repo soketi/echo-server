@@ -1,7 +1,8 @@
 import { App } from './../app';
 import { LocalRateLimiter } from './local-rate-limiter';
-import { RateLimiterDriver } from './rate-limiter-driver';
 import { Log } from './../log';
+import { RateLimiterDriver } from './rate-limiter-driver';
+import { RedisRateLimiter } from './redis-rate-limiter';
 
 export class RateLimiter implements RateLimiterDriver {
     /**
@@ -19,6 +20,8 @@ export class RateLimiter implements RateLimiterDriver {
     constructor(protected options: any) {
         if (options.rateLimiter.driver === 'local') {
             this.driver = new LocalRateLimiter(options);
+        } else if (options.rateLimiter.driver === 'redis') {
+            this.driver = new RedisRateLimiter(options);
         } else {
             Log.error('No stats driver specified.');
         }

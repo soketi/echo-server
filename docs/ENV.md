@@ -8,6 +8,7 @@
   - [Replication](#replication)
   - [Presence Channel Storage](#presence-channel-storage)
   - [Debugging](#debugging)
+  - [Rate Limiting](#rate-limiting)
   - [Statsitics](#statsitics)
 - [Databases](#databases)
   - [Redis](#redis)
@@ -54,8 +55,9 @@ Node settings include assigning identifiers for the running node.
 ## Default Application
 
 By default, the app is using a predefined list of applications to allow access.
-In case you opt-in for another `APP_MANAGER_DRIVER`, these are the variables you can change
-in order to change the app settings.
+In case you opt-in for another `APP_MANAGER_DRIVER`, these are the variables you can change in order to change the app settings.
+
+For the rate limiting options, setting limits to `-1` will disable the rate limiting.
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
@@ -123,6 +125,17 @@ Options for application debugging. Should be disabled on production environments
 | - | - | - | - | - |
 | `CLOSING_GRACE_PERIOD` | `closingGracePeriod` | `60` | - | The amount of time to wait after the server gets closed. This is useful to wait for arbitrary tasks after the sockets disconnect. |
 | `DEBUG` | `development` | `false` | `true`, `false` | Weteher the app should be in development mode. |
+
+## Rate Limiting
+
+Rate limiting is helping you limit the access for applications at the app level with [app settings, per se](#default-application).
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `RATE_LIMITER_DRIVER` | `rateLimiter.driver` | `local` | `local`, `redis` | The driver used for rate limiting counting. |
+
+- `local` - Rate limiting is stored within the memory and is lost upon process exit.
+- `redis` - Rate limiting is centralized in Redis using the key-value store. Recommended when having a multi-node configuration.
 
 ## Statsitics
 

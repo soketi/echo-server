@@ -1,14 +1,14 @@
 import { App } from './../app';
 import { RateLimiterDriver } from './rate-limiter-driver';
-import { RateLimiterMemory } from 'rate-limiter-flexible';
+import { RateLimiterAbstract, RateLimiterMemory } from 'rate-limiter-flexible';
 
 export class LocalRateLimiter implements RateLimiterDriver {
     /**
      * The rate limiter used for the Local driver.
      *
-     * @type {RateLimiterMemory}
+     * @type {RateLimiterAbstract}
      */
-    protected rateLimiter: RateLimiterMemory;
+    protected rateLimiter: RateLimiterAbstract;
 
     /**
      * The App instance to calculate the rate limiter for.
@@ -22,7 +22,7 @@ export class LocalRateLimiter implements RateLimiterDriver {
      *
      * @type {any}
      */
-     protected socket: any;
+    protected socket: any;
 
     /**
      * Initialize the local rate limiter driver.

@@ -54,6 +54,7 @@ export class Cli {
         PROMETHEUS_HOST: 'prometheus.host',
         PROMETHEUS_PORT: 'prometheus.port',
         PROMETHEUS_PROTOCOL: 'prometheus.protocol',
+        RATE_LIMITER_DRIVER: 'rateLimiter.driver',
         REPLICATION_DRIVER: 'replication.driver',
         REDIS_HOST: 'database.redis.host',
         REDIS_PORT: 'database.redis.port',

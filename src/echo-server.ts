@@ -114,7 +114,6 @@ export class EchoServer {
         },
         rateLimiter: {
             driver: 'local',
-            //
         },
         replication: {
             driver: 'local',
