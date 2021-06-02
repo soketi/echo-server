@@ -33,6 +33,11 @@ export class App {
     public enableStats: boolean;
 
     /**
+     * @type {boolean}
+     */
+    public enableClientMessages: boolean;
+
+    /**
      * @type {number}
      */
     public maxBackendEventsPerMinute: number;
@@ -58,6 +63,7 @@ export class App {
         this.secret = app.secret;
         this.maxConnections = app.maxConnections || -1;
         this.enableStats = app.enableStats || false;
+        this.enableClientMessages = app.enableStats || true;
         this.maxBackendEventsPerMinute = app.maxBackendEventsPerMinute || -1;
         this.maxClientEventsPerMinute = app.maxClientEventsPerMinute || -1;
         this.maxReadRequestsPerMinute = app.maxReadRequestsPerMinute || -1;

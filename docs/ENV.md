@@ -62,6 +62,7 @@ For the rate limiting options, setting limits to `-1` will disable the rate limi
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APP_DEFAULT_ENABLE_STATS` | `appManager.array.apps.0.enableStats` | `false` | - | Wether statistics should be enabled for the app. Overrides the `APPS_LIST` if set. |
+| `APP_DEFAULT_ENABLE_CLIENT_MESSAGES` | `appManager.array.apps.0.enableClientMessages` | `true` | - | Wether client messages should be enabled for the app. Overrides the `APPS_LIST` if set. |
 | `APP_DEFAULT_ID` | `appManager.array.apps.0.id` | `echo-app` | - | The default app id for the array driver. Overrides the `APPS_LIST` if set. |
 | `APP_DEFAULT_KEY` | `appManager.array.apps.0.key` | `echo-app-key` | - | The default app key for the array driver. Overrides the `APPS_LIST` if set. |
 | `APP_DEFAULT_MAX_CONNS` | `apiManager.array.apps.0.maxConnections` | `NaN` | - | The default app's limit of concurrent connections. Overrides the `APPS_LIST` if set. |
@@ -78,7 +79,7 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
-| `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false,"maxBackendEventsPerMinute":"-1","maxClientEventsPerMinute":"-1","maxReadRequestsPerMinute":"-1"}]'` | - | The list of apps to be used for authentication. |
+| `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false,"enableClientMessages":true,"maxBackendEventsPerMinute":"-1","maxClientEventsPerMinute":"-1","maxReadRequestsPerMinute":"-1"}]'` | - | The list of apps to be used for authentication. |
 | `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
 | `APPS_MANAGER_ENDPOINT` | `appManager.api.endpoint` | `/echo-server/app` | - | The endpoint used to retrieve an app. This is for `api` driver. |
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |

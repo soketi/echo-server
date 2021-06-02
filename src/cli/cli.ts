@@ -24,6 +24,7 @@ export class Cli {
      */
     envVariables: any = {
         APP_DEFAULT_ENABLE_STATS: 'appManager.array.apps.0.enableStats',
+        APP_DEFAULT_ENABLE_CLIENT_MESSAGES: 'appManager.array.apps.0.enableClientMessages',
         APP_DEFAULT_ID: 'appManager.array.apps.0.id',
         APP_DEFAULT_KEY: 'appManager.array.apps.0.key',
         APP_DEFAULT_MAX_CONNS: 'appManager.array.apps.0.maxConnections',
