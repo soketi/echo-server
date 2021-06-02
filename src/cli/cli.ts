@@ -92,7 +92,7 @@ export class Cli {
 
         for (let envVar in this.envVariables) {
             let value = process.env[envVar] || process.env[`ECHO_SERVER_${envVar}`] || null;
-            let optionKeys = this.envVariables[envVar.replace('ECHO_SERVER_', '')];
+            let optionKey = this.envVariables[envVar.replace('ECHO_SERVER_', '')];
 
             if (value !== null) {
                 let json = null;
@@ -109,13 +109,7 @@ export class Cli {
                     }
                 }
 
-                if (! optionKeys as any instanceof Array) {
-                    optionKeys = [optionKeys];
-                }
-
-                for (let optionKey in optionKeys) {
-                    this.options = dot.set(this.options, optionKey, value);
-                }
+                this.options = dot.set(this.options, optionKey, value);
             }
         }
     }
