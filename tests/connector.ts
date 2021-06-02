@@ -46,7 +46,7 @@ export class Connector {
                     auth: this.signTokenForPrivateChannel(socketId, channel),
                     channel_data: null,
                     shared_secret: crypto.createHash('sha256').update(
-                        Buffer.concat([Buffer.from(channel), decodeBase64('vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=')])
+                        Buffer.concat([Buffer.from(channel.name), decodeBase64('vwTqW/UBENYBOySubUo8fldlMFvCzOY8BFO5xAgnOus=')])
                     ).digest(),
                 })
             },
