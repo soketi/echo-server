@@ -9,6 +9,7 @@
   - [Presence Channel Storage](#presence-channel-storage)
   - [Debugging](#debugging)
   - [Rate Limiting](#rate-limiting)
+  - [Channels & Events Soft Limits](#channels--events-soft-limits)
   - [Statsitics](#statsitics)
 - [Databases](#databases)
   - [Redis](#redis)
@@ -28,8 +29,8 @@ Configuration needed to specify the protocol, port and host for the server.
 | `HTTP_PROTOCOL` | `httpApi.protocol` | `http` | `http`, `https` | The protocol used for the HTTP API. |
 | `HTTP_TRUST_PROXIES` | `trustProxies` | `false` | `true`, `false` | Wether to trust proxies at the HTTP API level. |
 | `EXTRA_HEADERS` | `httpApi.extraHeaders` | `[]` | - | Extra headers to attach to HTTP API responses. |
-| `HTTP_MAX_PAYLOAD_SIZE` | `httpApi.payload.payloadLimitInKb` | `100` | - | The maximum size, in KB, for the broadcasted payloads incoming from the clients. Set this according to your needs. |
-| `HTTP_MAX_REQUEST_SIZE` | `httpApi.payload.requestLimitInMb` | `100` | - | The maximum size, in MB, for the total size of the request. A hard limit has been set to 100 MB. |
+| ~~`HTTP_MAX_PAYLOAD_SIZE`~~ | ~~`eventLimits.maxPayloadInKb`~~ | ~~`100`~~ | - | ~~The maximum size, in KB, for the broadcasted payloads incoming from the clients. Set this according to your needs.~~ Deprecated, please see `EVENT_MAX_SIZE_IN_KB` |
+| `HTTP_MAX_REQUEST_SIZE` | `httpApi.requestLimitInMb` | `100` | - | The maximum size, in MB, for the total size of the request. A hard limit has been set to 100 MB. |
 
 ## SSL Settings
 
@@ -137,6 +138,18 @@ Rate limiting is helping you limit the access for applications at the app level 
 
 - `local` - Rate limiting is stored within the memory and is lost upon process exit.
 - `redis` - Rate limiting is centralized in Redis using the key-value store. Recommended when having a multi-node configuration.
+
+## Channels & Events Soft Limits
+
+Beside the rate limiting, you can set soft limits for the incoming data, such as the maximum allowed event size or the maximum event name length.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `CHANNEL_MAX_NAME_LENGTH` | `channelLimits.maxNameLength` | `100` | - | The maximum length of the channel name that is allowed. The specific-prefix names are also counted. |
+| `PRESENCE_MAX_MEMBERS` | `presence.maxMembersPerChannel` | `100` | - | The maximum amount of members that can simultaneously be connected in a presence channel. See: [Presence Channel Storage](#presence-channel-storage) |
+| `EVENT_MAX_CHANNELS_AT_ONCE` | `eventLimits.maxChannelsAtOnce` | `100` | - | The maximum amount of channels that the client can broadcast to from a single `/events` request. |
+| `EVENT_MAX_NAME_LENGTH` | `eventLimits.maxNameLength` | `200` | - | The maximum length of the event name that is allowed. |
+| `EVENT_MAX_SIZE_IN_KB` | `eventLimits.maxPayloadInKb` | `100` | - | The maximum size, in KB, for the broadcasted payloads incoming from the clients. |
 
 ## Statsitics
 

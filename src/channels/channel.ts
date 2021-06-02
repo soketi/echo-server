@@ -144,6 +144,16 @@ export class Channel {
                 this.isClientEvent(data.event) &&
                 this.isInChannel(socket, data.channel)
             ) {
+                if (data.event.length > this.options.eventLimits.maxNameLength) {
+                    return socket.emit('socket:error', { message: `The broadcasting client event name is longer than ${this.options.eventLimits.maxNameLength} characters.`, code: 4100 });
+                }
+
+                let payloadSizeInKb = this.dataToBytes(data.data) / 1024;
+
+                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+                    return socket.emit('socket:error', { message: `The broadcasting client event payload is greater than ${this.options.eventLimits.maxPayloadInKb} KB.`, code: 4100 });
+                }
+
                 this.rateLimiter.forApp(socket.data.echoApp).forSocket(socket).consumeFrontendEventPoints(1).then(rateLimitData => {
                     socket.to(data.channel).emit(
                         data.event, data.channel, data.data
@@ -285,5 +295,23 @@ export class Channel {
      */
     static isEncryptedPrivateChannel(channel: string): boolean {
         return channel.lastIndexOf('private-encrypted-', 0) === 0;
+    }
+
+    /**
+     * Get the amount of bytes from given parameters.
+     *
+     * @param  {any}  data
+     * @return {number}
+     */
+     protected dataToBytes(...data: any): number {
+        return data.reduce((totalBytes, element) => {
+            element = typeof element === 'string' ? element : JSON.stringify(element);
+
+            try {
+                return totalBytes += Buffer.byteLength(element, 'utf8');
+            } catch (e) {
+                return totalBytes;
+            }
+        }, 0);
     }
 }

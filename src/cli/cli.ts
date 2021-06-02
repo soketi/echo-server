@@ -37,12 +37,16 @@ export class Cli {
         APPS_MANAGER_ENDPOINT: 'appManager.api.endpoint',
         APPS_MANAGER_HOST: 'appManager.api.host',
         APPS_MANAGER_TOKEN: 'appManager.api.token',
+        CHANNEL_MAX_NAME_LENGTH: 'channelLimits.maxNameLength',
         CLOSING_GRACE_PERIOD: 'closingGracePeriod',
         CORS_ALLOWED_ORIGINS: 'cors.origin',
         DEBUG: 'development',
+        EVENT_MAX_CHANNELS_AT_ONCE: 'eventLimits.maxChannelsAtOnce',
+        EVENT_MAX_NAME_LENGTH: 'eventLimits.maxNameLength',
+        EVENT_MAX_SIZE_IN_KB: 'eventLimits.maxPayloadInKb',
         HTTP_EXTRA_HEADERS: 'httpApi.extraHeaders',
-        HTTP_MAX_PAYLOAD_SIZE: 'httpApi.payload.payloadLimitInKb',
-        HTTP_MAX_REQUEST_SIZE: 'httpApi.payload.requestLimitInMb',
+        HTTP_MAX_PAYLOAD_SIZE: 'eventLimits.maxPayloadInKb', // TODO: DEPRECATED
+        HTTP_MAX_REQUEST_SIZE: 'httpApi.requestLimitInMb',
         HTTP_PROTOCOL: 'httpApi.protocol',
         HTTP_TRUST_PROXIES: 'httpApi.trustProxies',
         NODE_ID: 'instance.node_id',
@@ -88,7 +92,7 @@ export class Cli {
 
         for (let envVar in this.envVariables) {
             let value = process.env[envVar] || process.env[`ECHO_SERVER_${envVar}`] || null;
-            let optionKey = this.envVariables[envVar.replace('ECHO_SERVER_', '')];
+            let optionKeys = this.envVariables[envVar.replace('ECHO_SERVER_', '')];
 
             if (value !== null) {
                 let json = null;
@@ -105,7 +109,13 @@ export class Cli {
                     }
                 }
 
-                this.options = dot.set(this.options, optionKey, value);
+                if (! optionKeys as any instanceof Array) {
+                    optionKeys = [optionKeys];
+                }
+
+                for (let optionKey in optionKeys) {
+                    this.options = dot.set(this.options, optionKey, value);
+                }
             }
         }
     }

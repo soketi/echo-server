@@ -48,7 +48,6 @@ export class HttpApi {
         this.configureHeaders();
         this.configureJsonBody();
         this.configureAppAttachmentToRequest();
-        this.configureLimits();
         this.configurePusherAuthentication();
 
         this.express.get('/', (req, res) => this.getHealth(req, res));
@@ -116,7 +115,7 @@ export class HttpApi {
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
             strict: true,
-            limit: `${this.options.httpApi.payload.requestLimitInMb}mb`,
+            limit: `${this.options.httpApi.requestLimitInMb}mb`,
             verify: (req, res, buffer) => {
                 req.rawBody = buffer.toString();
             },
@@ -158,23 +157,6 @@ export class HttpApi {
 
                 this.notFoundResponse(req, res);
             });
-        });
-    }
-
-    /**
-     * Check if the incoming request exceeds the payload limit set.
-     *
-     * @return {void}
-     */
-    protected configureLimits(): void {
-        this.express.use((req, res, next) => {
-            let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
-
-            if (payloadSizeInKb > parseFloat(this.options.httpApi.payload.payloadLimitInKb)) {
-                return this.badResponse(req, res, `The data should be less than ${this.options.httpApi.payload.payloadLimitInKb} KB.`);
-            }
-
-            next();
         });
     }
 
@@ -405,15 +387,31 @@ export class HttpApi {
             return this.badResponse(req, res, 'The received data is incorrect.');
         }
 
+        let channels = req.body.channels || [req.body.channel];
+
+        if (channels.length > this.options.eventLimits.maxChannelsAtOnce) {
+            return this.badResponse(req, res, `Cannot broadcast a message to more than ${this.options.httpApi.hardLimits.maxChannelsAtOnce} channels at once.`);
+        }
+
+        if (req.body.name.length > this.options.eventLimits.maxNameLength) {
+            return this.badResponse(req, res, `Event name is too long. Maximum allowed size is ${this.options.httpApi.hardLimits.maxEventNameLength}.`);
+        }
+
+        let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
+
+        if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+            return this.badResponse(req, res, `The event data should be less than ${this.options.eventLimits.maxPayloadInKb} KB.`);
+        }
+
         let appKey = req.echoApp.key;
         let socketId = req.body.socket_id || null;
 
         if (socketId) {
             this.findSocketInNamespace(`/${appKey}`, socketId).then(socket => {
-                this.sendEventToChannels(`/${appKey}`, req, socket);
+                this.sendEventToChannels(`/${appKey}`, channels, req, socket);
             });
         } else {
-            this.sendEventToChannels(`/${appKey}`, req);
+            this.sendEventToChannels(`/${appKey}`, channels, req);
         }
 
         if (this.options.prometheus.enabled) {
@@ -519,14 +517,13 @@ export class HttpApi {
      * with the broadcasting of a socket (if any).
      *
      * @param  {string}  namespace
+     * @param  {any}  channels
      * @param  {any}  req
      * @param  {any}  socket
      * @return {void}
      */
-    protected sendEventToChannels(namespace: string, req: any, socket: any = null): void
+    protected sendEventToChannels(namespace: string, channels: any, req: any, socket: any = null): void
     {
-        let channels = req.body.channels || [req.body.channel];
-
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),

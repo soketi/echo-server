@@ -83,17 +83,22 @@ export class EchoServer {
                 protocol: 'http',
             },
         },
+        channelLimits: {
+            maxNameLength: 100,
+        },
         development: false,
+        eventLimits: {
+            maxChannelsAtOnce: 100,
+            maxNameLength: 200,
+            maxPayloadInKb: 100,
+        },
         host: null,
         httpApi: {
             extraHeaders: [
                 //
             ],
-            payload: {
-                payloadLimitInKb: 100,
-                requestLimitInMb: 100,
-            },
             protocol: 'http',
+            requestLimitInMb: 100,
             trustProxies: false,
         },
         instance: {
@@ -403,7 +408,7 @@ export class EchoServer {
                 this.onDisconnecting(socket);
 
                 if (socket.data.echoApp.enableClientMessages) {
-                this.onClientEvent(socket);
+                    this.onClientEvent(socket);
                 }
             }, error => {
                 socket.disconnect();
@@ -450,6 +455,10 @@ export class EchoServer {
      */
     protected onSubscribe(socket: any): void {
         socket.on('subscribe', data => {
+            if (data.channel.length > this.options.channelLimits.maxNameLength) {
+                return socket.emit('socket:error', { message: `The channel name is longer than the allowed ${this.options.channelLimits.maxNameLength} characters.`, code: 4100 });
+            }
+
             this.getChannelInstance(data.channel).join(socket, data);
         });
     }
