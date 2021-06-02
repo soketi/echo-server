@@ -30,6 +30,10 @@ app.get('/echo-server/app', (req, res) => {
             secret: 'echo-app-secret',
             maxConnections: 100,
             enableStats: false,
+            enableClientMessages: true,
+            maxBackendEventsPerMinute: -1,
+            maxClientEventsPerMinute: -1,
+            maxReadRequestsPerMinute: -1,
         },
     });
 });

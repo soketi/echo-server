@@ -2,6 +2,7 @@ import { PresenceStorage } from './../presence-storage';
 import { Log } from './../log';
 import { PrivateChannel } from './private-channel';
 import { Prometheus } from './../prometheus';
+import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
 
 export class PresenceChannel extends PrivateChannel {
@@ -16,15 +17,17 @@ export class PresenceChannel extends PrivateChannel {
      * @param {any} io
      * @param {Stats} stats
      * @param {Prometheus} prometheus
+     * @param {RateLimiter} rateLimiter
      * @param {any} options
      */
-     constructor(
+    constructor(
         protected io: any,
         protected stats: Stats,
         protected prometheus: Prometheus,
+        protected rateLimiter: RateLimiter,
         protected options: any,
     ) {
-        super(io, stats, prometheus, options);
+        super(io, stats, prometheus, rateLimiter, options);
 
         this.presenceStorage = new PresenceStorage(options, io);
     }

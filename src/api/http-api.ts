@@ -1,9 +1,10 @@
+import { App } from './../app';
 import { AppManager } from './../app-managers';
 import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
+import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
-import { nextTick } from 'process';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
@@ -32,6 +33,7 @@ export class HttpApi {
         protected appManager: AppManager,
         protected stats: Stats,
         protected prometheus: Prometheus,
+        protected rateLimiter: RateLimiter,
     ) {
         //
     }
@@ -45,21 +47,25 @@ export class HttpApi {
         this.registerCorsMiddleware();
         this.configureHeaders();
         this.configureJsonBody();
-        this.configureLimits();
+        this.configureAppAttachmentToRequest();
         this.configurePusherAuthentication();
 
         this.express.get('/', (req, res) => this.getHealth(req, res));
         this.express.get('/health', (req, res) => this.getHealth(req, res));
         this.express.get('/ready', (req, res) => this.getReadiness(req, res));
         this.express.get('/usage', (req, res) => this.getUsage(req, res));
-        this.express.get('/apps/:appId/channels', (req, res) => this.getChannels(req, res));
-        this.express.get('/apps/:appId/channels/:channelName', (req, res) => this.getChannel(req, res));
-        this.express.get('/apps/:appId/channels/:channelName/users', (req, res) => this.getChannelUsers(req, res));
-        this.express.post('/apps/:appId/events', (req, res) => this.broadcastEvent(req, res));
+
+        let readRateLimiter = (req, res, next) => this.readRateLimiter(req, res, next);
+        let broadcastEventRateLimiter = (req, res, next) => this.broadcastEventRateLimiter(req, res, next);
+
+        this.express.get('/apps/:appId/channels', readRateLimiter, (req, res) => this.getChannels(req, res));
+        this.express.get('/apps/:appId/channels/:channelName', readRateLimiter, (req, res) => this.getChannel(req, res));
+        this.express.get('/apps/:appId/channels/:channelName/users', readRateLimiter, (req, res) => this.getChannelUsers(req, res));
+        this.express.post('/apps/:appId/events', broadcastEventRateLimiter, (req, res) => this.broadcastEvent(req, res));
 
         if (this.options.stats.enabled) {
-            this.express.get('/apps/:appId/stats', (req, res) => this.getStats(req, res));
-            this.express.get('/apps/:appId/stats/current', (req, res) => this.getCurrentStats(req, res));
+            this.express.get('/apps/:appId/stats', readRateLimiter, (req, res) => this.getStats(req, res));
+            this.express.get('/apps/:appId/stats/current', readRateLimiter, (req, res) => this.getCurrentStats(req, res));
         }
 
         if (this.options.prometheus.enabled) {
@@ -87,10 +93,14 @@ export class HttpApi {
      *
      * @return {void}
      */
-     protected configureHeaders(): void {
+    protected configureHeaders(): void {
+        if (this.options.httpApi.trustProxies) {
+            this.express.set('trust proxy', 1);
+        }
+
         this.express.use((req, res, next) => {
-            for (let header in this.options.headers) {
-                res.setHeader(header, this.options.headers[header]);
+            for (let header in this.options.httpApi.extraHeaders) {
+                res.setHeader(header, this.options.httpApi.extraHeaders[header]);
             }
 
             next();
@@ -105,7 +115,7 @@ export class HttpApi {
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
             strict: true,
-            limit: `${this.options.httpPayload.requestLimitInMb}mb`,
+            limit: `${this.options.httpApi.requestLimitInMb}mb`,
             verify: (req, res, buffer) => {
                 req.rawBody = buffer.toString();
             },
@@ -113,19 +123,40 @@ export class HttpApi {
     }
 
     /**
-     * Check if the incoming request exceeds the payload limit set.
+     * Attach the App instance to the request object.
      *
      * @return {void}
      */
-    protected configureLimits(): void {
-        this.express.use((req, res, next) => {
-            let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
+    protected configureAppAttachmentToRequest(): void {
+        this.express.use('/apps/*', (req, res, next) => {
+            let socketData = {
+                auth: {
+                    headers: req.headers,
+                },
+            };
 
-            if (payloadSizeInKb > parseFloat(this.options.httpPayload.payloadLimitInKb)) {
-                return this.badResponse(req, res, `The data should be less than ${this.options.httpPayload.payloadLimitInKb} KB.`);
-            }
+            let appId = this.getAppId(req);
+            let appKey = this.getAppKey(req);
 
-            next();
+            let promise = appId
+                ? this.appManager.findById(appId, null, socketData)
+                : this.appManager.findByKey(appKey, null, socketData);
+
+            promise.then((app: App) => {
+                req.echoApp = app;
+                next();
+            }, error => {
+                if (this.options.development) {
+                    Log.error({
+                        time: new Date().toISOString(),
+                        action: 'find_app',
+                        status: 'failed',
+                        error,
+                    });
+                }
+
+                this.notFoundResponse(req, res);
+            });
         });
     }
 
@@ -143,6 +174,56 @@ export class HttpApi {
                     next()
                 }
             });
+        });
+    }
+
+    /**
+     * Create a rate limiter for the /events endpoint.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @param  {function}  next
+     * @return {any}
+     */
+    protected broadcastEventRateLimiter(req, res, next): any {
+        let app = req.echoApp;
+
+        if (app.maxBackendEventsPerMinute < 0) {
+            return next();
+        }
+
+        let channels = req.body.channels || [req.body.channel];
+
+        this.rateLimiter.forApp(app).consumeBackendEventPoints(channels.length).then(rateLimitData => {
+            for (let header in rateLimitData.headers) {
+                res.setHeader(header, rateLimitData.headers[header]);
+            }
+
+            next();
+        }, error => {
+            return this.tooManyRequestsResponse(req, res);
+        });
+    }
+
+    /**
+     * Create a rate limiter for any read-only endpoint.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @param  {function}  next
+     * @return {any}
+     */
+    protected readRateLimiter(req, res, next): any {
+        let app = req.echoApp;
+
+        this.rateLimiter.forApp(app).consumeReadRequestsPoints(1).then(rateLimitData => {
+            for (let header in rateLimitData.headers) {
+                res.header(header, rateLimitData.headers[header]);
+            }
+
+            next();
+        }, error => {
+            return this.tooManyRequestsResponse(req, res);
         });
     }
 
@@ -306,15 +387,31 @@ export class HttpApi {
             return this.badResponse(req, res, 'The received data is incorrect.');
         }
 
+        let channels = req.body.channels || [req.body.channel];
+
+        if (channels.length > this.options.eventLimits.maxChannelsAtOnce) {
+            return this.badResponse(req, res, `Cannot broadcast a message to more than ${this.options.httpApi.hardLimits.maxChannelsAtOnce} channels at once.`);
+        }
+
+        if (req.body.name.length > this.options.eventLimits.maxNameLength) {
+            return this.badResponse(req, res, `Event name is too long. Maximum allowed size is ${this.options.httpApi.hardLimits.maxEventNameLength}.`);
+        }
+
+        let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
+
+        if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+            return this.badResponse(req, res, `The event data should be less than ${this.options.eventLimits.maxPayloadInKb} KB.`);
+        }
+
         let appKey = req.echoApp.key;
         let socketId = req.body.socket_id || null;
 
         if (socketId) {
             this.findSocketInNamespace(`/${appKey}`, socketId).then(socket => {
-                this.sendEventToChannels(`/${appKey}`, req, socket);
+                this.sendEventToChannels(`/${appKey}`, channels, req, socket);
             });
         } else {
-            this.sendEventToChannels(`/${appKey}`, req);
+            this.sendEventToChannels(`/${appKey}`, channels, req);
         }
 
         if (this.options.prometheus.enabled) {
@@ -420,14 +517,13 @@ export class HttpApi {
      * with the broadcasting of a socket (if any).
      *
      * @param  {string}  namespace
+     * @param  {any}  channels
      * @param  {any}  req
      * @param  {any}  socket
      * @return {void}
      */
-    protected sendEventToChannels(namespace: string, req: any, socket: any = null): void
+    protected sendEventToChannels(namespace: string, channels: any, req: any, socket: any = null): void
     {
-        let channels = req.body.channels || [req.body.channel];
-
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),
@@ -471,7 +567,17 @@ export class HttpApi {
      * @return {string|null}
      */
     protected getAppId(req: any): string|null {
-        return req.params.appId ? req.params.appId : null;
+        return req.params.appId || null;
+    }
+
+    /**
+     * Get the app key from the request.
+     *
+     * @param  {any}  req
+     * @return {string|null}
+     */
+    protected getAppKey(req: any): string|null {
+        return req.query.auth_key || null;
     }
 
     /**
@@ -495,58 +601,37 @@ export class HttpApi {
      * @return {Promise<string>}
      */
     protected getSignedToken(req: any): Promise<string> {
+        let app = req.echoApp;
+
         return new Promise((resolve, reject) => {
-            let socketData = {
-                auth: {
-                    headers: req.headers,
-                },
+            let key = req.query.auth_key;
+            let token = new Pusher.Token(key, app.secret);
+
+            const params = {
+                auth_key: app.key,
+                auth_timestamp: req.query.auth_timestamp,
+                auth_version: req.query.auth_version,
+                ...req.query,
+                ...req.params,
             };
 
-            this.appManager.findById(this.getAppId(req), null, socketData).then(app => {
-                if (!app) {
-                    reject({ reason: 'App not found when signing token.' });
-                }
+            delete params['auth_signature'];
+            delete params['body_md5']
+            delete params['appId'];
+            delete params['appKey'];
+            delete params['channelName'];
 
-                req.echoApp = app;
+            if (req.rawBody && Object.keys(req.body).length > 0) {
+                params['body_md5'] = pusherUtil.getMD5(req.rawBody);
+            }
 
-                let key = req.query.auth_key;
-                let token = new Pusher.Token(key, app.secret);
-
-                const params = {
-                    auth_key: app.key,
-                    auth_timestamp: req.query.auth_timestamp,
-                    auth_version: req.query.auth_version,
-                    ...req.query,
-                    ...req.params,
-                };
-
-                delete params['auth_signature'];
-                delete params['body_md5']
-                delete params['appId'];
-                delete params['appKey'];
-                delete params['channelName'];
-
-                if (req.rawBody && Object.keys(req.body).length > 0) {
-                    params['body_md5'] = pusherUtil.getMD5(req.rawBody);
-                }
-
-                resolve(
-                    token.sign([
-                        req.method.toUpperCase(),
-                        req.path,
-                        pusherUtil.toOrderedArray(params).join('&'),
-                    ].join("\n"))
-                );
-            }, error => {
-                if (this.options.development) {
-                    Log.error({
-                        time: new Date().toISOString(),
-                        action: 'find_app',
-                        status: 'failed',
-                        error,
-                    });
-                }
-            });
+            resolve(
+                token.sign([
+                    req.method.toUpperCase(),
+                    req.path,
+                    pusherUtil.toOrderedArray(params).join('&'),
+                ].join("\n"))
+            );
         });
     }
 
@@ -580,6 +665,36 @@ export class HttpApi {
     }
 
     /**
+     * Throw 404 response.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected notFoundResponse(req: any, res: any): boolean {
+        let appId = this.getAppId(req);
+
+        res.statusCode = 404;
+        res.json({ error: `The app ${appId} does not exist` });
+
+        return false;
+    }
+
+    /**
+     * Throw 429 response.
+     *
+     * @param  {any}  req
+     * @param  {any}  res
+     * @return {boolean}
+     */
+    protected tooManyRequestsResponse(req: any, res: any): boolean {
+        res.statusCode = 429;
+        res.json({ error: 'Too many requests' });
+
+        return false;
+    }
+
+    /**
      * Throw 503 response.
      *
      * @param  {any}  req
@@ -599,7 +714,7 @@ export class HttpApi {
      * @param  {any}  data
      * @return {number}
      */
-     protected dataToBytes(...data: any): number {
+    protected dataToBytes(...data: any): number {
         return data.reduce((totalBytes, element) => {
             element = typeof element === 'string' ? element : JSON.stringify(element);
 

@@ -3,6 +3,7 @@ import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } fro
 import { HttpApi } from './api';
 import { Log } from './log';
 import { Prometheus } from './prometheus';
+import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
 import { Stats } from './stats';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,6 +36,10 @@ export class EchoServer {
                         secret: 'echo-app-secret',
                         maxConnections: -1,
                         enableStats: false,
+                        enableClientMessages: true,
+                        maxBackendEventsPerMinute: -1,
+                        maxClientEventsPerMinute: -1,
+                        maxReadRequestsPerMinute: -1,
                     },
                 ],
             },
@@ -78,14 +83,23 @@ export class EchoServer {
                 protocol: 'http',
             },
         },
+        channelLimits: {
+            maxNameLength: 100,
+        },
         development: false,
+        eventLimits: {
+            maxChannelsAtOnce: 100,
+            maxNameLength: 200,
+            maxPayloadInKb: 100,
+        },
         host: null,
-        headers: [
-            //
-        ],
-        httpPayload: {
-            payloadLimitInKb: 100,
+        httpApi: {
+            extraHeaders: [
+                //
+            ],
+            protocol: 'http',
             requestLimitInMb: 100,
+            trustProxies: false,
         },
         instance: {
             node_id: null,
@@ -104,7 +118,9 @@ export class EchoServer {
             enabled: false,
             prefix: 'echo_server_',
         },
-        protocol: 'http',
+        rateLimiter: {
+            driver: 'local',
+        },
         replication: {
             driver: 'local',
         },
@@ -184,7 +200,14 @@ export class EchoServer {
      *
      * @type {Prometheus}
      */
-     protected prometheus: Prometheus;
+    protected prometheus: Prometheus;
+
+     /**
+     * The RateLimiter client.
+     *
+     * @type {RateLimiter}
+     */
+    protected rateLimiter: RateLimiter;
 
     /**
      * Let the server know to reject any new connections.
@@ -265,11 +288,12 @@ export class EchoServer {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
+            this.rateLimiter = new RateLimiter(this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
-            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -279,6 +303,7 @@ export class EchoServer {
                 this.appManager,
                 this.stats,
                 this.prometheus,
+                this.rateLimiter,
             );
 
             this.httpApi.initialize();
@@ -381,7 +406,10 @@ export class EchoServer {
                 this.onSubscribe(socket);
                 this.onUnsubscribe(socket);
                 this.onDisconnecting(socket);
-                this.onClientEvent(socket);
+
+                if (socket.data.echoApp.enableClientMessages) {
+                    this.onClientEvent(socket);
+                }
             }, error => {
                 socket.disconnect();
             });
@@ -427,6 +455,10 @@ export class EchoServer {
      */
     protected onSubscribe(socket: any): void {
         socket.on('subscribe', data => {
+            if (data.channel.length > this.options.channelLimits.maxNameLength) {
+                return socket.emit('socket:error', { message: `The channel name is longer than the allowed ${this.options.channelLimits.maxNameLength} characters.`, code: 4100 });
+            }
+
             this.getChannelInstance(data.channel).join(socket, data);
         });
     }

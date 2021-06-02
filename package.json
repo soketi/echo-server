@@ -37,6 +37,7 @@
     "prom-client": "^13.1.0",
     "prometheus-query": "^3.0.0",
     "pusher": "^5.0.0",
+    "rate-limiter-flexible": "^2.2.2",
     "redis-semaphore": "^4.1.0",
     "redis-time-series-ts": "^1.3.0",
     "request": "^2.88.2",

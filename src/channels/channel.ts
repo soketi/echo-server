@@ -1,5 +1,6 @@
 import { Log } from './../log';
 import { Prometheus } from './../prometheus';
+import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
 
 export class Channel {
@@ -29,12 +30,14 @@ export class Channel {
      * @param {any} io
      * @param {Stats} stats
      * @param {Prometheus} prometheus
+     * @param {RateLimiter} rateLimiter
      * @param {any} options
      */
     constructor(
         protected io: any,
         protected stats: Stats,
         protected prometheus: Prometheus,
+        protected rateLimiter: RateLimiter,
         protected options: any,
     ) {
         //
@@ -141,29 +144,53 @@ export class Channel {
                 this.isClientEvent(data.event) &&
                 this.isInChannel(socket, data.channel)
             ) {
-                socket.to(data.channel).emit(
-                    data.event, data.channel, data.data
-                );
-
-                this.stats.markWsMessage(socket.data.echoApp);
-
-                /**
-                 * We can't intercept the socket.emit() function, so
-                 * this one will be present here to mark an outgoing WS message.
-                 */
-                if (this.options.prometheus.enabled) {
-                    this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                if (data.event.length > this.options.eventLimits.maxNameLength) {
+                    return socket.emit('socket:error', { message: `The broadcasting client event name is longer than ${this.options.eventLimits.maxNameLength} characters.`, code: 4100 });
                 }
 
-                if (this.options.development) {
-                    Log.info({
-                        time: new Date().toISOString(),
-                        socketId: socket.id,
-                        action: 'client_event',
-                        status: 'success',
-                        data,
-                    });
+                let payloadSizeInKb = this.dataToBytes(data.data) / 1024;
+
+                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+                    return socket.emit('socket:error', { message: `The broadcasting client event payload is greater than ${this.options.eventLimits.maxPayloadInKb} KB.`, code: 4100 });
                 }
+
+                this.rateLimiter.forApp(socket.data.echoApp).forSocket(socket).consumeFrontendEventPoints(1).then(rateLimitData => {
+                    socket.to(data.channel).emit(
+                        data.event, data.channel, data.data
+                    );
+
+                    this.stats.markWsMessage(socket.data.echoApp);
+
+                    /**
+                     * We can't intercept the socket.emit() function, so
+                     * this one will be present here to mark an outgoing WS message.
+                     */
+                    if (this.options.prometheus.enabled) {
+                        this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                    }
+
+                    if (this.options.development) {
+                        Log.info({
+                            time: new Date().toISOString(),
+                            socketId: socket.id,
+                            action: 'client_event',
+                            status: 'success',
+                            data,
+                        });
+                    }
+                }, error => {
+                    if (this.options.development) {
+                        Log.info({
+                            time: new Date().toISOString(),
+                            socketId: socket.id,
+                            action: 'client_event',
+                            status: 'over_quota',
+                            data,
+                        });
+                    }
+
+                    socket.emit('socket:error', { message: `The number of client messages per minute got exceeded. Please slow it down.`, code: 4100 });
+                });
             }
         }
     }
@@ -268,5 +295,23 @@ export class Channel {
      */
     static isEncryptedPrivateChannel(channel: string): boolean {
         return channel.lastIndexOf('private-encrypted-', 0) === 0;
+    }
+
+    /**
+     * Get the amount of bytes from given parameters.
+     *
+     * @param  {any}  data
+     * @return {number}
+     */
+     protected dataToBytes(...data: any): number {
+        return data.reduce((totalBytes, element) => {
+            element = typeof element === 'string' ? element : JSON.stringify(element);
+
+            try {
+                return totalBytes += Buffer.byteLength(element, 'utf8');
+            } catch (e) {
+                return totalBytes;
+            }
+        }, 0);
     }
 }
