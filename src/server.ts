@@ -38,17 +38,15 @@ export class Server {
      * @return {Promise<any>}
      */
     initialize(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.serverProtocol().then(() => {
-                let host = this.options.host || '127.0.0.1';
-                Log.success(`Running at ${host} on port ${this.options.port}`);
+        return this.serverProtocol().then(() => {
+            let host = this.options.host || '127.0.0.1';
+            Log.success(`Running at ${host} on port ${this.options.port}`);
 
-                this.configureAdapters();
-                this.configureSocketIdGeneration();
+            this.configureAdapters();
+            this.configureSocketIdGeneration();
 
-                resolve(this.io);
-            }, error => reject(error));
-        });
+            return this.io;
+        }, error => Log.error(error));
     }
 
     /**
@@ -57,14 +55,14 @@ export class Server {
      * @return {Promise<any>}
      */
     protected serverProtocol(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (this.options.httpApi.protocol === 'https') {
-                this.configureSecurity().then(() => {
-                    resolve(this.buildServer(true));
-                }, error => reject(error));
-            } else {
-                resolve(this.buildServer(false));
-            }
+        if (this.options.httpApi.protocol === 'https') {
+            return this.configureSecurity().then(() => {
+                return this.buildServer(true);
+            }, error => Log.error(error));
+        }
+
+        return new Promise(resolve => {
+            resolve(this.buildServer(false));
         });
     }
 

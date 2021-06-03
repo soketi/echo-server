@@ -246,7 +246,7 @@ export class HttpApi {
      * @return {void}
      */
     protected getReadiness(req: any, res: any): void {
-        if (this.server.closing || this.server.rejectNewConnections) {
+        if (this.server.closing) {
             this.serviceUnavailableResponse(req, res);
         } else {
             res.send('OK');

@@ -44,7 +44,7 @@ export class EchoServer {
                 ],
             },
         },
-        closingGracePeriod: 60,
+        closingGracePeriod: 3,
         cors: {
             credentials: true,
             origin: ['*'],
@@ -210,13 +210,6 @@ export class EchoServer {
     protected rateLimiter: RateLimiter;
 
     /**
-     * Let the server know to reject any new connections.
-     *
-     * @type {boolean}
-     */
-    rejectNewConnections = false;
-
-    /**
      * Let the plugins know if the server is closing.
      *
      * @type {boolean}
@@ -244,37 +237,28 @@ export class EchoServer {
      * @return {Promise<any>}
      */
     start(options: any = {}): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.options = {
-                ...Object.assign(this.options, options),
-                ...{
-                    closingGracePeriod: ['local', 'prometheus'].includes(this.options.stats.driver) ? 1 : this.options.closingGracePeriod,
-                },
-            };
+        this.options = Object.assign(this.options, options);
+        this.server = new Server(this.options);
 
-            this.server = new Server(this.options);
+        if (this.options.development) {
+            Log.warning('Starting the server in development mode...\n');
+        } else {
+            Log.info('Starting the server...\n')
+        }
 
-            if (this.options.development) {
-                Log.warning('Starting the server in development mode...\n');
-            } else {
-                Log.info('Starting the server...\n')
-            }
+        return this.server.initialize().then(io => {
+            return this.initialize(io).then(() => {
+                this.closing = false;
 
-            this.server.initialize().then(io => {
-                this.initialize(io).then(() => {
-                    this.rejectNewConnections = false;
-                    this.closing = false;
+                Log.info('\nServer ready!\n');
 
-                    Log.info('\nServer ready!\n');
+                if (this.options.development) {
+                    Log.info({ options: JSON.stringify(this.options) });
+                }
 
-                    if (this.options.development) {
-                        Log.info({ options: JSON.stringify(this.options) });
-                    }
-
-                    resolve(this);
-                }, error => Log.error(error));
+                return this;
             }, error => Log.error(error));
-        });
+        }, error => Log.error(error));
     }
 
     /**
@@ -327,7 +311,6 @@ export class EchoServer {
         return new Promise((resolve, reject) => {
             Log.warning('Stopping the server...');
 
-            this.rejectNewConnections = true;
             this.closing = true;
 
             this.server.io.close(async () => {
@@ -376,7 +359,7 @@ export class EchoServer {
         nsp.use((socket, next) => {
             socket.id = this.generateSocketId();
 
-            this.checkIfSocketHasValidEchoApp(socket).then(socket => {
+            this.checkForValidEchoApp(socket).then(socket => {
                 next();
             }, error => {
                 next(error);
@@ -398,11 +381,11 @@ export class EchoServer {
                 this.prometheus.markNewConnection(socket);
             }
 
-            if (this.rejectNewConnections || this.closing) {
+            if (this.closing) {
                 return socket.disconnect();
             }
 
-            this.checkIfSocketDidNotReachedLimit(socket).then(socket => {
+            this.checkAppConnectionLimit(socket).then(socket => {
                 this.onSubscribe(socket);
                 this.onUnsubscribe(socket);
                 this.onDisconnecting(socket);
@@ -544,7 +527,7 @@ export class EchoServer {
      * @param  {any}  socket
      * @return {Promise<any>}
      */
-    protected checkIfSocketHasValidEchoApp(socket: any): Promise<any> {
+    protected checkForValidEchoApp(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.data.echoApp) {
                 return resolve(socket);
@@ -595,7 +578,7 @@ export class EchoServer {
      * @param  {any}  socket
      * @return {Promise<any>}
      */
-    protected checkIfSocketDidNotReachedLimit(socket: any): Promise<any> {
+    protected checkAppConnectionLimit(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
                 if (this.options.development) {
