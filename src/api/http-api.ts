@@ -5,6 +5,7 @@ import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
+import { Utils } from '../utils';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
@@ -397,7 +398,7 @@ export class HttpApi {
             return this.badResponse(req, res, `Event name is too long. Maximum allowed size is ${this.options.httpApi.hardLimits.maxEventNameLength}.`);
         }
 
-        let payloadSizeInKb = this.dataToBytes(req.body.data) / 1024;
+        let payloadSizeInKb = Utils.dataToBytes(req.body.data) / 1024;
 
         if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
             return this.badResponse(req, res, `The event data should be less than ${this.options.eventLimits.maxPayloadInKb} KB.`);
@@ -706,23 +707,5 @@ export class HttpApi {
         res.json({ error: 'Service unavailable' });
 
         return false;
-    }
-
-    /**
-     * Get the amount of bytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
-     */
-    protected dataToBytes(...data: any): number {
-        return data.reduce((totalBytes, element) => {
-            element = typeof element === 'string' ? element : JSON.stringify(element);
-
-            try {
-                return totalBytes += Buffer.byteLength(element, 'utf8');
-            } catch (e) {
-                return totalBytes;
-            }
-        }, 0);
     }
 }
