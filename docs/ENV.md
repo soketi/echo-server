@@ -7,7 +7,6 @@
   - [Applications](#applications)
     - [Default Application](#default-application)
     - [Apps Manager](#apps-manager)
-  - [CORS Settings](#cors-settings-1)
   - [Rate Limiting](#rate-limiting)
     - [Events Soft Limits](#events-soft-limits)
   - [Channels](#channels)
@@ -120,7 +119,6 @@ To configure the rest of the MySQL connection details, check [MySQL](#mysql).
 | - | - | - | - | - |
 | `APPS_MANAGER_MYSQL_TABLE` | `appManager.mysql.table` | `echo_apps` | - | The table name where the apps will be stored in MySQL. |
 
-## CORS Settings
 ## Rate Limiting
 
 Rate limiting is helping you limit the access for applications at the app level with [app settings, per se](#default-application).
@@ -231,6 +229,7 @@ Configuration needed to connect to a MySQL server.
 | `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
 | `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
 | `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
+
 ## Debugging
 
 Options for application debugging. Should be disabled on production environments.
