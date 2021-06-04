@@ -1,6 +1,5 @@
 import { Log } from './log';
 
-const bodyParser = require('body-parser');
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
@@ -39,17 +38,15 @@ export class Server {
      * @return {Promise<any>}
      */
     initialize(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.serverProtocol().then(() => {
-                let host = this.options.host || '127.0.0.1';
-                Log.success(`Running at ${host} on port ${this.options.port}`);
+        return this.serverProtocol().then(() => {
+            let host = this.options.host || '127.0.0.1';
+            Log.success(`Running at ${host} on port ${this.options.port}`);
 
-                this.configureAdapters();
-                this.configureSocketIdGeneration();
+            this.configureAdapters();
+            this.configureSocketIdGeneration();
 
-                resolve(this.io);
-            }, error => reject(error));
-        });
+            return this.io;
+        }, error => Log.error(error));
     }
 
     /**
@@ -58,14 +55,14 @@ export class Server {
      * @return {Promise<any>}
      */
     protected serverProtocol(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (this.options.protocol === 'https') {
-                this.configureSecurity().then(() => {
-                    resolve(this.buildServer(true));
-                }, error => reject(error));
-            } else {
-                resolve(this.buildServer(false));
-            }
+        if (this.options.httpApi.protocol === 'https') {
+            return this.configureSecurity().then(() => {
+                return this.buildServer(true);
+            }, error => Log.error(error));
+        }
+
+        return new Promise(resolve => {
+            resolve(this.buildServer(false));
         });
     }
 
@@ -99,9 +96,6 @@ export class Server {
      */
     protected buildServer(secure: boolean): any {
         this.express = express();
-
-        this.configureHeaders();
-        this.configureJsonBody();
 
         let httpServer = secure
             ? https.createServer(this.options, this.express)
@@ -149,34 +143,5 @@ export class Server {
         let randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
         this.io.engine.generateId = req => randomNumber(min, max) + '.' + randomNumber(min, max);
-    }
-
-    /**
-     * Configure the headers from the settings.
-     *
-     * @return {void}
-     */
-    protected configureHeaders(): void {
-        this.express.use((req, res, next) => {
-            for (let header in this.options.headers) {
-                res.setHeader(header, this.options.headers[header]);
-            }
-
-            next();
-        });
-    }
-
-    /**
-     * Configure the JSON body parser.
-     *
-     * @return {void}
-     */
-    protected configureJsonBody(): void {
-        this.express.use(bodyParser.json({
-            strict: true,
-            verify: (req, res, buffer) => {
-                req.rawBody = buffer.toString();
-            },
-        }));
     }
 }

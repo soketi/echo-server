@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2.1.5
         name: Installing Node.js v${{ matrix.node }}
         with:
           node-version: ${{ matrix.node }}

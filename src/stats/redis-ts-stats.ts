@@ -26,7 +26,7 @@ export class RedisTimeSeriesStats implements StatsDriver {
      *
      * @type {Redis}
      */
-     protected redis: typeof Redis;
+    protected redis: typeof Redis;
 
     /**
      * Initialize the Redis stats driver.

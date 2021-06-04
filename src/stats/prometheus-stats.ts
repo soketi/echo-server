@@ -3,7 +3,6 @@ import { PrometheusDriver } from 'prometheus-query';
 import { StatsDriver } from './stats-driver';
 
 const dayjs = require('dayjs');
-const request = require('request');
 
 export class PrometheusStats implements StatsDriver {
     /**
@@ -194,7 +193,7 @@ export class PrometheusStats implements StatsDriver {
      * @param  {number}  end
      * @return {string}
      */
-     protected calculateStringStepFor(start: number, end: number): string {
+    protected calculateStringStepFor(start: number, end: number): string {
         let startDate = dayjs(start);
         let endDate = dayjs(end);
 
@@ -215,7 +214,7 @@ export class PrometheusStats implements StatsDriver {
      * @param  {App}  app
      * @return {boolean}
      */
-     protected canRegisterStats(app: App): boolean {
+    protected canRegisterStats(app: App): boolean {
         return this.options.stats.enabled && !!app.enableStats;
     }
 }

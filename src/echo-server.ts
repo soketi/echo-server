@@ -1,15 +1,15 @@
 import { AppManager } from './app-managers/app-manager';
-import { Channel, PresenceChannel, PrivateChannel } from './channels';
+import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
 import { Prometheus } from './prometheus';
+import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
 import { Stats } from './stats';
 import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
-const packageFile = require('../package.json');
 
 /**
  * Echo server class.
@@ -36,6 +36,10 @@ export class EchoServer {
                         secret: 'echo-app-secret',
                         maxConnections: -1,
                         enableStats: false,
+                        enableClientMessages: true,
+                        maxBackendEventsPerMinute: -1,
+                        maxClientEventsPerMinute: -1,
+                        maxReadRequestsPerMinute: -1,
                     },
                 ],
             },
@@ -43,7 +47,7 @@ export class EchoServer {
                 table: 'echo_apps',
             },
         },
-        closingGracePeriod: 60,
+        closingGracePeriod: 3,
         cors: {
             credentials: true,
             origin: ['*'],
@@ -89,21 +93,28 @@ export class EchoServer {
                 protocol: 'http',
             },
         },
+        channelLimits: {
+            maxNameLength: 100,
+        },
         development: false,
+        eventLimits: {
+            maxChannelsAtOnce: 100,
+            maxNameLength: 200,
+            maxPayloadInKb: 100,
+        },
         host: null,
-        headers: [
-            //
-        ],
+        httpApi: {
+            extraHeaders: [
+                //
+            ],
+            protocol: 'http',
+            requestLimitInMb: 100,
+            trustProxies: false,
+        },
         instance: {
             node_id: null,
             process_id: process.pid || uuidv4(),
             pod_id: null,
-        },
-        network: {
-            probesApi: {
-                enabled: false,
-                token: 'probe-token',
-            },
         },
         port: 6001,
         presence: {
@@ -117,7 +128,9 @@ export class EchoServer {
             enabled: false,
             prefix: 'echo_server_',
         },
-        protocol: 'http',
+        rateLimiter: {
+            driver: 'local',
+        },
         replication: {
             driver: 'local',
         },
@@ -165,6 +178,13 @@ export class EchoServer {
     protected privateChannel: PrivateChannel;
 
     /**
+     * Encrypted private channel instance.
+     *
+     * @type {PrivateChannel}
+     */
+     protected encryptedPrivateChannel: EncryptedPrivateChannel;
+
+    /**
      * Presence channel instance.
      *
      * @type {PresenceChannel}
@@ -190,14 +210,14 @@ export class EchoServer {
      *
      * @type {Prometheus}
      */
-     protected prometheus: Prometheus;
+    protected prometheus: Prometheus;
 
-    /**
-     * Let the server know to reject any new connections.
+     /**
+     * The RateLimiter client.
      *
-     * @type {boolean}
+     * @type {RateLimiter}
      */
-    rejectNewConnections = false;
+    protected rateLimiter: RateLimiter;
 
     /**
      * Let the plugins know if the server is closing.
@@ -227,37 +247,28 @@ export class EchoServer {
      * @return {Promise<any>}
      */
     start(options: any = {}): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.options = {
-                ...Object.assign(this.options, options),
-                ...{
-                    closingGracePeriod: ['local', 'prometheus'].includes(this.options.stats.driver) ? 1 : this.options.closingGracePeriod,
-                },
-            };
+        this.options = Object.assign(this.options, options);
+        this.server = new Server(this.options);
 
-            this.server = new Server(this.options);
+        if (this.options.development) {
+            Log.warning('Starting the server in development mode...\n');
+        } else {
+            Log.info('Starting the server...\n')
+        }
 
-            if (this.options.development) {
-                Log.warning('Starting the server in development mode...\n');
-            } else {
-                Log.info('Starting the server...\n')
-            }
+        return this.server.initialize().then(io => {
+            return this.initialize(io).then(() => {
+                this.closing = false;
 
-            this.server.initialize().then(io => {
-                this.initialize(io).then(() => {
-                    this.rejectNewConnections = false;
-                    this.closing = false;
+                Log.info('\nServer ready!\n');
 
-                    Log.info('\nServer ready!\n');
+                if (this.options.development) {
+                    Log.info({ options: JSON.stringify(this.options) });
+                }
 
-                    if (this.options.development) {
-                        Log.info({ options: JSON.stringify(this.options) });
-                    }
-
-                    resolve(this);
-                }, error => Log.error(error));
+                return this;
             }, error => Log.error(error));
-        });
+        }, error => Log.error(error));
     }
 
     /**
@@ -271,10 +282,12 @@ export class EchoServer {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
+            this.rateLimiter = new RateLimiter(this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -284,6 +297,7 @@ export class EchoServer {
                 this.appManager,
                 this.stats,
                 this.prometheus,
+                this.rateLimiter,
             );
 
             this.httpApi.initialize();
@@ -307,7 +321,6 @@ export class EchoServer {
         return new Promise((resolve, reject) => {
             Log.warning('Stopping the server...');
 
-            this.rejectNewConnections = true;
             this.closing = true;
 
             this.server.io.close(async () => {
@@ -356,7 +369,7 @@ export class EchoServer {
         nsp.use((socket, next) => {
             socket.id = this.generateSocketId();
 
-            this.checkIfSocketHasValidEchoApp(socket).then(socket => {
+            this.checkForValidEchoApp(socket).then(socket => {
                 next();
             }, error => {
                 next(error);
@@ -378,15 +391,18 @@ export class EchoServer {
                 this.prometheus.markNewConnection(socket);
             }
 
-            if (this.rejectNewConnections || this.closing) {
+            if (this.closing) {
                 return socket.disconnect();
             }
 
-            this.checkIfSocketDidNotReachedLimit(socket).then(socket => {
+            this.checkAppConnectionLimit(socket).then(socket => {
                 this.onSubscribe(socket);
                 this.onUnsubscribe(socket);
                 this.onDisconnecting(socket);
-                this.onClientEvent(socket);
+
+                if (socket.data.echoApp.enableClientMessages) {
+                    this.onClientEvent(socket);
+                }
             }, error => {
                 socket.disconnect();
             });
@@ -432,6 +448,10 @@ export class EchoServer {
      */
     protected onSubscribe(socket: any): void {
         socket.on('subscribe', data => {
+            if (data.channel.length > this.options.channelLimits.maxNameLength) {
+                return socket.emit('socket:error', { message: `The channel name is longer than the allowed ${this.options.channelLimits.maxNameLength} characters.`, code: 4100 });
+            }
+
             this.getChannelInstance(data.channel).join(socket, data);
         });
     }
@@ -496,11 +516,13 @@ export class EchoServer {
      * Get the channel instance for a channel name.
      *
      * @param  {string}  channel
-     * @return {Channel|PrivateChannel|PresenceChannel}
+     * @return {Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel}
      */
-    getChannelInstance(channel): Channel|PrivateChannel|PresenceChannel {
+    getChannelInstance(channel): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
         if (Channel.isPresenceChannel(channel)) {
             return this.presenceChannel;
+        } else if (Channel.isEncryptedPrivateChannel(channel)) {
+            return this.encryptedPrivateChannel;
         } else if (Channel.isPrivateChannel(channel)) {
             return this.privateChannel;
         } else {
@@ -515,7 +537,7 @@ export class EchoServer {
      * @param  {any}  socket
      * @return {Promise<any>}
      */
-    protected checkIfSocketHasValidEchoApp(socket: any): Promise<any> {
+    protected checkForValidEchoApp(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.data.echoApp) {
                 return resolve(socket);
@@ -566,7 +588,7 @@ export class EchoServer {
      * @param  {any}  socket
      * @return {Promise<any>}
      */
-    protected checkIfSocketDidNotReachedLimit(socket: any): Promise<any> {
+    protected checkAppConnectionLimit(socket: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
                 if (this.options.development) {

@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Commit
 
 on:
   push:
@@ -19,12 +19,10 @@ jobs:
     strategy:
       matrix:
         node:
-          - 14.16.0-alpine
-          - 14.16.0-buster
-          - 14.16.0-buster-slim
-          - 14.16.0-stretch
-          - 14.16.0-stretch-slim
           - lts-alpine
+          - 14-alpine
+          - 12-alpine
+          - 10-alpine
 
     services:
       registry:
@@ -71,3 +69,5 @@ jobs:
         with:
           push: true
           tags: soketi/echo-server:${{ github.sha }}-${{ matrix.node }}
+          build-args: |
+            VERSION=${{ matrix.node }}

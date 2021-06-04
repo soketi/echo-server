@@ -9,8 +9,6 @@ describe('public channel test', () => {
         let roomName = Connector.randomChannelName();
 
         Connector.connectToPublicChannel(client, roomName).listen('.greeting', e => {
-            e = JSON.parse(e);
-
             expect(e.message).toBe('hello');
             client.disconnect();
             done();

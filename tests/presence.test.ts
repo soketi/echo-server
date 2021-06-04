@@ -27,8 +27,6 @@ describe('presence channel test', () => {
                 expect(JSON.stringify(users)).toBe(JSON.stringify([user.user_info]));
             })
             .listen('.message', e => {
-                e = JSON.parse(e);
-
                 expect(e.message).toBe('hello');
                 client.disconnect();
                 done();
