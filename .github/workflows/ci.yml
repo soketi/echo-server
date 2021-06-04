@@ -38,7 +38,6 @@ jobs:
           # - redis-ts - WIP
           - prometheus
 
-
     name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
 
     steps:
@@ -56,7 +55,7 @@ jobs:
           number of databases: 100
 
       - name: Setup MySQL
-        uses: mirromutth/mysql-action@v1.1
+        uses: haltuf/mysql-action@v1
         with:
           host port: 3306
           container port: 3306
