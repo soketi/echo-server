@@ -2,6 +2,7 @@ import { Log } from './../log';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Stats } from './../stats';
+import { Utils } from '../utils';
 
 export class Channel {
     /**
@@ -148,7 +149,7 @@ export class Channel {
                     return socket.emit('socket:error', { message: `The broadcasting client event name is longer than ${this.options.eventLimits.maxNameLength} characters.`, code: 4100 });
                 }
 
-                let payloadSizeInKb = this.dataToBytes(data.data) / 1024;
+                let payloadSizeInKb = Utils.dataToBytes(data.data) / 1024;
 
                 if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
                     return socket.emit('socket:error', { message: `The broadcasting client event payload is greater than ${this.options.eventLimits.maxPayloadInKb} KB.`, code: 4100 });
@@ -295,23 +296,5 @@ export class Channel {
      */
     static isEncryptedPrivateChannel(channel: string): boolean {
         return channel.lastIndexOf('private-encrypted-', 0) === 0;
-    }
-
-    /**
-     * Get the amount of bytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
-     */
-     protected dataToBytes(...data: any): number {
-        return data.reduce((totalBytes, element) => {
-            element = typeof element === 'string' ? element : JSON.stringify(element);
-
-            try {
-                return totalBytes += Buffer.byteLength(element, 'utf8');
-            } catch (e) {
-                return totalBytes;
-            }
-        }, 0);
     }
 }

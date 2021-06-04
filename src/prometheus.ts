@@ -1,4 +1,5 @@
 import * as prom from 'prom-client';
+import { Utils } from './utils';
 
 export class Prometheus {
     /**
@@ -100,7 +101,7 @@ export class Prometheus {
 
         socket.onAny((event, ...args) => {
             this.metrics.clientToServerReceivedEventsTotal.inc({ namespace });
-            this.metrics.socketBytesReceived.inc({ namespace }, this.dataToBytes(event, args));
+            this.metrics.socketBytesReceived.inc({ namespace }, Utils.dataToBytes(event, args));
             this.metrics.serverToClientSentEventsTotal.inc({ namespace });
         });
     }
@@ -129,7 +130,7 @@ export class Prometheus {
      */
     markApiMessage(namespace: string, req: any, ...responseData: any): void {
         this.metrics.httpBytesReceived.inc({ namespace }, req.socket.bytesRead);
-        this.metrics.httpBytesTransmitted.inc({ namespace }, req.socket.bytesRead + this.dataToBytes(...responseData));
+        this.metrics.httpBytesTransmitted.inc({ namespace }, req.socket.bytesRead + Utils.dataToBytes(...responseData));
         this.metrics.httpCallsReceived.inc({ namespace });
     }
 
@@ -142,24 +143,6 @@ export class Prometheus {
      * @return {void}
      */
     markWsMessage(namespace: string, event: string, ...data: any): void {
-        this.metrics.socketBytesTransmitted.inc({ namespace }, this.dataToBytes(namespace, event, ...data));
-    }
-
-    /**
-     * Get the amount of bytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
-     */
-    protected dataToBytes(...data: any): number {
-        return data.reduce((totalBytes, element) => {
-            element = typeof element === 'string' ? element : JSON.stringify(element);
-
-            try {
-                return totalBytes += Buffer.byteLength(element, 'utf8');
-            } catch (e) {
-                return totalBytes;
-            }
-        }, 0);
+        this.metrics.socketBytesTransmitted.inc({ namespace }, Utils.dataToBytes(namespace, event, ...data));
     }
 }
