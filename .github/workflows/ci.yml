@@ -55,7 +55,7 @@ jobs:
           number of databases: 100
 
       - name: Setup MySQL
-        uses: haltuf/mysql-action@v1
+        uses: haltuf/mysql-action@master
         with:
           host port: 3306
           container port: 3306
