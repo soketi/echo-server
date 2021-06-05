@@ -38,6 +38,7 @@ export class Cli {
         APPS_MANAGER_HOST: 'appManager.api.host',
         APPS_MANAGER_TOKEN: 'appManager.api.token',
         APPS_MANAGER_MYSQL_TABLE: 'appManager.mysql.table',
+        APPS_MANAGER_MYSQL_VERSION: 'appManager.mysql.version',
         CHANNEL_MAX_NAME_LENGTH: 'channelLimits.maxNameLength',
         CLOSING_GRACE_PERIOD: 'closingGracePeriod',
         CORS_ALLOWED_ORIGINS: 'cors.origin',

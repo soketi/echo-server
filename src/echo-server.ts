@@ -45,6 +45,7 @@ export class EchoServer {
             },
             mysql: {
                 table: 'echo_apps',
+                version: '8.0',
             },
         },
         closingGracePeriod: 3,

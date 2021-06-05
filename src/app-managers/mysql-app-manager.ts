@@ -21,6 +21,7 @@ export class MysqlAppManager implements AppManagerDriver {
             connection: {
                 ...options.database.mysql,
             },
+            version: options.appManager.mysql.version,
         });
     }
 

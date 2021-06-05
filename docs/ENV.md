@@ -118,6 +118,7 @@ To configure the rest of the MySQL connection details, check [MySQL](#mysql).
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APPS_MANAGER_MYSQL_TABLE` | `appManager.mysql.table` | `echo_apps` | - | The table name where the apps will be stored in MySQL. |
+| `APPS_MANAGER_MYSQL_VERSION` | `appManager.mysql.version` | `8.0` | - | The MySQL version to be used on the connection. Defaults to latest MySQL (`8.0`) |
 
 ## Rate Limiting
 
