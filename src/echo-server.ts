@@ -47,6 +47,13 @@ export class EchoServer {
                 table: 'echo_apps',
                 version: '8.0',
             },
+            postgres: {
+                table: 'echo_apps',
+                version: '13.3',
+            },
+        },
+        channelLimits: {
+            maxNameLength: 100,
         },
         closingGracePeriod: 3,
         cors: {
@@ -85,6 +92,13 @@ export class EchoServer {
                 password: 'password',
                 database: 'main',
             },
+            postgres: {
+                host: '127.0.0.1',
+                port: 3306,
+                user: 'root',
+                password: 'password',
+                database: 'main',
+            },
             local: {
                 //
             },
@@ -94,8 +108,10 @@ export class EchoServer {
                 protocol: 'http',
             },
         },
-        channelLimits: {
-            maxNameLength: 100,
+        databasePooling: {
+            enabled: false,
+            min: 0,
+            max: 7,
         },
         development: false,
         eventLimits: {

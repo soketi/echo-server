@@ -15,7 +15,6 @@ This is a fork of the original [Laravel Echo Server package](https://github.com/
 
 - [Echo Server](#echo-server)
   - [🤝 Supporting](#-supporting)
-  - [Current Milestones](#current-milestones)
   - [System Requirements](#system-requirements)
   - [🚀 Installation](#-installation)
   - [🙌 Usage](#-usage)
@@ -42,10 +41,6 @@ Renoki Co. and Soketi on GitHub aims on bringing a lot of open source projects a
 If you are using your application in your day-to-day job, on presentation demos, hobby projects or even school projects, spread some kind words about our work or sponsor our work. Kind words will touch our chakras and vibe, while the sponsorships will keep the open source projects alive.
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R42U8CL)
-
-## Current Milestones
-
-- MySQL Apps Manager
 
 ## System Requirements
 

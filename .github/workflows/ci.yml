@@ -33,6 +33,7 @@ jobs:
           - array
           - api
           - mysql
+          - postgres
         stats_driver:
           - local
           # - redis-ts - WIP
@@ -65,10 +66,19 @@ jobs:
           mysql database: main
           mysql root password: password
 
+      - name: Setup PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: 13.3
+          postgresql db: main
+          postgresql user: root
+          postgresql password: password
+
       - name: Load SQL into databases
         run: |
           sleep 15
           mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
+          psql --host=127.0.0.1 --username=root --password=password main < tests/fixtures/app.sql
 
       - name: Installing dependencies
         run: |
