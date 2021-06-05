@@ -77,7 +77,9 @@ jobs:
         run: |
           sleep 15
           mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
-          psql --host=127.0.0.1 --username=root --password=password main < tests/fixtures/app.sql
+          psql --host=127.0.0.1 --username=root --password main < tests/fixtures/app.sql
+        env:
+          PGPASSWORD: password
 
       - name: Installing dependencies
         run: |
