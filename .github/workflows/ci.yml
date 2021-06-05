@@ -21,10 +21,9 @@ jobs:
 
       matrix:
         node:
-          - 12.x
           - 14.x
         presence_db:
-          - redis
+          # - redis # TODO: Deprecated
           - socket
         replication_driver:
           - redis
@@ -36,7 +35,7 @@ jobs:
           - postgres
         stats_driver:
           - local
-          # - redis-ts - WIP
+          # - redis-ts # TODO: Deprecated?
           - prometheus
 
     name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
