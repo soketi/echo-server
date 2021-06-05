@@ -3,6 +3,7 @@ import { AppManagerDriver } from './app-manager-driver';
 import { ArrayAppManager } from './array-app-manager';
 import { Log } from './../log';
 import { ApiAppManager } from './api-app-manager';
+import { MysqlAppManager } from './mysql-app-manager';
 
 /**
  * Class that controls the key/value data store.
@@ -23,6 +24,8 @@ export class AppManager implements AppManagerDriver {
             this.driver = new ArrayAppManager(options);
         } else if (options.appManager.driver === 'api') {
             this.driver = new ApiAppManager(options);
+        } else if (options.appManager.driver === 'mysql') {
+            this.driver = new MysqlAppManager(options);
         } else {
             Log.error('Clients driver not set.');
         }

@@ -16,6 +16,7 @@
   - [Databases](#databases)
     - [Redis](#redis)
     - [Prometheus](#prometheus)
+    - [MySQL](#mysql)
   - [Debugging](#debugging)
     - [Node Metadata](#node-metadata)
 
@@ -99,10 +100,25 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false,"enableClientMessages":true,"maxBackendEventsPerMinute":"-1","maxClientEventsPerMinute":"-1","maxReadRequestsPerMinute":"-1"}]'` | - | The list of apps to be used for authentication. |
-| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
+| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api`, `mysql` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
 | `APPS_MANAGER_ENDPOINT` | `appManager.api.endpoint` | `/echo-server/app` | - | The endpoint used to retrieve an app. This is for `api` driver. |
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |
 | `APPS_MANAGER_TOKEN` | `appManager.api.token` | `echo-app-token` | - | The token used for any API app manager provider to know the request came from the Node.js server. |
+
+For SQL-related drivers, a table is needed with the following configuration:
+
+- `id` - number or string
+- `key` - number or string
+- `secret` - string
+- `max_connections` - integer
+- `enable_stats` - boolean
+
+To configure the rest of the MySQL connection details, check [MySQL](#mysql).
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `APPS_MANAGER_MYSQL_TABLE` | `appManager.mysql.table` | `echo_apps` | - | The table name where the apps will be stored in MySQL. |
+| `APPS_MANAGER_MYSQL_VERSION` | `appManager.mysql.version` | `8.0` | - | The MySQL version to be used on the connection. Defaults to latest MySQL (`8.0`) |
 
 ## Rate Limiting
 
@@ -202,6 +218,18 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 | `PROMETHEUS_HOST` | `prometheus.host` | `127.0.0.1` | - | The host of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |
+
+### MySQL
+
+Configuration needed to connect to a MySQL server.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `MYSQL_HOST` | `database.mysql.host` | `127.0.0.1` | - | The MySQL host used for `mysql` driver. |
+| `MYSQL_PORT` | `database.mysql.port` | `3306` | - | The MySQL port used for `mysql` driver. |
+| `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
+| `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
+| `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
 
 ## Debugging
 

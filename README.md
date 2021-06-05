@@ -51,7 +51,7 @@ If you are using your application in your day-to-day job, on presentation demos,
 
 The following are required to function properly:
 
-- Node 10.0+
+- Node 12.0+
 - Redis 6+ (optional)
 
 Additional information on broadcasting with Laravel can be found in the official [Broadcasting docs](https://laravel.com/docs/master/broadcasting)

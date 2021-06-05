@@ -21,7 +21,6 @@ jobs:
 
       matrix:
         node:
-          - 10.x
           - 12.x
           - 14.x
         presence_db:
@@ -33,11 +32,11 @@ jobs:
         apps_manager_driver:
           - array
           - api
+          - mysql
         stats_driver:
           - local
           # - redis-ts - WIP
           - prometheus
-
 
     name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
 
@@ -54,6 +53,22 @@ jobs:
         with:
           redis version: 6
           number of databases: 100
+
+      - name: Setup MySQL
+        uses: haltuf/mysql-action@master
+        with:
+          host port: 3306
+          container port: 3306
+          character set server: utf8mb4
+          collation server: utf8mb4_unicode_ci
+          mysql version: 8.0
+          mysql database: main
+          mysql root password: password
+
+      - name: Load SQL into databases
+        run: |
+          sleep 15
+          mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
 
       - name: Installing dependencies
         run: |
