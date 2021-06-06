@@ -46,14 +46,10 @@ export abstract class SqlAppManager implements AppManagerDriver {
      * @return {Promise<App|null>}
      */
     findById(id: string, socket: any, data: any): Promise<App|null> {
-        return new Promise((resolve, reject) => {
-            this.connection<App>(this.appsTableName()).where('id', id).select('*').then(apps => {
-                if (apps.length === 0) {
-                    reject({ reason: `App ${id} not found.` });
-                } else {
-                    resolve(new App(apps[0]));
-                }
-            });
+        return this.selectById(id).then(apps => {
+            return apps.length === 0
+                ? null
+                : new App(apps[0] || apps);
         });
     }
 
@@ -66,15 +62,35 @@ export abstract class SqlAppManager implements AppManagerDriver {
      * @return {Promise<App|null>}
      */
     findByKey(key: string, socket: any, data: any): Promise<App|null> {
-        return new Promise((resolve, reject) => {
-            this.connection<App>(this.appsTableName()).where('key', key).select('*').then(apps => {
-                if (apps.length === 0) {
-                    reject({ reason: `App ${key} not found.` });
-                } else {
-                    resolve(new App(apps[0]));
-                }
-            });
+        return this.selectByKey(key).then(apps => {
+            return apps.length === 0
+                ? null
+                : new App(apps[0] || apps);
         });
+    }
+
+    /**
+     * Make a Knex selection for the app ID.
+     *
+     * @param  {string}  id
+     * @return {App[]}
+     */
+    protected selectById(id: string): any {
+        return this.connection<App>(this.appsTableName())
+            .where('id', id)
+            .select('*');
+    }
+
+    /**
+     * Make a Knex selection for the app key.
+     *
+     * @param  {string}  key
+     * @return {App[]}
+     */
+    protected selectByKey(key: string): any {
+        return this.connection<App>(this.appsTableName())
+            .where('key', key)
+            .select('*');
     }
 
     /**
