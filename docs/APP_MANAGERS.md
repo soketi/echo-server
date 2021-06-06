@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS echo_apps (
     secret varchar(255) NOT NULL,
     max_connections integer NOT NULL,
     enable_stats smallint NOT NULL,
-    enable_client_messages smallint NOT NULL
+    enable_client_messages smallint NOT NULL,
     max_backend_events_per_min integer NOT NULL,
     max_client_events_per_min integer NOT NULL,
     max_read_req_per_min integer NOT NULL
