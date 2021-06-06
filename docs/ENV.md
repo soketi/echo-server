@@ -245,7 +245,7 @@ Configuration needed to connect to a MySQL server.
 | - | - | - | - | - |
 | `MYSQL_HOST` | `database.mysql.host` | `127.0.0.1` | - | The MySQL host used for `mysql` driver. |
 | `MYSQL_PORT` | `database.mysql.port` | `3306` | - | The MySQL port used for `mysql` driver. |
-| `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
+| `MYSQL_USERNAME` | `database.mysql.user` | `root` | - | The MySQL username used for `mysql` driver. |
 | `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
 | `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
 
@@ -259,7 +259,7 @@ Configuration needed to connect to a PostgreSQL server.
 | - | - | - | - | - |
 | `POSTGRES_HOST` | `database.postgres.host` | `127.0.0.1` | - | The PostgreSQL host used for `postgres` driver. |
 | `POSTGRES_PORT` | `database.postgres.port` | `3306` | - | The PostgreSQL port used for `postgres` driver. |
-| `POSTGRES_USERNAME` | `database.postgres.username` | `root` | - | The PostgreSQL username used for `postgres` driver. |
+| `POSTGRES_USERNAME` | `database.postgres.user` | `root` | - | The PostgreSQL username used for `postgres` driver. |
 | `POSTGRES_PASSWORD` | `database.postgres.password` | `password` | - | The PostgreSQL password used for `postgres` driver. |
 | `POSTGRES_DATABASE` | `database.postgres.database` | `main` | - | The PostgreSQL database used for `postgres` driver. |
 
