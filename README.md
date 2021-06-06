@@ -15,7 +15,6 @@ This is a fork of the original [Laravel Echo Server package](https://github.com/
 
 - [Echo Server](#echo-server)
   - [🤝 Supporting](#-supporting)
-  - [Current Milestones](#current-milestones)
   - [System Requirements](#system-requirements)
   - [🚀 Installation](#-installation)
   - [🙌 Usage](#-usage)
@@ -43,15 +42,11 @@ If you are using your application in your day-to-day job, on presentation demos,
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R42U8CL)
 
-## Current Milestones
-
-- MySQL Apps Manager
-
 ## System Requirements
 
 The following are required to function properly:
 
-- Node 12.0+
+- Node 14.0+
 - Redis 6+ (optional)
 
 Additional information on broadcasting with Laravel can be found in the official [Broadcasting docs](https://laravel.com/docs/master/broadcasting)

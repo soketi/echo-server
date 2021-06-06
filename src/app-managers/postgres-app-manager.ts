@@ -1,13 +1,13 @@
 import { SqlAppManager } from './sql-app-manager';
 
-export class MysqlAppManager extends SqlAppManager {
+export class PostgresAppManager extends SqlAppManager {
     /**
      * Get the client name to be used by Knex.
      *
      * @return {string}
      */
     protected knexClientName(): string {
-        return 'mysql';
+        return 'pg';
     }
 
     /**
@@ -17,7 +17,7 @@ export class MysqlAppManager extends SqlAppManager {
      */
     protected knexConnectionDetails(): any {
         return {
-            ...this.options.database.mysql,
+            ...this.options.database.postgres,
         };
     }
 
@@ -28,7 +28,7 @@ export class MysqlAppManager extends SqlAppManager {
      * @return {string}
      */
     protected knexVersion(): string {
-        return this.options.appManager.mysql.version;
+        return this.options.appManager.postgres.version;
     }
 
     /**
@@ -47,6 +47,6 @@ export class MysqlAppManager extends SqlAppManager {
      * @return {string}
      */
     protected appsTableName(): string {
-        return this.options.appManager.mysql.table;
+        return this.options.appManager.postgres.table;
     }
 }

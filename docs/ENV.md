@@ -7,6 +7,9 @@
   - [Applications](#applications)
     - [Default Application](#default-application)
     - [Apps Manager](#apps-manager)
+      - [SQL-Related Drivers](#sql-related-drivers)
+      - [MySQL](#mysql)
+      - [PostgreSQL](#postgresql)
   - [Rate Limiting](#rate-limiting)
     - [Events Soft Limits](#events-soft-limits)
   - [Channels](#channels)
@@ -16,7 +19,9 @@
   - [Databases](#databases)
     - [Redis](#redis)
     - [Prometheus](#prometheus)
-    - [MySQL](#mysql)
+    - [MySQL](#mysql-1)
+    - [PostgreSQL](#postgresql-1)
+  - [Database Pooling](#database-pooling)
   - [Debugging](#debugging)
     - [Node Metadata](#node-metadata)
 
@@ -100,10 +105,12 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APPS_LIST` | `appManager.array.apps` | `'[{"id":"echo-app","key":"echo-app-key","secret":"echo-app-secret","maxConnections":"-1","enableStats":false,"enableClientMessages":true,"maxBackendEventsPerMinute":"-1","maxClientEventsPerMinute":"-1","maxReadRequestsPerMinute":"-1"}]'` | - | The list of apps to be used for authentication. |
-| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api`, `mysql` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
+| `APPS_MANAGER_DRIVER` | `appManager.driver` | `array` | `array`, `api`, `mysql`, `postgres` | The driver used to retrieve the app. Use `api` or other centralized method for storing the data. |
 | `APPS_MANAGER_ENDPOINT` | `appManager.api.endpoint` | `/echo-server/app` | - | The endpoint used to retrieve an app. This is for `api` driver. |
 | `APPS_MANAGER_HOST` | `appManager.api.host` | `http://127.0.0.1` | - | The host used to make call, alongside with the endpoint, to retrieve apps. It will be passed in the request as `?token=` |
 | `APPS_MANAGER_TOKEN` | `appManager.api.token` | `echo-app-token` | - | The token used for any API app manager provider to know the request came from the Node.js server. |
+
+#### SQL-Related Drivers
 
 For SQL-related drivers, a table is needed with the following configuration:
 
@@ -113,12 +120,23 @@ For SQL-related drivers, a table is needed with the following configuration:
 - `max_connections` - integer
 - `enable_stats` - boolean
 
+#### MySQL
+
 To configure the rest of the MySQL connection details, check [MySQL](#mysql).
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `APPS_MANAGER_MYSQL_TABLE` | `appManager.mysql.table` | `echo_apps` | - | The table name where the apps will be stored in MySQL. |
 | `APPS_MANAGER_MYSQL_VERSION` | `appManager.mysql.version` | `8.0` | - | The MySQL version to be used on the connection. Defaults to latest MySQL (`8.0`) |
+
+#### PostgreSQL
+
+To configure the rest of the PostgreSQL connection details, check [PostgreSQL](#postgresql).
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `APPS_MANAGER_POSTGRES_TABLE` | `appManager.postgres.table` | `echo_apps` | - | The table name where the apps will be stored in Postgres. |
+| `APPS_MANAGER_POSTGRES_VERSION` | `appManager.postgres.version` | `8.0` | - | The Postgres version to be used on the connection. Defaults to latest stable Postgres (`13.3`) |
 
 ## Rate Limiting
 
@@ -227,9 +245,36 @@ Configuration needed to connect to a MySQL server.
 | - | - | - | - | - |
 | `MYSQL_HOST` | `database.mysql.host` | `127.0.0.1` | - | The MySQL host used for `mysql` driver. |
 | `MYSQL_PORT` | `database.mysql.port` | `3306` | - | The MySQL port used for `mysql` driver. |
-| `MYSQL_USERNAME` | `database.mysql.username` | `root` | - | The MySQL username used for `mysql` driver. |
+| `MYSQL_USERNAME` | `database.mysql.user` | `root` | - | The MySQL username used for `mysql` driver. |
 | `MYSQL_PASSWORD` | `database.mysql.password` | `password` | - | The MySQL password used for `mysql` driver. |
 | `MYSQL_DATABASE` | `database.mysql.database` | `main` | - | The MySQL database used for `mysql` driver. |
+
+This database supports [Database Pooling](#database-pooling).
+
+### PostgreSQL
+
+Configuration needed to connect to a PostgreSQL server.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `POSTGRES_HOST` | `database.postgres.host` | `127.0.0.1` | - | The PostgreSQL host used for `postgres` driver. |
+| `POSTGRES_PORT` | `database.postgres.port` | `3306` | - | The PostgreSQL port used for `postgres` driver. |
+| `POSTGRES_USERNAME` | `database.postgres.user` | `root` | - | The PostgreSQL username used for `postgres` driver. |
+| `POSTGRES_PASSWORD` | `database.postgres.password` | `password` | - | The PostgreSQL password used for `postgres` driver. |
+| `POSTGRES_DATABASE` | `database.postgres.database` | `main` | - | The PostgreSQL database used for `postgres` driver. |
+
+This database supports [Database Pooling](#database-pooling).
+
+## Database Pooling
+
+Behind the scenes, the connections to the relational databases are made using [Knex](https://knexjs.org/). In case you are using Connection Pooling in your database,
+you can instruct Knex to connect to them via pooling instead of a regular one connection per statement.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `DATABASE_POOLING_ENABLED` | `databasePooling.enabled` | `false` | `true`, `false` | Wether to enable the database pooling. The pooling will be truly enable only if the database suppport pooling in Knex. |
+| `DATABASE_POOLING_MIN` | `databasePooling.min` | `0` | - | The minimum amount of connections. |
+| `DATABASE_POOLING_MAX` | `databasePooling.max` | `7` | - | The maximum amount of connections. |
 
 ## Debugging
 

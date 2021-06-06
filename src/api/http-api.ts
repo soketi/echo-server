@@ -168,12 +168,10 @@ export class HttpApi {
      */
     protected configurePusherAuthentication(): void {
         this.express.param('appId', (req, res, next) => {
-            this.signatureIsValid(req).then(isValid => {
-                if (!isValid) {
-                    this.unauthorizedResponse(req, res);
-                } else {
-                    next()
-                }
+            this.signatureIsValid(req, res).then(() => {
+                next();
+            }, error => {
+                this.unauthorizedResponse(req, res);
             });
         });
     }
@@ -202,7 +200,7 @@ export class HttpApi {
 
             next();
         }, error => {
-            return this.tooManyRequestsResponse(req, res);
+            this.tooManyRequestsResponse(req, res);
         });
     }
 
@@ -585,13 +583,12 @@ export class HttpApi {
      * Check is an incoming request can access the api.
      *
      * @param  {any}  req
+     * @param  {any}  res
      * @return {Promise<boolean>}
      */
-    protected signatureIsValid(req: any): Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            this.getSignedToken(req).then(token => {
-                resolve(token === req.query.auth_signature);
-            });
+    protected signatureIsValid(req: any, res: any): Promise<boolean> {
+        return this.getSignedToken(req).then(token => {
+            return token === req.query.auth_signature;
         });
     }
 
@@ -605,6 +602,10 @@ export class HttpApi {
         let app = req.echoApp;
 
         return new Promise((resolve, reject) => {
+            if (! app) {
+                reject({ reason: 'The request is not authenticated.' });
+            }
+
             let key = req.query.auth_key;
             let token = new Pusher.Token(key, app.secret);
 

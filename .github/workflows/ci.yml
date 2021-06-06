@@ -21,10 +21,9 @@ jobs:
 
       matrix:
         node:
-          - 12.x
           - 14.x
         presence_db:
-          - redis
+          # - redis # TODO: Deprecated
           - socket
         replication_driver:
           - redis
@@ -33,9 +32,10 @@ jobs:
           - array
           - api
           - mysql
+          - postgres
         stats_driver:
           - local
-          # - redis-ts - WIP
+          # - redis-ts # TODO: Deprecated?
           - prometheus
 
     name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
@@ -65,10 +65,21 @@ jobs:
           mysql database: main
           mysql root password: password
 
+      - name: Setup PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: 13.3
+          postgresql db: main
+          postgresql user: postgres2
+          postgresql password: password
+
       - name: Load SQL into databases
         run: |
           sleep 15
-          mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app.sql
+          mysql --host=127.0.0.1 --user=root --password=password --database=main < tests/fixtures/app_mysql.sql
+          psql --host=127.0.0.1 --username=postgres2 main < tests/fixtures/app_postgres.sql
+        env:
+          PGPASSWORD: password
 
       - name: Installing dependencies
         run: |
@@ -99,6 +110,7 @@ jobs:
           APPS_MANAGER_TOKEN: some-very-secret-token
           APP_DEFAULT_ENABLE_STATS: true
           STATS_DRIVER: ${{ matrix.stats_driver }}
+          POSTGRES_USERNAME: postgres2
 
       - name: Execute tests
         run: |
