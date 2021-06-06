@@ -17,10 +17,10 @@
     - [Channels Soft Limits](#channels-soft-limits)
   - [Statsitics](#statsitics)
   - [Databases](#databases)
-    - [Redis](#redis)
-    - [Prometheus](#prometheus)
-    - [MySQL](#mysql-1)
-    - [PostgreSQL](#postgresql-1)
+    - [Redis Configuration](#redis-configuration)
+    - [Prometheus Configuration](#prometheus-configuration)
+    - [MySQL Configuration](#mysql-configuration)
+    - [PostgreSQL Configuration](#postgresql-configuration)
   - [Database Pooling](#database-pooling)
   - [Debugging](#debugging)
     - [Node Metadata](#node-metadata)
@@ -112,17 +112,10 @@ external API in order to retrieve an app, like [soketi/echo-server-core](https:/
 
 #### SQL-Related Drivers
 
-For SQL-related drivers, a table is needed with the following configuration:
-
-- `id` - number or string
-- `key` - number or string
-- `secret` - string
-- `max_connections` - integer
-- `enable_stats` - boolean
-
+For SQL-related drivers, a table is needed with a specific configuration. [You can find more about the SQL-Related Drivers int the App Managers documentation](APP_MANAGERS.md#sql-drivers)
 #### MySQL
 
-To configure the rest of the MySQL connection details, check [MySQL](#mysql).
+To configure the rest of the MySQL connection details, check [MySQL](#mysql-configuration).
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
@@ -131,7 +124,7 @@ To configure the rest of the MySQL connection details, check [MySQL](#mysql).
 
 #### PostgreSQL
 
-To configure the rest of the PostgreSQL connection details, check [PostgreSQL](#postgresql).
+To configure the rest of the PostgreSQL connection details, check [PostgreSQL](#postgresql-configuration).
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
@@ -205,7 +198,7 @@ For distributed systems:
 
 ## Databases
 
-### Redis
+### Redis Configuration
 
 Configuration needed to connect to a Redis server.
 
@@ -225,7 +218,7 @@ For [Redis Time Series](https://oss.redislabs.com/redistimeseries), you may use 
 | `REDIS_TS_PASSWORD` | `database.redisTs.password` | `null` | - | The Redis password used for `redis-ts` driver. |
 | `REDIS_TS_PREFIX` | `database.redisTs.keyPrefix` | `echo-server` | - | The key prefix for Redis. Only for `redis-ts` driver. |
 
-### Prometheus
+### Prometheus Configuration
 
 Echo Server embeds a Prometheus client that can be accessed on the `/metrics` endpoint. It provides data to be scraped by the Prometheus service and includes Socket.IO stats by namespace, as well as the Node.js default metrics.
 
@@ -237,7 +230,7 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 | `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |
 
-### MySQL
+### MySQL Configuration
 
 Configuration needed to connect to a MySQL server.
 
@@ -251,7 +244,7 @@ Configuration needed to connect to a MySQL server.
 
 This database supports [Database Pooling](#database-pooling).
 
-### PostgreSQL
+### PostgreSQL Configuration
 
 Configuration needed to connect to a PostgreSQL server.
 
