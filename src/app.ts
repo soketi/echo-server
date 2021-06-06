@@ -55,17 +55,17 @@ export class App {
     /**
      * Create a new app from object.
      *
-     * @param {App} app
+     * @param {any} app
      */
-    constructor(app: App) {
+    constructor(app: any) {
         this.id = app.id;
         this.key = app.key;
         this.secret = app.secret;
-        this.maxConnections = app.maxConnections || -1;
-        this.enableStats = app.enableStats || false;
-        this.enableClientMessages = app.enableStats || true;
-        this.maxBackendEventsPerMinute = app.maxBackendEventsPerMinute || -1;
-        this.maxClientEventsPerMinute = app.maxClientEventsPerMinute || -1;
-        this.maxReadRequestsPerMinute = app.maxReadRequestsPerMinute || -1;
+        this.maxConnections = app.maxConnections || app.max_connections || -1;
+        this.enableStats = app.enableStats || app.enable_stats || false;
+        this.enableClientMessages = app.enableClientMessages || app.enable_client_messages || true;
+        this.maxBackendEventsPerMinute = app.maxBackendEventsPerMinute || app.max_backend_events_per_min || -1;
+        this.maxClientEventsPerMinute = app.maxClientEventsPerMinute || app.max_client_events_per_min || -1;
+        this.maxReadRequestsPerMinute = app.maxReadRequestsPerMinute || app.max_read_req_per_min || -1;
     }
 }
