@@ -1,6 +1,7 @@
 import { Log } from './../log';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
+import { Socket } from './../socket';
 import { Stats } from './../stats';
 import { Utils } from '../utils';
 
@@ -47,11 +48,11 @@ export class Channel {
     /**
      * Join a given channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
      * @return {Promise<any>}
      */
-    join(socket: any, data: any): Promise<any> {
+    join(socket: Socket, data: any): Promise<any> {
         return new Promise((resolve, reject) => {
             socket.join(data.channel);
             this.onJoin(socket, data.channel, null);
@@ -63,12 +64,12 @@ export class Channel {
     /**
      * Leave a channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @param  {string}  reason
      * @return {void}
      */
-    leave(socket: any, channel: string, reason: string): void {
+    leave(socket: Socket, channel: string, reason: string): void {
         if (channel) {
             socket.leave(channel);
 
@@ -87,12 +88,12 @@ export class Channel {
     /**
      * Handle joins.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @param  {any}  member
      * @return {void}
      */
-    onJoin(socket: any, channel: string, member: any): void {
+    onJoin(socket: Socket, channel: string, member: any): void {
         socket.emit('channel:joined', channel);
 
         /**
@@ -119,11 +120,11 @@ export class Channel {
     /**
      * Trigger a client message.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
-     * @return {void}
+     * @return {any}
      */
-    onClientEvent(socket: any, data: any): void {
+    onClientEvent(socket: Socket, data: any): any {
         try {
             data = JSON.parse(data);
         } catch (e) {
@@ -219,42 +220,42 @@ export class Channel {
     /**
      * Check if a socket has joined a channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @return {boolean}
      */
-    isInChannel(socket: any, channel: string): boolean {
+    isInChannel(socket: Socket, channel: string): boolean {
         return socket.adapter.rooms.has(channel);
     }
 
     /**
      * Create alias for static.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @return {boolean}
      */
-    static isInChannel(socket: any, channel: string): boolean {
+    static isInChannel(socket: Socket, channel: string): boolean {
         return this.isInChannel(socket, channel);
     }
 
     /**
      * Extract the namespace from socket.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {string}
      */
-    getNspForSocket(socket: any): string {
+    getNspForSocket(socket: Socket): string {
         return socket.nsp.name;
     }
 
     /**
      * Create alias for static.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {string}
      */
-    static getNspForSocket(socket: any): string {
+    static getNspForSocket(socket: Socket): string {
         return this.getNspForSocket(socket);
     }
 

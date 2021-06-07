@@ -1,6 +1,7 @@
 import { App } from './../app';
 import { RateLimiterDriver } from './rate-limiter-driver';
 import { RateLimiterAbstract, RateLimiterMemory } from 'rate-limiter-flexible';
+import { Socket } from './../socket';
 
 export class LocalRateLimiter implements RateLimiterDriver {
     /**
@@ -22,7 +23,7 @@ export class LocalRateLimiter implements RateLimiterDriver {
      *
      * @type {any}
      */
-    protected socket: any;
+    protected socket: Socket;
 
     /**
      * Initialize the local rate limiter driver.
@@ -52,10 +53,10 @@ export class LocalRateLimiter implements RateLimiterDriver {
     /**
      * Set the socket to calculate the rate limiter for.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {RateLimiterDriver}
      */
-    forSocket(socket: any): RateLimiterDriver {
+    forSocket(socket: Socket): RateLimiterDriver {
         this.socket = socket;
 
         return this;

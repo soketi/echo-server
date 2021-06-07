@@ -4,6 +4,7 @@ import { Log } from './../log';
 import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
+import { Socket } from './../socket';
 import { Stats } from './../stats';
 import { Utils } from '../utils';
 
@@ -518,10 +519,10 @@ export class HttpApi {
      * @param  {string}  namespace
      * @param  {any}  channels
      * @param  {any}  req
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    protected sendEventToChannels(namespace: string, channels: any, req: any, socket: any = null): void
+    protected sendEventToChannels(namespace: string, channels: any, req: any, socket: Socket = null): void
     {
         if (this.options.development) {
             Log.info({

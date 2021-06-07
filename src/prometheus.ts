@@ -1,4 +1,5 @@
 import * as prom from 'prom-client';
+import { Socket } from './socket';
 import { Utils } from './utils';
 
 export class Prometheus {
@@ -89,10 +90,10 @@ export class Prometheus {
     /**
      * Handle a new connection.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    markNewConnection(socket: any): void {
+    markNewConnection(socket: Socket): void {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 
@@ -109,10 +110,10 @@ export class Prometheus {
     /**
      * Handle a disconnection.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    markDisconnection(socket: any): void {
+    markDisconnection(socket: Socket): void {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 

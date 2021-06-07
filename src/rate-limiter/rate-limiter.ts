@@ -3,6 +3,7 @@ import { LocalRateLimiter } from './local-rate-limiter';
 import { Log } from './../log';
 import { RateLimiterDriver } from './rate-limiter-driver';
 import { RedisRateLimiter } from './redis-rate-limiter';
+import { Socket } from './../socket';
 
 export class RateLimiter implements RateLimiterDriver {
     /**
@@ -70,10 +71,10 @@ export class RateLimiter implements RateLimiterDriver {
     /**
      * Set the socket to calculate the rate limiter for.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {RateLimiterDriver}
      */
-    forSocket(socket: any): RateLimiterDriver {
+    forSocket(socket: Socket): RateLimiterDriver {
         return this.driver.forSocket(socket);
     }
 }

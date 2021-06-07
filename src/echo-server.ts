@@ -5,6 +5,7 @@ import { Log } from './log';
 import { Prometheus } from './prometheus';
 import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
+import { Socket } from './socket';
 import { Stats } from './stats';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -359,20 +360,20 @@ export class EchoServer {
     /**
      * Extract the namespace from socket.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {string}
      */
-    getNspForSocket(socket: any): string {
+    getNspForSocket(socket: Socket): string {
         return socket.nsp.name;
     }
 
     /**
      * Get the App Key from the socket connection.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {string|undefined}
      */
-    protected getAppKey(socket: any): string|undefined {
+    protected getAppKey(socket: Socket): string|undefined {
         return this.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
     }
 
@@ -460,10 +461,10 @@ export class EchoServer {
     /**
      * Handle subscriptions to a channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    protected onSubscribe(socket: any): void {
+    protected onSubscribe(socket: Socket): void {
         socket.on('subscribe', data => {
             if (data.channel.length > this.options.channelLimits.maxNameLength) {
                 return socket.emit('socket:error', { message: `The channel name is longer than the allowed ${this.options.channelLimits.maxNameLength} characters.`, code: 4100 });
@@ -476,10 +477,10 @@ export class EchoServer {
     /**
      * Handle unsubscribes from a channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    protected onUnsubscribe(socket: any): void {
+    protected onUnsubscribe(socket: Socket): void {
         socket.on('unsubscribe', data => {
             this.getChannelInstance(data.channel).leave(socket, data.channel, 'unsubscribed');
         });
@@ -488,10 +489,10 @@ export class EchoServer {
     /**
      * Handle socket disconnection.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    protected onDisconnecting(socket: any): void {
+    protected onDisconnecting(socket: Socket): void {
         /**
          * Make sure to store this before using stats.
          */
@@ -520,10 +521,10 @@ export class EchoServer {
     /**
      * Handle client events.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {void}
      */
-    protected onClientEvent(socket: any): void {
+    protected onClientEvent(socket: Socket): void {
         socket.on('client event', data => {
             this.getChannelInstance(data.channel).onClientEvent(socket, data);
         });
@@ -551,10 +552,10 @@ export class EchoServer {
      * Make sure if the socket connected
      * to a valid echo app.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {Promise<any>}
      */
-    protected checkForValidEchoApp(socket: any): Promise<any> {
+    protected checkForValidEchoApp(socket: Socket): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.data.echoApp) {
                 return resolve(socket);
@@ -602,10 +603,10 @@ export class EchoServer {
      * Make sure the socket connection did not
      * reach the app limit.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {Promise<any>}
      */
-    protected checkAppConnectionLimit(socket: any): Promise<any> {
+    protected checkAppConnectionLimit(socket: Socket): Promise<any> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
                 if (this.options.development) {

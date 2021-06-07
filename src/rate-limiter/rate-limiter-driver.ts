@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Socket } from './../socket';
 
 export interface RateLimiterDriver {
     /**
@@ -36,8 +37,8 @@ export interface RateLimiterDriver {
     /**
      * Set the socket to calculate the rate limiter for.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @return {RateLimiterDriver}
      */
-    forSocket(socket: any): RateLimiterDriver;
+    forSocket(socket: Socket): RateLimiterDriver;
 }

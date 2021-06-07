@@ -1,3 +1,5 @@
+import { Socket } from './../socket';
+
 /**
  * Interface for key/value data stores.
  */
@@ -14,24 +16,24 @@ export interface PresenceStorageDriver {
     /**
      * Add a new member to a given channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any>;
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any>;
 
     /**
      * Remove a member from a given channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {any}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any>;
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any>;
 
     /**
      * Check if the given member exists in a channel.
@@ -48,10 +50,10 @@ export interface PresenceStorageDriver {
      * as the given socket. Used to avoid doubling connections
      * for same presence user (like in the case of multiple tabs).
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
      * @return {Promise<any>}
      */
-    whoLeft(socket: any, nsp: string, channel: string): Promise<any>;
+    whoLeft(socket: Socket, nsp: string, channel: string): Promise<any>;
 }

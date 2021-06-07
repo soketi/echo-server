@@ -3,6 +3,7 @@ import { Log } from './../log';
 import { PrivateChannel } from './private-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
+import { Socket } from './../socket';
 import { Stats } from './../stats';
 
 export class PresenceChannel extends PrivateChannel {
@@ -35,11 +36,11 @@ export class PresenceChannel extends PrivateChannel {
     /**
      * Join a given channel.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
      * @return {Promise<any>}
      */
-    join(socket: any, data: any): Promise<any> {
+    join(socket: Socket, data: any): Promise<any> {
         return this.signatureIsValid(socket, data).then(isValid => {
             if (!isValid) {
                 return;
@@ -101,11 +102,11 @@ export class PresenceChannel extends PrivateChannel {
      * presenece channel and broadcast they have left
      * only if not other presence channel instances exist.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @return {void}
      */
-    leave(socket: any, channel: string): void {
+    leave(socket: Socket, channel: string): void {
         this.presenceStorage.whoLeft(socket, this.getNspForSocket(socket), channel).then(memberWhoLeft => {
             /**
              * Since in .join(), only the first connection that has a certain member.user_id is stored (the rest
@@ -128,12 +129,12 @@ export class PresenceChannel extends PrivateChannel {
     /**
      * Handle joins.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @param  {any}  member
      * @return {void}
      */
-    onJoin(socket: any, channel: string, member: any): void {
+    onJoin(socket: Socket, channel: string, member: any): void {
         super.onJoin(socket, channel, member);
 
         socket.to(channel).emit('presence:joining', channel, member);
@@ -152,12 +153,12 @@ export class PresenceChannel extends PrivateChannel {
     /**
      * Handle leaves.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @param  {any}  member
      * @return {void}
      */
-    onLeave(socket: any, channel: string, member: any): void {
+    onLeave(socket: Socket, channel: string, member: any): void {
         this.io.of(this.getNspForSocket(socket))
             .to(channel)
             .emit('presence:leaving', channel, member);
@@ -176,12 +177,12 @@ export class PresenceChannel extends PrivateChannel {
     /**
      * Handle subscriptions.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {string}  channel
      * @param  {any[]}  members
      * @return {void}
      */
-    onSubscribed(socket: any, channel: string, members: any[]): void {
+    onSubscribed(socket: Socket, channel: string, members: any[]): void {
         this.io.of(this.getNspForSocket(socket))
             .to(socket.id)
             .emit('presence:subscribed', channel, members);
@@ -211,11 +212,11 @@ export class PresenceChannel extends PrivateChannel {
     /**
      * Get the data to sign for the token.
      *
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
      * @return {string}
      */
-    protected getDataToSignForToken(socket: any, data: any): string {
+    protected getDataToSignForToken(socket: Socket, data: any): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;
     }
 

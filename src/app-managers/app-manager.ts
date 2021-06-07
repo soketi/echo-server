@@ -5,6 +5,7 @@ import { ApiAppManager } from './api-app-manager';
 import { Log } from './../log';
 import { MysqlAppManager } from './mysql-app-manager';
 import { PostgresAppManager } from './postgres-app-manager';
+import { Socket } from './../socket';
 
 /**
  * Class that controls the key/value data store.
@@ -38,11 +39,11 @@ export class AppManager implements AppManagerDriver {
      * Find an app by given ID.
      *
      * @param  {string|number}  id
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string|number, socket: any, data: any): Promise<App|null> {
+    findById(id: string|number, socket: Socket, data: any): Promise<App|null> {
         return this.driver.findById(id, socket, data);
     }
 
@@ -50,11 +51,11 @@ export class AppManager implements AppManagerDriver {
      * Find an app by given key.
      *
      * @param  {string|number}  key
-     * @param  {any}  socket
+     * @param  {Socket}  socket
      * @param  {any}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string|number, socket: any, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: Socket, data: any): Promise<App|null> {
         return this.driver.findByKey(key, socket, data);
     }
 }
