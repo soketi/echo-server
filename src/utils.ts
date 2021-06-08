@@ -1,9 +1,8 @@
+import { Socket } from "./socket";
+
 export class Utils {
     /**
      * Get the amount of bytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
      */
     static dataToBytes(...data: any): number {
         return data.reduce((totalBytes, element) => {
@@ -15,5 +14,19 @@ export class Utils {
                 return totalBytes;
             }
         }, 0);
+    }
+
+    /**
+     * Get the amount of kilobytes from given parameters.
+     */
+    static dataToKilobytes(...data: any): number {
+        return this.dataToBytes(...data) / 1024;
+    }
+
+    /**
+     * Extract the namespace from socket.
+     */
+    static getNspForSocket(socket: Socket): string {
+        return socket.nsp.name;
     }
 }

@@ -1,9 +1,22 @@
-import { PresenceStorage } from './../presence-storage';
+import { EmittedData } from '../echo-server';
 import { Log } from './../log';
+import { Options } from './../options';
+import { PresenceStorage } from './../presence-storage';
 import { PrivateChannel } from './private-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
+import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
+import { Utils } from './../utils';
+
+export interface Member {
+    user_id: number|string;
+    user_data: {
+        [key: string]: any;
+    };
+    socket_id?: string;
+}
 
 export class PresenceChannel extends PrivateChannel {
     /**
@@ -13,19 +26,13 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Create a new channel instance.
-     *
-     * @param {any} io
-     * @param {Stats} stats
-     * @param {Prometheus} prometheus
-     * @param {RateLimiter} rateLimiter
-     * @param {any} options
      */
     constructor(
-        protected io: any,
+        protected io: SocketIoServer,
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
-        protected options: any,
+        protected options: Options,
     ) {
         super(io, stats, prometheus, rateLimiter, options);
 
@@ -34,21 +41,18 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Join a given channel.
-     *
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {Promise<any>}
      */
-    join(socket: any, data: any): Promise<any> {
+    join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return this.signatureIsValid(socket, data).then(isValid => {
             if (!isValid) {
-                return;
+                return null;
             }
 
-            let member = data.channel_data;
+            let member: Member = null;
+            let memberAsString: string = data.channel_data;
 
             try {
-                member = JSON.parse(member);
+                member = JSON.parse(memberAsString) as Member;
             } catch (e) {
                 //
             }
@@ -60,21 +64,21 @@ export class PresenceChannel extends PrivateChannel {
 
                 socket.emit('socket:error', { message: 'The member received from the HTTP API request is not JSONable.', code: 4303 });
 
-                return;
+                return null;
             }
 
-            return this.presenceStorage.memberExistsInChannel(this.getNspForSocket(socket), data.channel, member).then(exists => {
+            return this.presenceStorage.memberExistsInChannel(Utils.getNspForSocket(socket), data.channel, member).then(exists => {
                 /**
                  * If member.user_id already exists, there is no way on connecting this socket to the same channel.
                  * This avoids duplicated tabs for users, as well as minimizing impact on the network.
                  */
                 if (!exists) {
-                    if (this.dataToKilobytes(member) > this.options.presence.maxMemberSizeInKb) {
+                    if (Utils.dataToKilobytes(member) > parseFloat(this.options.presence.maxMemberSizeInKb as string)) {
                         socket.emit('socket:error', { message: `The member size exceeds ${this.options.presence.maxMemberSizeInKb} KB.`, code: 4100 });
                     } else {
                         member.socket_id = socket.id;
 
-                        this.presenceStorage.addMemberToChannel(socket, this.getNspForSocket(socket), data.channel, member).then(members => {
+                        this.presenceStorage.addMemberToChannel(socket, Utils.getNspForSocket(socket), data.channel, member).then(members => {
                             if (members.length > this.options.presence.maxMembersPerChannel) {
                                 socket.emit('socket:error', { message: 'The maximum channel members amount has been reached.', code: 4100 });
                                 socket.disconnect();
@@ -92,6 +96,8 @@ export class PresenceChannel extends PrivateChannel {
                 return member;
             }, error => {
                 socket.emit('socket:error', { message: 'There is an internal problem.', code: 4304 });
+
+                return null;
             });
         });
     }
@@ -100,20 +106,16 @@ export class PresenceChannel extends PrivateChannel {
      * Leave a channel. Remove a member from a
      * presenece channel and broadcast they have left
      * only if not other presence channel instances exist.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @return {void}
      */
-    leave(socket: any, channel: string): void {
-        this.presenceStorage.whoLeft(socket, this.getNspForSocket(socket), channel).then(memberWhoLeft => {
+    leave(socket: Socket, channel: string): void {
+        this.presenceStorage.whoLeft(socket, Utils.getNspForSocket(socket), channel).then(memberWhoLeft => {
             /**
              * Since in .join(), only the first connection that has a certain member.user_id is stored (the rest
              * of the sockets that connect with the member.user_id are rejected), we check if the socket exists.
              * If the socket leaves, then delete the user associated with it.
              */
             if (memberWhoLeft) {
-                this.presenceStorage.removeMemberFromChannel(socket, this.getNspForSocket(socket), channel, memberWhoLeft).then(members => {
+                this.presenceStorage.removeMemberFromChannel(socket, Utils.getNspForSocket(socket), channel, memberWhoLeft).then(members => {
                     socket.leave(channel);
                     this.onLeave(socket, channel, memberWhoLeft);
                 });
@@ -127,13 +129,8 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle joins.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {void}
      */
-    onJoin(socket: any, channel: string, member: any): void {
+    onJoin(socket: Socket, channel: string, member: Member): void {
         super.onJoin(socket, channel, member);
 
         socket.to(channel).emit('presence:joining', channel, member);
@@ -143,7 +140,7 @@ export class PresenceChannel extends PrivateChannel {
          * this one will be present here to mark an outgoing WS message.
          */
         if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:joining', channel, member);
+            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:joining', channel, member);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -151,14 +148,9 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle leaves.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {void}
      */
-    onLeave(socket: any, channel: string, member: any): void {
-        this.io.of(this.getNspForSocket(socket))
+    onLeave(socket: Socket, channel: string, member: Member): void {
+        this.io.of(Utils.getNspForSocket(socket))
             .to(channel)
             .emit('presence:leaving', channel, member);
 
@@ -167,7 +159,7 @@ export class PresenceChannel extends PrivateChannel {
          * this one will be present here to mark an outgoing WS message.
          */
         if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:leaving', channel, member);
+            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:leaving', channel, member);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -175,14 +167,9 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle subscriptions.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @param  {any[]}  members
-     * @return {void}
      */
-    onSubscribed(socket: any, channel: string, members: any[]): void {
-        this.io.of(this.getNspForSocket(socket))
+    onSubscribed(socket: Socket, channel: string, members: Member[]): void {
+        this.io.of(Utils.getNspForSocket(socket))
             .to(socket.id)
             .emit('presence:subscribed', channel, members);
 
@@ -191,7 +178,7 @@ export class PresenceChannel extends PrivateChannel {
          * this one will be present here to mark an outgoing WS message.
          */
         if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'presence:subscribed', channel, members);
+            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:subscribed', channel, members);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -199,41 +186,15 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Get the members of a presence channel.
-     *
-     * @param  {string}  namespace
-     * @param  {string}  channel
-     * @return {Promise<any>}
      */
-    getMembers(namespace: string, channel: string): Promise<any> {
+    getMembers(namespace: string, channel: string): Promise<Member[]> {
         return this.presenceStorage.getMembersFromChannel(namespace, channel);
     }
 
     /**
      * Get the data to sign for the token.
-     *
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {string}
      */
-    protected getDataToSignForToken(socket: any, data: any): string {
+    protected getDataToSignForToken(socket: Socket, data: EmittedData): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;
-    }
-
-    /**
-     * Get the amount of kb from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
-     */
-    protected dataToKilobytes(...data: any): number {
-        return data.reduce((totalKilobytes, element) => {
-            element = typeof element === 'string' ? element : JSON.stringify(element);
-
-            try {
-                return totalKilobytes += Buffer.byteLength(element, 'utf8') / 1024;
-            } catch (e) {
-                return totalKilobytes;
-            }
-        }, 0);
     }
 }

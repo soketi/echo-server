@@ -1,8 +1,10 @@
 import { App } from './../app';
+import { ConsumptionResponse, RateLimiterDriver } from './rate-limiter-driver';
 import { LocalRateLimiter } from './local-rate-limiter';
 import { Log } from './../log';
-import { RateLimiterDriver } from './rate-limiter-driver';
+import { Options } from './../options';
 import { RedisRateLimiter } from './redis-rate-limiter';
+import { Socket } from './../socket';
 
 export class RateLimiter implements RateLimiterDriver {
     /**
@@ -14,10 +16,8 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Initialize the rate limiter driver.
-     *
-     * @param {any} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         if (options.rateLimiter.driver === 'local') {
             this.driver = new LocalRateLimiter(options);
         } else if (options.rateLimiter.driver === 'redis') {
@@ -29,39 +29,27 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Consume the points for backend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    consumeBackendEventPoints(points: number): Promise<any> {
+    consumeBackendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeBackendEventPoints(points);
     }
 
     /**
      * Consume the points for frontend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    consumeFrontendEventPoints(points: number): Promise<any> {
+    consumeFrontendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeFrontendEventPoints(points);
     }
 
      /**
       * Consume the points for HTTP read requests.
-      *
-      * @param  {number}  points
-      * @return {Promise<any>}
       */
-    consumeReadRequestsPoints(points: number): Promise<any> {
+    consumeReadRequestsPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeReadRequestsPoints(points);
     }
 
      /**
       * Set the app to calculate the rate limiter for.
-      *
-      * @param  {App}  app
-      * @return {RateLimiterDriver}
       */
     forApp(app: App): RateLimiterDriver {
         return this.driver.forApp(app);
@@ -69,11 +57,8 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Set the socket to calculate the rate limiter for.
-     *
-     * @param  {any}  socket
-     * @return {RateLimiterDriver}
      */
-    forSocket(socket: any): RateLimiterDriver {
+    forSocket(socket: Socket): RateLimiterDriver {
         return this.driver.forSocket(socket);
     }
 }

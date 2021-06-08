@@ -1,6 +1,7 @@
 import { App } from './../app';
+import { AppSnapshottedPoints, StatsDriver, StatsElement, TimedStatsElement } from './stats-driver';
+import { Options } from './../options';
 import { PrometheusDriver } from 'prometheus-query';
-import { StatsDriver } from './stats-driver';
 
 const dayjs = require('dayjs');
 
@@ -14,10 +15,8 @@ export class PrometheusStats implements StatsDriver {
 
     /**
      * Initialize the Prometheus stats driver.
-     *
-     * @param {any} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         let { host, port, protocol } = this.options.database.prometheus;
 
         this.prometheus = new PrometheusDriver({
@@ -29,9 +28,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Mark in the stats a new connection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markNewConnection(app: App): Promise<number> {
         return new Promise(resolve => resolve(0));
@@ -40,10 +36,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Mark in the stats a socket disconnection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @param  {string|null}  reason
-     * @return {Promise<number>}
      */
     markDisconnection(app: App, reason?: string): Promise<number> {
         return new Promise(resolve => resolve(0));
@@ -52,9 +44,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Mark in the stats a new API message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markApiMessage(app: App): Promise<number> {
         return new Promise(resolve => resolve(0));
@@ -63,9 +52,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Mark in the stats a whisper message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markWsMessage(app: App): Promise<number> {
         return new Promise(resolve => resolve(0));
@@ -73,37 +59,27 @@ export class PrometheusStats implements StatsDriver {
 
     /**
      * Get the compiled stats for a given app.
-     *
-     * @param  {App|string}  app
-     * @return {Promise<any>}
      */
-    getStats(app: App|string): Promise<any> {
+    getStats(app: App|string): Promise<StatsElement> {
         return new Promise(resolve => resolve({}));
     }
 
     /**
      * Take a snapshot of the current stats
      * for a given time.
-     *
-     * @param  {App|string}  app
-     * @param  {number|null}  time
-     * @return {Promise<any>}
      */
-    takeSnapshot(app: App|string, time?: number): Promise<any> {
-        return new Promise(resolve => resolve({}));
+    takeSnapshot(app: App|string, time?: number): Promise<TimedStatsElement> {
+        return new Promise(resolve => resolve({
+            time: new Date().toISOString(),
+            stats: { },
+        }));
     }
 
     /**
-     * Get the list of stats snapshots
-     * for a given interval. Defaults to
-     * the last 7 days.
-     *
-     * @param  {App|string}  app
-     * @param  {number|null}  start
-     * @param  {number|null}  end
-     * @return {Promise<any>}
+     * Get the list of stats snapshots for a given interval.
+     * Defaults to the last 7 days.
      */
-    getSnapshots(app: App|string, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         start = start ? start : dayjs().subtract(7, 'day').unix();
         end = end ? end : dayjs().unix();
 
@@ -134,10 +110,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Delete points that are outside of the desired range
      * of keeping the history of.
-     *
-     * @param  {App|string}  app
-     * @param  {number|null}  time
-     * @return {Promise<boolean>}
      */
     deleteStalePoints(app: App|string, time?: number): Promise<boolean> {
         return new Promise(resolve => resolve(true));
@@ -145,9 +117,6 @@ export class PrometheusStats implements StatsDriver {
 
     /**
      * Register the app to know we have metrics for it.
-     *
-     * @param  {App|string}  app
-     * @return {Promise<boolean>}
      */
     registerApp(app: App|string): Promise<boolean> {
         return new Promise(resolve => resolve(true));
@@ -155,8 +124,6 @@ export class PrometheusStats implements StatsDriver {
 
     /**
      * Get the list of registered apps into stats.
-     *
-     * @return {Promise<string[]>}
      */
     getRegisteredApps(): Promise<string[]> {
         return new Promise(resolve => resolve([]));
@@ -165,10 +132,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Calculate the appropriate Prometheus interval,
      * in seconds, for given start and end dates.
-     *
-     * @param  {number}  start
-     * @param  {number}  end
-     * @return {number}
      */
     protected calculateStepFor(start: number, end: number): number {
         let startDate = dayjs(start);
@@ -188,10 +151,6 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Calculate the appropriate Prometheus interval,
      * in seconds, for given start and end dates.
-     *
-     * @param  {number}  start
-     * @param  {number}  end
-     * @return {string}
      */
     protected calculateStringStepFor(start: number, end: number): string {
         let startDate = dayjs(start);
@@ -210,9 +169,6 @@ export class PrometheusStats implements StatsDriver {
 
     /**
      * Check if the given app can register stats.
-     *
-     * @param  {App}  app
-     * @return {boolean}
      */
     protected canRegisterStats(app: App): boolean {
         return this.options.stats.enabled && !!app.enableStats;

@@ -1,15 +1,36 @@
+import { App } from './app';
 import { AppManager } from './app-managers/app-manager';
 import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Namespace } from 'socket.io';
+import { Options } from './options';
 import { Prometheus } from './prometheus';
 import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
+import { Socket } from './socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './stats';
+import { Utils } from './utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
+
+export interface EmittedData {
+    channel?: string;
+    event?: string;
+    data?: {
+        [key: string]: any;
+    };
+    token?: string;
+    channel_data?: string;
+    auth?: {
+        headers?: {
+            [key: string]: any;
+        };
+    };
+}
 
 /**
  * Echo server class.
@@ -18,9 +39,9 @@ export class EchoServer {
     /**
      * Default server options.
      *
-     * @type {any}
+     * @type {Options}
      */
-    public options: any = {
+    public options: Options = {
         appManager: {
             driver: 'array',
             api: {
@@ -121,9 +142,9 @@ export class EchoServer {
         },
         host: null,
         httpApi: {
-            extraHeaders: [
+            extraHeaders: {
                 //
-            ],
+            },
             protocol: 'http',
             requestLimitInMb: 100,
             trustProxies: false,
@@ -259,43 +280,59 @@ export class EchoServer {
 
     /**
      * Start the Echo Server.
-     *
-     * @param  {any}  options
-     * @return {Promise<any>}
      */
-    start(options: any = {}): Promise<any> {
+    start(options: any = {}): Promise<EchoServer> {
         this.options = Object.assign(this.options, options);
         this.server = new Server(this.options);
 
+        Log.title('\n📡 Echo Server initialization started.\n');
+
         if (this.options.development) {
-            Log.warning('Starting the server in development mode...\n');
+            Log.info('⚡ Starting the server in Development mode...\n');
         } else {
-            Log.info('Starting the server...\n')
+            Log.info('⚡ Starting the server in Production mode...\n')
         }
 
-        return this.server.initialize().then(io => {
+        Log.info('⚡ Initializing the HTTP API & Socket.IO Server...\n');
+
+        return this.server.initialize().then((io: SocketIoServer) => {
+            Log.info('⚡ Initializing the Socket.IO listeners and channels...\n');
+
             return this.initialize(io).then(() => {
                 this.closing = false;
 
-                Log.info('\nServer ready!\n');
-
                 if (this.options.development) {
-                    Log.info({ options: JSON.stringify(this.options) });
+                    console.dir(this.options, { depth: 100 });
+                    console.log('\n');
                 }
 
+                Log.success('🎉 Server is up and running!\n');
+
+                let host = this.options.host || '127.0.0.1';
+
+                Log.success(`📡 The Websockets server is available at ${host}:${this.options.port}\n`);
+                Log.success(`🔗 The HTTP API server is available at ${this.options.httpApi.protocol}://${host}:${this.options.port}\n`);
+
+                Log.info('👂 The server is now listening for events and managing the channels.\n');
+
                 return this;
-            }, error => Log.error(error));
-        }, error => Log.error(error));
+            }, error => {
+                Log.error(error);
+
+                return this;
+            });
+        }, error => {
+            Log.error(error);
+
+            return this;
+        });
     }
 
     /**
      * Initialize the websockets server.
-     *
-     * @param  {any}  io
-     * @return {Promise<void>}
      */
-    initialize(io: any): Promise<void> {
-        return new Promise((resolve, reject) => {
+    initialize(io: SocketIoServer): Promise<SocketIoServer> {
+        return new Promise((resolve) => {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
@@ -325,22 +362,25 @@ export class EchoServer {
             this.registerConnectionCallbacks(nsp);
             this.registerStatsSnapshotter();
 
-            resolve();
+            resolve(io);
         });
     }
 
     /**
      * Stop the echo server.
-     *
-     * @return {Promise<void>}
      */
     async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            Log.warning('Stopping the server...');
+            Log.warning('⛔ Stopping the server...\n');
 
             this.closing = true;
 
+            Log.warning('🚫 New users cannot connect to this instance anymore. Preparing for signaling...\n');
+
             this.server.io.close(async () => {
+                Log.warning('⚡ The server is closing and signaling the existing connections to terminate.\n');
+                Log.warning(`⚡ The server will stay up ${this.options.closingGracePeriod} more seconds before closing the process.\n`);
+
                 /**
                  * There is a timeout set to resolve the promise later
                  * since (in odd ways???) sync actions like disconnecting
@@ -351,42 +391,31 @@ export class EchoServer {
                  * a while before closing it, hence naming his timeout as "grace period"
                  * to resolve all socket.on() actions.
                  */
-                await setTimeout(() => resolve(), this.options.closingGracePeriod * 1000);
+                await setTimeout(() => {
+                    Log.warning('⚡ Grace period finished. Closing the server.');
+
+                    resolve();
+                }, this.options.closingGracePeriod * 1000);
             });
         });
     }
 
     /**
-     * Extract the namespace from socket.
-     *
-     * @param  {any}  socket
-     * @return {string}
-     */
-    getNspForSocket(socket: any): string {
-        return socket.nsp.name;
-    }
-
-    /**
      * Get the App Key from the socket connection.
-     *
-     * @param  {any}  socket
-     * @return {string|undefined}
      */
-    protected getAppKey(socket: any): string|undefined {
-        return this.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
+    protected getAppKey(socket: Socket): string|undefined {
+        return Utils.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
     }
 
     /**
      * Register the Socket.IO middleware.
-     *
-     * @param  {any}  nsp
-     * @return {void}
      */
-    protected registerSocketMiddleware(nsp: any): void {
-        nsp.use((socket, next) => {
+    protected registerSocketMiddleware(nsp: Namespace): void {
+        nsp.use((socket: Socket, next) => {
+            // @ts-ignore
             socket.id = this.generateSocketId();
 
-            this.checkForValidEchoApp(socket).then(socket => {
+            this.checkForValidEchoApp(socket).then((socket: Socket) => {
                 next();
             }, error => {
                 next(error);
@@ -396,12 +425,9 @@ export class EchoServer {
 
     /**
      * Register callbacks for on('connection') events.
-     *
-     * @param  {any}  nsp
-     * @return {void}
      */
-    protected registerConnectionCallbacks(nsp: any): void {
-        nsp.on('connection', socket => {
+    protected registerConnectionCallbacks(nsp: Namespace): void {
+        nsp.on('connection', (socket: Socket) => {
             this.stats.markNewConnection(socket.data.echoApp);
 
             if (this.options.prometheus.enabled) {
@@ -412,7 +438,7 @@ export class EchoServer {
                 return socket.disconnect();
             }
 
-            this.checkAppConnectionLimit(socket).then(socket => {
+            this.checkAppConnectionLimit(socket).then((socket: Socket) => {
                 this.onSubscribe(socket);
                 this.onUnsubscribe(socket);
                 this.onDisconnecting(socket);
@@ -428,15 +454,13 @@ export class EchoServer {
 
     /**
      * Register the stats snapshotter for all namespaces.
-     *
-     * @return {void}
      */
     protected registerStatsSnapshotter(): void {
         if (this.options.stats.enabled) {
             setInterval(() => {
                 let time = dayjs().unix();
 
-                this.stats.getRegisteredApps().then(apps => {
+                this.stats.getRegisteredApps().then((apps: string[]) => {
                     apps.forEach(name => {
                         if (this.options.development) {
                             Log.info({
@@ -459,11 +483,8 @@ export class EchoServer {
 
     /**
      * Handle subscriptions to a channel.
-     *
-     * @param  {any}  socket
-     * @return {void}
      */
-    protected onSubscribe(socket: any): void {
+    protected onSubscribe(socket: Socket): void {
         socket.on('subscribe', data => {
             if (data.channel.length > this.options.channelLimits.maxNameLength) {
                 return socket.emit('socket:error', { message: `The channel name is longer than the allowed ${this.options.channelLimits.maxNameLength} characters.`, code: 4100 });
@@ -475,11 +496,8 @@ export class EchoServer {
 
     /**
      * Handle unsubscribes from a channel.
-     *
-     * @param  {any}  socket
-     * @return {void}
      */
-    protected onUnsubscribe(socket: any): void {
+    protected onUnsubscribe(socket: Socket): void {
         socket.on('unsubscribe', data => {
             this.getChannelInstance(data.channel).leave(socket, data.channel, 'unsubscribed');
         });
@@ -487,11 +505,8 @@ export class EchoServer {
 
     /**
      * Handle socket disconnection.
-     *
-     * @param  {any}  socket
-     * @return {void}
      */
-    protected onDisconnecting(socket: any): void {
+    protected onDisconnecting(socket: Socket): void {
         /**
          * Make sure to store this before using stats.
          */
@@ -519,11 +534,8 @@ export class EchoServer {
 
     /**
      * Handle client events.
-     *
-     * @param  {any}  socket
-     * @return {void}
      */
-    protected onClientEvent(socket: any): void {
+    protected onClientEvent(socket: Socket): void {
         socket.on('client event', data => {
             this.getChannelInstance(data.channel).onClientEvent(socket, data);
         });
@@ -531,11 +543,8 @@ export class EchoServer {
 
     /**
      * Get the channel instance for a channel name.
-     *
-     * @param  {string}  channel
-     * @return {Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel}
      */
-    getChannelInstance(channel): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
+    getChannelInstance(channel: string): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
         if (Channel.isPresenceChannel(channel)) {
             return this.presenceChannel;
         } else if (Channel.isEncryptedPrivateChannel(channel)) {
@@ -550,11 +559,8 @@ export class EchoServer {
     /**
      * Make sure if the socket connected
      * to a valid echo app.
-     *
-     * @param  {any}  socket
-     * @return {Promise<any>}
      */
-    protected checkForValidEchoApp(socket: any): Promise<any> {
+    protected checkForValidEchoApp(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
             if (socket.data.echoApp) {
                 return resolve(socket);
@@ -562,7 +568,7 @@ export class EchoServer {
 
             let appKey = this.getAppKey(socket);
 
-            this.appManager.findByKey(appKey, socket, {}).then(app => {
+            this.appManager.findByKey(appKey, socket, {}).then((app: App|null) => {
                 if (!app) {
                     if (this.options.development) {
                         Log.error({
@@ -577,7 +583,7 @@ export class EchoServer {
 
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
-                    socket.data.echoApp = app;
+                    socket.data.echoApp = app as App;
                     resolve(socket);
                 }
             }, error => {
@@ -601,11 +607,8 @@ export class EchoServer {
     /**
      * Make sure the socket connection did not
      * reach the app limit.
-     *
-     * @param  {any}  socket
-     * @return {Promise<any>}
      */
-    protected checkAppConnectionLimit(socket: any): Promise<any> {
+    protected checkAppConnectionLimit(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
                 if (this.options.development) {
@@ -624,8 +627,8 @@ export class EchoServer {
                 return reject({ reason: 'The app connection limit cannot be checked because the socket is not authenticated.' });
             }
 
-            this.server.io.of(this.getNspForSocket(socket)).allSockets().then(clients => {
-                let maxConnections = parseInt(socket.data.echoApp.maxConnections) || -1;
+            this.server.io.of(Utils.getNspForSocket(socket)).allSockets().then(clients => {
+                let maxConnections = parseInt(socket.data.echoApp.maxConnections as string) || -1;
 
                 if (maxConnections < 0) {
                     return resolve(socket);
@@ -660,8 +663,6 @@ export class EchoServer {
 
     /**
      * Generate a Pusher-like socket id.
-     *
-     * @return {string}
      */
     protected generateSocketId(): string {
         let min = 0;

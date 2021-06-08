@@ -203,8 +203,11 @@ window.Soketi = new Soketi({
 });
 
 // for example
-Soketi.channel('twitter').listen('.tweet', e => {
-    console.log(e);
+Soketi.join('chat-room.176').listen('.message', event => {
+	this.messages.push({
+		message: event.message,
+      	sender: event.user.id,
+    });
 });
 ```
 

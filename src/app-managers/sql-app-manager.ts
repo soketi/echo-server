@@ -1,6 +1,9 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
+import { EmittedData } from './../echo-server';
 import { Knex, knex } from 'knex';
+import { Options } from './../options';
+import { Socket } from './../socket';
 
 export abstract class SqlAppManager implements AppManagerDriver {
     /**
@@ -12,10 +15,8 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Create a new app manager instance.
-     *
-     * @param {any} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         let knexConfig = {
             client: this.knexClientName(),
             connection: this.knexConnectionDetails(),
@@ -39,13 +40,8 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Find an app by given ID.
-     *
-     * @param  {string}  id
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {Promise<App|null>}
      */
-    findById(id: string, socket: any, data: any): Promise<App|null> {
+    findById(id: string, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.selectById(id).then(apps => {
             return apps.length === 0
                 ? null
@@ -55,13 +51,8 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Find an app by given key.
-     *
-     * @param  {string}  key
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {Promise<App|null>}
      */
-    findByKey(key: string, socket: any, data: any): Promise<App|null> {
+    findByKey(key: string, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.selectByKey(key).then(apps => {
             return apps.length === 0
                 ? null
@@ -71,9 +62,6 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Make a Knex selection for the app ID.
-     *
-     * @param  {string}  id
-     * @return {App[]}
      */
     protected selectById(id: string): any {
         return this.connection<App>(this.appsTableName())
@@ -83,9 +71,6 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Make a Knex selection for the app key.
-     *
-     * @param  {string}  key
-     * @return {App[]}
      */
     protected selectByKey(key: string): any {
         return this.connection<App>(this.appsTableName())
@@ -95,38 +80,28 @@ export abstract class SqlAppManager implements AppManagerDriver {
 
     /**
      * Get the client name to be used by Knex.
-     *
-     * @return {string}
      */
      protected abstract knexClientName(): string;
 
      /**
       * Get the object connection details for Knex.
-      *
-      * @return {any}
       */
-     protected abstract knexConnectionDetails(): any;
+     protected abstract knexConnectionDetails(): { [key: string]: any; };
 
      /**
       * Get the connection version for Knex.
       * For MySQL can be 5.7 or 8.0, etc.
-      *
-      * @return {string}
       */
      protected abstract knexVersion(): string;
 
      /**
       * Wether the manager supports pooling. This introduces
       * additional settings for connection pooling.
-      *
-      * @return {boolean}
       */
      protected abstract supportsPooling(): boolean;
 
      /**
       * Get the table name where the apps are stored.
-      *
-      * @return {string}
       */
      protected abstract appsTableName(): string;
 }

@@ -1,6 +1,8 @@
 import { App } from './../app';
-import { RateLimiterDriver } from './rate-limiter-driver';
-import { RateLimiterAbstract, RateLimiterMemory } from 'rate-limiter-flexible';
+import { ConsumptionResponse, RateLimiterDriver } from './rate-limiter-driver';
+import { Options } from './../options';
+import { RateLimiterAbstract, RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
+import { Socket } from './../socket';
 
 export class LocalRateLimiter implements RateLimiterDriver {
     /**
@@ -22,14 +24,12 @@ export class LocalRateLimiter implements RateLimiterDriver {
      *
      * @type {any}
      */
-    protected socket: any;
+    protected socket: Socket;
 
     /**
      * Initialize the local rate limiter driver.
-     *
-     * @param {any} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         this.rateLimiter = new RateLimiterMemory({
             points: 1,
             duration: 60,
@@ -39,9 +39,6 @@ export class LocalRateLimiter implements RateLimiterDriver {
 
     /**
      * Set the app to calculate the rate limiter for.
-     *
-     * @param  {App}  app
-     * @return {RateLimiterDriver}
      */
     forApp(app: App): RateLimiterDriver {
         this.app = app;
@@ -51,11 +48,8 @@ export class LocalRateLimiter implements RateLimiterDriver {
 
     /**
      * Set the socket to calculate the rate limiter for.
-     *
-     * @param  {any}  socket
-     * @return {RateLimiterDriver}
      */
-    forSocket(socket: any): RateLimiterDriver {
+    forSocket(socket: Socket): RateLimiterDriver {
         this.socket = socket;
 
         return this;
@@ -63,36 +57,27 @@ export class LocalRateLimiter implements RateLimiterDriver {
 
     /**
      * Consume the points for backend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    consumeBackendEventPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxBackendEventsPerMinute;
+    consumeBackendEventPoints(points: number): Promise<ConsumptionResponse> {
+        this.rateLimiter.points = this.app.maxBackendEventsPerMinute as number;
 
         return this.consumeForKey(`backend:events:${this.app.id}`, points);
     }
 
     /**
      * Consume the points for frontend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    consumeFrontendEventPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxClientEventsPerMinute;
+    consumeFrontendEventPoints(points: number): Promise<ConsumptionResponse> {
+        this.rateLimiter.points = this.app.maxClientEventsPerMinute as number;
 
         return this.consumeForKey(`frontend:events:${this.socket.id}:${this.app.id}`, points);
     }
 
     /**
      * Consume the points for HTTP read requests.
-     *
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    consumeReadRequestsPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxReadRequestsPerMinute;
+    consumeReadRequestsPoints(points: number): Promise<ConsumptionResponse> {
+        this.rateLimiter.points = this.app.maxReadRequestsPerMinute as number;
 
         return this.consumeForKey(`backend:request_read:${this.app.id}`, points);
     }
@@ -101,29 +86,25 @@ export class LocalRateLimiter implements RateLimiterDriver {
      * Consume points for a given key, then
      * return a response object with headers and
      * the success indicator.
-     *
-     * @param  {string}  key
-     * @param  {number}  points
-     * @return {Promise<any>}
      */
-    protected consumeForKey(key: string, points: number): Promise<any> {
+    protected consumeForKey(key: string, points: number): Promise<ConsumptionResponse> {
         if (this.rateLimiter.points < 0) {
-            return new Promise(resolve => resolve({ rateLimiterRes: null, headers: [] }));
+            return new Promise(resolve => resolve({ rateLimiterRes: null, headers: { } }));
         }
 
         return new Promise((resolve, reject) => {
-            let calculateHeaders = rateLimiterRes => ({
+            let calculateHeaders = (rateLimiterRes: RateLimiterRes) => ({
                 'Retry-After': rateLimiterRes.msBeforeNext / 1000,
                 'X-RateLimit-Limit': this.rateLimiter.points,
                 'X-RateLimit-Remaining': rateLimiterRes.remainingPoints,
             });
 
-            this.rateLimiter.consume(key, points).then(rateLimiterRes => {
+            this.rateLimiter.consume(key, points).then((rateLimiterRes: RateLimiterRes) => {
                 resolve({
                     rateLimiterRes,
                     headers: calculateHeaders(rateLimiterRes),
                 });
-            }).catch(rateLimiterRes => {
+            }).catch((rateLimiterRes: RateLimiterRes) => {
                 reject({
                     rateLimiterRes,
                     headers: calculateHeaders(rateLimiterRes),

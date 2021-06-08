@@ -1,4 +1,5 @@
 import * as dot from 'dot-wild';
+import { Options } from './../options';
 
 const echo = require('./../../dist');
 
@@ -8,7 +9,7 @@ export class Cli {
      *
      * @type {any}
      */
-    options: any;
+    options: Options;
 
     /**
      * Create new CLI instance.
@@ -22,7 +23,7 @@ export class Cli {
      *
      * @type {any}
      */
-    envVariables: any = {
+    envVariables: { [key: string]: string; } = {
         APP_DEFAULT_ENABLE_STATS: 'appManager.array.apps.0.enableStats',
         APP_DEFAULT_ENABLE_CLIENT_MESSAGES: 'appManager.array.apps.0.enableClientMessages',
         APP_DEFAULT_ID: 'appManager.array.apps.0.id',
@@ -101,8 +102,6 @@ export class Cli {
 
     /**
      * Inject the .env vars into options if they exist.
-     *
-     * @return {void}
      */
     protected overwriteOptionsFromEnv(): void {
         require('dotenv').config();
@@ -133,8 +132,6 @@ export class Cli {
 
     /**
      * Start the Echo server.
-     *
-     * @return {Promise<any>}
      */
     start(yargs: any): Promise<any> {
         this.overwriteOptionsFromEnv();
@@ -153,12 +150,8 @@ export class Cli {
 
     /**
      * Stop the server.
-     *
-     * @return {Promise<any>}
      */
-    stop(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            echo.stop();
-        });
+    stop(): Promise<void> {
+        return echo.stop();
     }
 }

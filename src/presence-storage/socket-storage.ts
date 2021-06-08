@@ -1,42 +1,31 @@
-import { resolve } from 'path';
+import { Member } from '../channels/presence-channel';
+import { Options } from './../options';
 import { PresenceStorageDriver } from './presence-storage-driver';
+import { Socket } from './../socket';
+import { RemoteSocket, Server as SocketIoServer } from 'socket.io';
 
 export class SocketStorage implements PresenceStorageDriver {
     /**
      * Create a new cache instance.
-     *
-     * @param {any} options
-     * @param {any} io
      */
-    constructor(protected options: any, protected io: any) {
+    constructor(protected options: Options, protected io: SocketIoServer) {
         //
     }
 
     /**
      * Get channel members.
-     *
-     * @param  {string}  nsp
-     * @param  {string}  channel
-     * @return {Promise<any>}
      */
-    getMembersFromChannel(nsp: string, channel: string): Promise<any> {
-        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then(sockets => {
-            return sockets.map(socket => {
-                return socket?.data?.presence?.[channel];
-            }).filter(member => !!member);
+    getMembersFromChannel(nsp: string, channel: string): Promise<Member[]> {
+        // @ts-ignore
+        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then((sockets: RemoteSocket[]) => {
+            return sockets.map(socket => socket?.data?.presence?.[channel]).filter(member => !!member);
         });
     }
 
     /**
      * Add a new member to a given channel.
-     *
-     * @param  {any}  socket
-     * @param  {string}  nsp
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {Promise<any>}
      */
-    addMemberToChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         if (!socket.data) {
             socket.data = {};
         }
@@ -52,14 +41,8 @@ export class SocketStorage implements PresenceStorageDriver {
 
     /**
      * Remove a member from a given channel.
-     *
-     * @param  {any}  socket
-     * @param  {string}  nsp
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: any, nsp: string, channel: string, member: any): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         if (socket.data && socket.data.presence) {
             delete socket.data.presence[channel];
         }
@@ -69,13 +52,8 @@ export class SocketStorage implements PresenceStorageDriver {
 
     /**
      * Check if the given member exists in a channel.
-     *
-     * @param  {string}  nsp
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {Promise<boolean>}
      */
-    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+    memberExistsInChannel(nsp: string, channel: string, member: Member): Promise<boolean> {
         return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
             let memberInChannel = existingMembers.find(existingMember => {
                 return existingMember.user_id === member.user_id;
@@ -89,15 +67,8 @@ export class SocketStorage implements PresenceStorageDriver {
      * Check for presence members that share the same socket_id
      * as the given socket. Used to avoid doubling connections
      * for same presence user (like in the case of multiple tabs).
-     *
-     * @param  {any}  socket
-     * @param  {string}  nsp
-     * @param  {string}  channel
-     * @return {Promise<any>}
      */
-    whoLeft(socket: any, nsp: string, channel: string): Promise<any> {
-        return new Promise(resolve => {
-            resolve(socket.data.presence[channel]);
-        });
+    whoLeft(socket: Socket, nsp: string, channel: string): Promise<Member> {
+        return new Promise(resolve => resolve(socket.data.presence[channel]));
     }
 }

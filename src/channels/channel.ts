@@ -1,6 +1,11 @@
+import { EmittedData } from '../echo-server';
 import { Log } from './../log';
+import { Member } from './presence-channel';
+import { Options } from './../options';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
+import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
 import { Utils } from '../utils';
 
@@ -27,31 +32,21 @@ export class Channel {
 
     /**
      * Create a new channel instance.
-     *
-     * @param {any} io
-     * @param {Stats} stats
-     * @param {Prometheus} prometheus
-     * @param {RateLimiter} rateLimiter
-     * @param {any} options
      */
     constructor(
-        protected io: any,
+        protected io: SocketIoServer,
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
-        protected options: any,
+        protected options: Options,
     ) {
         //
     }
 
     /**
      * Join a given channel.
-     *
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {Promise<any>}
      */
-    join(socket: any, data: any): Promise<any> {
+    join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return new Promise((resolve, reject) => {
             socket.join(data.channel);
             this.onJoin(socket, data.channel, null);
@@ -62,13 +57,8 @@ export class Channel {
 
     /**
      * Leave a channel.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @param  {string}  reason
-     * @return {void}
      */
-    leave(socket: any, channel: string, reason: string): void {
+    leave(socket: Socket, channel: string, reason: string): void {
         if (channel) {
             socket.leave(channel);
 
@@ -86,13 +76,8 @@ export class Channel {
 
     /**
      * Handle joins.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @param  {any}  member
-     * @return {void}
      */
-    onJoin(socket: any, channel: string, member: any): void {
+    onJoin(socket: Socket, channel: string, member: Member): void {
         socket.emit('channel:joined', channel);
 
         /**
@@ -100,7 +85,7 @@ export class Channel {
          * this one will be present here to mark an outgoing WS message.
          */
         if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', channel);
+            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', channel);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -118,18 +103,8 @@ export class Channel {
 
     /**
      * Trigger a client message.
-     *
-     * @param  {any}  socket
-     * @param  {any}  data
-     * @return {void}
      */
-    onClientEvent(socket: any, data: any): void {
-        try {
-            data = JSON.parse(data);
-        } catch (e) {
-            //
-        }
-
+    onClientEvent(socket: Socket, data: EmittedData): any {
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),
@@ -151,7 +126,7 @@ export class Channel {
 
                 let payloadSizeInKb = Utils.dataToBytes(data.data) / 1024;
 
-                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb as string)) {
                     return socket.emit('socket:error', { message: `The broadcasting client event payload is greater than ${this.options.eventLimits.maxPayloadInKb} KB.`, code: 4100 });
                 }
 
@@ -167,7 +142,7 @@ export class Channel {
                      * this one will be present here to mark an outgoing WS message.
                      */
                     if (this.options.prometheus.enabled) {
-                        this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                        this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
                     }
 
                     if (this.options.development) {
@@ -198,9 +173,6 @@ export class Channel {
 
     /**
      * Check if client is a client event.
-     *
-     * @param  {string}  event
-     * @return {boolean}
      */
     isClientEvent(event: string): boolean {
         let isClientEvent = false;
@@ -218,51 +190,22 @@ export class Channel {
 
     /**
      * Check if a socket has joined a channel.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @return {boolean}
      */
-    isInChannel(socket: any, channel: string): boolean {
+    isInChannel(socket: Socket, channel: string): boolean {
+        // TODO: Check this line? It throw error in ESLint.
+        // @ts-ignore
         return socket.adapter.rooms.has(channel);
     }
 
     /**
      * Create alias for static.
-     *
-     * @param  {any}  socket
-     * @param  {string}  channel
-     * @return {boolean}
      */
-    static isInChannel(socket: any, channel: string): boolean {
+    static isInChannel(socket: Socket, channel: string): boolean {
         return this.isInChannel(socket, channel);
     }
 
     /**
-     * Extract the namespace from socket.
-     *
-     * @param  {any}  socket
-     * @return {string}
-     */
-    getNspForSocket(socket: any): string {
-        return socket.nsp.name;
-    }
-
-    /**
-     * Create alias for static.
-     *
-     * @param  {any}  socket
-     * @return {string}
-     */
-    static getNspForSocket(socket: any): string {
-        return this.getNspForSocket(socket);
-    }
-
-    /**
      * Check if the given channel name is private.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isPrivateChannel(channel: string): boolean {
         let isPrivate = false;
@@ -280,9 +223,6 @@ export class Channel {
 
     /**
      * Check if the given channel name is a presence channel.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isPresenceChannel(channel: string): boolean {
         return channel.lastIndexOf('presence-', 0) === 0;
@@ -290,9 +230,6 @@ export class Channel {
 
     /**
      * Check if the given channel name is a encrypted private channel.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isEncryptedPrivateChannel(channel: string): boolean {
         return channel.lastIndexOf('private-encrypted-', 0) === 0;
