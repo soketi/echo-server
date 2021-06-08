@@ -287,21 +287,35 @@ export class EchoServer {
         this.options = Object.assign(this.options, options);
         this.server = new Server(this.options);
 
+        Log.title('\n📡 Echo Server initialization started.\n');
+
         if (this.options.development) {
-            Log.warning('Starting the server in development mode...\n');
+            Log.info('⚡ Starting the server in Development mode...\n');
         } else {
-            Log.info('Starting the server...\n')
+            Log.info('⚡ Starting the server in Production mode...\n')
         }
 
+        Log.info('⚡ Initializing the HTTP API & Socket.IO Server...\n');
+
         return this.server.initialize().then((io: SocketIoServer) => {
+            Log.info('⚡ Initializing the Socket.IO listeners and channels...\n');
+
             return this.initialize(io).then(() => {
                 this.closing = false;
 
-                Log.info('\nServer ready!\n');
-
                 if (this.options.development) {
-                    Log.info({ options: JSON.stringify(this.options) });
+                    console.dir(this.options, { depth: 100 });
+                    console.log('\n');
                 }
+
+                Log.success('🎉 Server is up and running!\n');
+
+                let host = this.options.host || '127.0.0.1';
+
+                Log.success(`📡 The Websockets server is available at ${host}:${this.options.port}\n`);
+                Log.success(`🔗 The HTTP API server is available at ${this.options.httpApi.protocol}://${host}:${this.options.port}\n`);
+
+                Log.info('👂 The server is now listening for events and managing the channels.\n');
 
                 return this;
             }, error => {
@@ -364,11 +378,16 @@ export class EchoServer {
      */
     async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
-            Log.warning('Stopping the server...');
+            Log.warning('⛔ Stopping the server...\n');
 
             this.closing = true;
 
+            Log.warning('🚫 New users cannot connect to this instance anymore. Preparing for signaling...\n');
+
             this.server.io.close(async () => {
+                Log.warning('⚡ The server is closing and signaling the existing connections to terminate.\n');
+                Log.warning(`⚡ The server will stay up ${this.options.closingGracePeriod} more seconds before closing the process.\n`);
+
                 /**
                  * There is a timeout set to resolve the promise later
                  * since (in odd ways???) sync actions like disconnecting
@@ -379,7 +398,11 @@ export class EchoServer {
                  * a while before closing it, hence naming his timeout as "grace period"
                  * to resolve all socket.on() actions.
                  */
-                await setTimeout(() => resolve(), this.options.closingGracePeriod * 1000);
+                await setTimeout(() => {
+                    Log.warning('⚡ Grace period finished. Closing the server.');
+
+                    resolve();
+                }, this.options.closingGracePeriod * 1000);
             });
         });
     }

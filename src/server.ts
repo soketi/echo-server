@@ -1,10 +1,11 @@
 import { createServer as createHttpServer } from 'http';
 import { createServer as createHttpsServer } from 'https';
-import express, { Application } from 'express';
+import { Application } from 'express';
 import { Log } from './log';
 import { Options } from './options';
 import { Server as SocketIoServer } from 'socket.io';
 
+const express = require('express');
 const fs = require('fs');
 const Redis = require('ioredis');
 const redisAdapter = require('socket.io-redis');
@@ -40,9 +41,6 @@ export class Server {
      */
     initialize(): Promise<SocketIoServer> {
         return this.buildServer(this.options.httpApi.protocol === 'https').then(() => {
-            let host = this.options.host || '127.0.0.1';
-            Log.success(`Running at ${host} on port ${this.options.port}`);
-
             this.configureAdapters();
             this.configureSocketIdGeneration();
 
