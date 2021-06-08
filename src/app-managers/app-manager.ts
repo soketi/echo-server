@@ -5,6 +5,7 @@ import { ApiAppManager } from './api-app-manager';
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { MysqlAppManager } from './mysql-app-manager';
+import { Options } from './../options';
 import { PostgresAppManager } from './postgres-app-manager';
 import { Socket } from './../socket';
 
@@ -20,9 +21,9 @@ export class AppManager implements AppManagerDriver {
     /**
      * Create a new database instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         if (options.appManager.driver === 'array') {
             this.driver = new ArrayAppManager(options);
         } else if (options.appManager.driver === 'api') {

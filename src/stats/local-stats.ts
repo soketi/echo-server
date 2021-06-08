@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Options } from './../options';
 import { StatsDriver } from './stats-driver';
 import * as dot from 'dot-wild';
 
@@ -35,9 +36,9 @@ export class LocalStats implements StatsDriver {
     /**
      * Initialize the local stats driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         //
     }
 

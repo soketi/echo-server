@@ -1,4 +1,5 @@
 import { Member } from '../channels/presence-channel';
+import { Options } from './../options';
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
@@ -7,10 +8,10 @@ export class SocketStorage implements PresenceStorageDriver {
     /**
      * Create a new cache instance.
      *
-     * @param {any} options
+     * @param {Options} options
      * @param {SocketIoServer} io
      */
-    constructor(protected options: any, protected io: SocketIoServer) {
+    constructor(protected options: Options, protected io: SocketIoServer) {
         //
     }
 

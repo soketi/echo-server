@@ -1,5 +1,6 @@
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
+import { Options } from './../options';
 import { PresenceStorage } from './../presence-storage';
 import { PrivateChannel } from './private-channel';
 import { Prometheus } from './../prometheus';
@@ -30,14 +31,14 @@ export class PresenceChannel extends PrivateChannel {
      * @param {Stats} stats
      * @param {Prometheus} prometheus
      * @param {RateLimiter} rateLimiter
-     * @param {any} options
+     * @param {Options} options
      */
     constructor(
         protected io: SocketIoServer,
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
-        protected options: any,
+        protected options: Options,
     ) {
         super(io, stats, prometheus, rateLimiter, options);
 

@@ -2,6 +2,7 @@ import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { EmittedData } from './../echo-server';
 import { Knex, knex } from 'knex';
+import { Options } from './../options';
 import { Socket } from './../socket';
 
 export abstract class SqlAppManager implements AppManagerDriver {
@@ -15,9 +16,9 @@ export abstract class SqlAppManager implements AppManagerDriver {
     /**
      * Create a new app manager instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         let knexConfig = {
             client: this.knexClientName(),
             connection: this.knexConnectionDetails(),

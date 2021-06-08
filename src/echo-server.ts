@@ -3,6 +3,7 @@ import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } fro
 import { HttpApi } from './api';
 import { Log } from './log';
 import { Namespace } from 'socket.io';
+import { Options } from './options';
 import { Prometheus } from './prometheus';
 import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
@@ -37,9 +38,9 @@ export class EchoServer {
     /**
      * Default server options.
      *
-     * @type {any}
+     * @type {Options}
      */
-    public options: any = {
+    public options: Options = {
         appManager: {
             driver: 'array',
             api: {
@@ -140,9 +141,9 @@ export class EchoServer {
         },
         host: null,
         httpApi: {
-            extraHeaders: [
+            extraHeaders: {
                 //
-            ],
+            },
             protocol: 'http',
             requestLimitInMb: 100,
             trustProxies: false,

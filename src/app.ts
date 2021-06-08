@@ -1,7 +1,7 @@
 import { Namespace } from 'socket.io';
 import { Server as SocketIoServer } from 'socket.io';
 
-export interface App {
+export interface AppInterface {
     id: string|number;
     key: string|number;
     secret: string;
@@ -13,7 +13,7 @@ export interface App {
     maxReadRequestsPerMinute: string|number;
 }
 
-export class App {
+export class App implements AppInterface {
     /**
      * @type {string|number}
      */

@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Options } from './../options';
 import { StatsDriver } from './stats-driver';
 import {
     Aggregation,
@@ -31,9 +32,9 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Initialize the Redis stats driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         this.redisTimeSeries = (new RedisTimeSeriesFactory(options.database.redisTs)).create();
         this.redis = new Redis(options.database.redisTs);
     }

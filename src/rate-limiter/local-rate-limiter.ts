@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Options } from './../options';
 import { RateLimiterDriver } from './rate-limiter-driver';
 import { RateLimiterAbstract, RateLimiterMemory } from 'rate-limiter-flexible';
 import { Socket } from './../socket';
@@ -28,9 +29,9 @@ export class LocalRateLimiter implements RateLimiterDriver {
     /**
      * Initialize the local rate limiter driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         this.rateLimiter = new RateLimiterMemory({
             points: 1,
             duration: 60,

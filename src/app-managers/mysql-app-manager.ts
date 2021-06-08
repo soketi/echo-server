@@ -28,7 +28,7 @@ export class MysqlAppManager extends SqlAppManager {
      * @return {string}
      */
     protected knexVersion(): string {
-        return this.options.appManager.mysql.version;
+        return this.options.appManager.mysql.version as string;
     }
 
     /**

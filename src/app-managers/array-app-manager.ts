@@ -1,15 +1,16 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { EmittedData } from '../echo-server';
+import { Options } from './../options';
 import { Socket } from './../socket';
 
 export class ArrayAppManager implements AppManagerDriver {
     /**
      * Create a new app manager instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         //
     }
 

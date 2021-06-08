@@ -3,6 +3,7 @@ import { Application, Response } from 'express';
 import { AppManager } from './../app-managers';
 import { EchoServer } from '../echo-server';
 import { Log } from './../log';
+import { Options } from './../options';
 import { PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
@@ -26,7 +27,7 @@ export class HttpApi {
      * @param {EchoServer} server
      * @param {SocketIoServer} io
      * @param {Application} express
-     * @param {any} options
+     * @param {Options} options
      * @param {AppManager} appManager
      * @param {Stats} stats
      * @param {Prometheus} prometheus
@@ -35,7 +36,7 @@ export class HttpApi {
         protected server: EchoServer,
         protected io: SocketIoServer,
         protected express: Application,
-        protected options: any,
+        protected options: Options,
         protected appManager: AppManager,
         protected stats: Stats,
         protected prometheus: Prometheus,
@@ -394,16 +395,16 @@ export class HttpApi {
         let channels = req.body.channels || [req.body.channel] as string[];
 
         if (channels.length > this.options.eventLimits.maxChannelsAtOnce) {
-            return this.badResponse(req, res, `Cannot broadcast a message to more than ${this.options.httpApi.hardLimits.maxChannelsAtOnce} channels at once.`);
+            return this.badResponse(req, res, `Cannot broadcast a message to more than ${this.options.eventLimits.maxChannelsAtOnce} channels at once.`);
         }
 
         if (req.body.name.length > this.options.eventLimits.maxNameLength) {
-            return this.badResponse(req, res, `Event name is too long. Maximum allowed size is ${this.options.httpApi.hardLimits.maxEventNameLength}.`);
+            return this.badResponse(req, res, `Event name is too long. Maximum allowed size is ${this.options.eventLimits.maxNameLength}.`);
         }
 
         let payloadSizeInKb = Utils.dataToBytes(req.body.data) / 1024;
 
-        if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+        if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb as string)) {
             return this.badResponse(req, res, `The event data should be less than ${this.options.eventLimits.maxPayloadInKb} KB.`);
         }
 

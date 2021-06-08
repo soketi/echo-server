@@ -2,6 +2,7 @@ import { createServer as createHttpServer } from 'http';
 import { createServer as createHttpsServer } from 'https';
 import express, { Application } from 'express';
 import { Log } from './log';
+import { Options } from './options';
 import { Server as SocketIoServer } from 'socket.io';
 
 const fs = require('fs');
@@ -26,9 +27,9 @@ export class Server {
     /**
      * Create a new server instance.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         //
     }
 
@@ -91,7 +92,7 @@ export class Server {
             }
 
             let server = secure
-                ? createHttpsServer(httpOptions, this.express)
+                ? createHttpsServer(httpOptions as object, this.express)
                 : createHttpServer(this.express);
 
             server.listen(this.options.port, this.options.host);

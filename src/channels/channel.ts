@@ -1,6 +1,7 @@
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { Member } from './presence-channel';
+import { Options } from './../options';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Socket } from './../socket';
@@ -36,14 +37,14 @@ export class Channel {
      * @param {Stats} stats
      * @param {Prometheus} prometheus
      * @param {RateLimiter} rateLimiter
-     * @param {any} options
+     * @param {Options} options
      */
     constructor(
         protected io: SocketIoServer,
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
-        protected options: any,
+        protected options: Options,
     ) {
         //
     }
@@ -149,7 +150,7 @@ export class Channel {
 
                 let payloadSizeInKb = Utils.dataToBytes(data.data) / 1024;
 
-                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb)) {
+                if (payloadSizeInKb > parseFloat(this.options.eventLimits.maxPayloadInKb as string)) {
                     return socket.emit('socket:error', { message: `The broadcasting client event payload is greater than ${this.options.eventLimits.maxPayloadInKb} KB.`, code: 4100 });
                 }
 

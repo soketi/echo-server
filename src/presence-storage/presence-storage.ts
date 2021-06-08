@@ -1,6 +1,7 @@
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Log } from './../log';
 import { Member } from '../channels/presence-channel';
+import { Options } from './../options';
 import { RedisStorage } from './redis-storage';
 import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
@@ -20,10 +21,10 @@ export class PresenceStorage implements PresenceStorageDriver {
     /**
      * Create a new storage instance.
      *
-     * @param {any} options
+     * @param {Options} options
      * @param {SocketIoServer} io
      */
-    constructor(protected options: any, protected io: SocketIoServer) {
+    constructor(protected options: Options, protected io: SocketIoServer) {
         if (options.presence.storage.database === 'redis') {
             this.storage = new RedisStorage(options, io);
         } else if (options.presence.storage.database === 'socket') {

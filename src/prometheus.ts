@@ -1,4 +1,5 @@
 import * as prom from 'prom-client';
+import { Options } from './options';
 import { Request } from './request';
 import { Socket } from './socket';
 import { Server as SocketIoServer } from 'socket.io';
@@ -87,9 +88,9 @@ export class Prometheus {
      * Initialize the Prometheus exporter.
      *
      * @param {SocketIoServer} io
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected io: SocketIoServer, protected options: any) {
+    constructor(protected io: SocketIoServer, protected options: Options) {
         this.register = prom.register;
 
         prom.collectDefaultMetrics({

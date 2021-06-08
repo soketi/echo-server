@@ -28,7 +28,7 @@ export class PostgresAppManager extends SqlAppManager {
      * @return {string}
      */
     protected knexVersion(): string {
-        return this.options.appManager.postgres.version;
+        return this.options.appManager.postgres.version as string;
     }
 
     /**

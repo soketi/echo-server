@@ -1,6 +1,7 @@
 import { App } from './../app';
 import { LocalRateLimiter } from './local-rate-limiter';
 import { Log } from './../log';
+import { Options } from './../options';
 import { RateLimiterDriver } from './rate-limiter-driver';
 import { RedisRateLimiter } from './redis-rate-limiter';
 import { Socket } from './../socket';
@@ -16,9 +17,9 @@ export class RateLimiter implements RateLimiterDriver {
     /**
      * Initialize the rate limiter driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         if (options.rateLimiter.driver === 'local') {
             this.driver = new LocalRateLimiter(options);
         } else if (options.rateLimiter.driver === 'redis') {

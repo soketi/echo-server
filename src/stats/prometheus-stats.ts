@@ -1,4 +1,5 @@
 import { App } from './../app';
+import { Options } from './../options';
 import { PrometheusDriver } from 'prometheus-query';
 import { StatsDriver } from './stats-driver';
 
@@ -15,9 +16,9 @@ export class PrometheusStats implements StatsDriver {
     /**
      * Initialize the Prometheus stats driver.
      *
-     * @param {any} options
+     * @param {Options} options
      */
-    constructor(protected options: any) {
+    constructor(protected options: Options) {
         let { host, port, protocol } = this.options.database.prometheus;
 
         this.prometheus = new PrometheusDriver({

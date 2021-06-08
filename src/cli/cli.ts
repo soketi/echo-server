@@ -1,4 +1,5 @@
 import * as dot from 'dot-wild';
+import { Options } from './../options';
 
 const echo = require('./../../dist');
 
@@ -8,7 +9,7 @@ export class Cli {
      *
      * @type {any}
      */
-    options: any;
+    options: Options;
 
     /**
      * Create new CLI instance.
