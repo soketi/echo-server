@@ -86,9 +86,6 @@ export class Prometheus {
 
     /**
      * Initialize the Prometheus exporter.
-     *
-     * @param {SocketIoServer} io
-     * @param {Options} options
      */
     constructor(protected io: SocketIoServer, protected options: Options) {
         this.register = prom.register;
@@ -105,9 +102,6 @@ export class Prometheus {
 
     /**
      * Handle a new connection.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     markNewConnection(socket: Socket): void {
         let namespace = socket.nsp.name;
@@ -125,9 +119,6 @@ export class Prometheus {
 
     /**
      * Handle a disconnection.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     markDisconnection(socket: Socket): void {
         let namespace = socket.nsp.name;
@@ -139,11 +130,6 @@ export class Prometheus {
 
     /**
      * Handle a new API message event being received and sent out.
-     *
-     * @param  {string}  namespace
-     * @param  {Request}  req
-     * @param  {any}  responseData
-     * @return {void}
      */
     markApiMessage(namespace: string, req: Request, ...responseData: any): void {
         this.metrics.httpBytesReceived.inc({ namespace }, req.socket.bytesRead);
@@ -153,11 +139,6 @@ export class Prometheus {
 
     /**
      * Handle a new WS client message event being received.
-     *
-     * @param  {string}  namespace
-     * @param  {string}  event
-     * @param  {any}  data
-     * @return {void}
      */
     markWsMessage(namespace: string, event: string, ...data: any): void {
         this.metrics.socketBytesTransmitted.inc({ namespace }, Utils.dataToBytes(namespace, event, ...data));

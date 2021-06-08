@@ -16,8 +16,6 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Initialize the rate limiter driver.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         if (options.rateLimiter.driver === 'local') {
@@ -31,9 +29,6 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Consume the points for backend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<ConsumptionResponse>}
      */
     consumeBackendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeBackendEventPoints(points);
@@ -41,9 +36,6 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Consume the points for frontend-received events.
-     *
-     * @param  {number}  points
-     * @return {Promise<ConsumptionResponse>}
      */
     consumeFrontendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeFrontendEventPoints(points);
@@ -51,9 +43,6 @@ export class RateLimiter implements RateLimiterDriver {
 
      /**
       * Consume the points for HTTP read requests.
-      *
-      * @param  {number}  points
-      * @return {Promise<ConsumptionResponse>}
       */
     consumeReadRequestsPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeReadRequestsPoints(points);
@@ -61,9 +50,6 @@ export class RateLimiter implements RateLimiterDriver {
 
      /**
       * Set the app to calculate the rate limiter for.
-      *
-      * @param  {App}  app
-      * @return {RateLimiterDriver}
       */
     forApp(app: App): RateLimiterDriver {
         return this.driver.forApp(app);
@@ -71,9 +57,6 @@ export class RateLimiter implements RateLimiterDriver {
 
     /**
      * Set the socket to calculate the rate limiter for.
-     *
-     * @param  {Socket}  socket
-     * @return {RateLimiterDriver}
      */
     forSocket(socket: Socket): RateLimiterDriver {
         return this.driver.forSocket(socket);

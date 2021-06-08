@@ -8,10 +8,6 @@ const Pusher = require('pusher');
 export class PrivateChannel extends Channel {
     /**
      * Join a given channel.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<Member|{ socket: Socket; data: EmittedData }|null>}
      */
     join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return this.signatureIsValid(socket, data).then(isValid => {
@@ -25,10 +21,6 @@ export class PrivateChannel extends Channel {
 
     /**
      * Check is an incoming connection can subscribe.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<boolean>}
      */
     protected signatureIsValid(socket: Socket, data: EmittedData): Promise<boolean> {
         return new Promise((resolve, reject) => {
@@ -40,10 +32,6 @@ export class PrivateChannel extends Channel {
 
     /**
      * Get the signed token from the given socket connection.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<string>}
      */
     protected getSignedToken(socket: Socket, data: EmittedData): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -57,10 +45,6 @@ export class PrivateChannel extends Channel {
 
     /**
      * Get the data to sign for the token.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {string}
      */
     protected getDataToSignForToken(socket: Socket, data: EmittedData): string {
         return `${socket.id}:${data.channel}`;

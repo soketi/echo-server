@@ -280,9 +280,6 @@ export class EchoServer {
 
     /**
      * Start the Echo Server.
-     *
-     * @param  {any}  options
-     * @return {Promise<EchoServer>}
      */
     start(options: any = {}): Promise<EchoServer> {
         this.options = Object.assign(this.options, options);
@@ -333,9 +330,6 @@ export class EchoServer {
 
     /**
      * Initialize the websockets server.
-     *
-     * @param  {SocketIoServer}  io
-     * @return {Promise<SocketIoServer>}
      */
     initialize(io: SocketIoServer): Promise<SocketIoServer> {
         return new Promise((resolve) => {
@@ -374,8 +368,6 @@ export class EchoServer {
 
     /**
      * Stop the echo server.
-     *
-     * @return {Promise<void>}
      */
     async stop(): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -410,9 +402,6 @@ export class EchoServer {
 
     /**
      * Get the App Key from the socket connection.
-     *
-     * @param  {Socket}  socket
-     * @return {string|undefined}
      */
     protected getAppKey(socket: Socket): string|undefined {
         return Utils.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
@@ -420,9 +409,6 @@ export class EchoServer {
 
     /**
      * Register the Socket.IO middleware.
-     *
-     * @param  {Namespace}  nsp
-     * @return {void}
      */
     protected registerSocketMiddleware(nsp: Namespace): void {
         nsp.use((socket: Socket, next) => {
@@ -439,9 +425,6 @@ export class EchoServer {
 
     /**
      * Register callbacks for on('connection') events.
-     *
-     * @param  {Namespace}  nsp
-     * @return {void}
      */
     protected registerConnectionCallbacks(nsp: Namespace): void {
         nsp.on('connection', (socket: Socket) => {
@@ -471,8 +454,6 @@ export class EchoServer {
 
     /**
      * Register the stats snapshotter for all namespaces.
-     *
-     * @return {void}
      */
     protected registerStatsSnapshotter(): void {
         if (this.options.stats.enabled) {
@@ -502,9 +483,6 @@ export class EchoServer {
 
     /**
      * Handle subscriptions to a channel.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     protected onSubscribe(socket: Socket): void {
         socket.on('subscribe', data => {
@@ -518,9 +496,6 @@ export class EchoServer {
 
     /**
      * Handle unsubscribes from a channel.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     protected onUnsubscribe(socket: Socket): void {
         socket.on('unsubscribe', data => {
@@ -530,9 +505,6 @@ export class EchoServer {
 
     /**
      * Handle socket disconnection.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     protected onDisconnecting(socket: Socket): void {
         /**
@@ -562,9 +534,6 @@ export class EchoServer {
 
     /**
      * Handle client events.
-     *
-     * @param  {Socket}  socket
-     * @return {void}
      */
     protected onClientEvent(socket: Socket): void {
         socket.on('client event', data => {
@@ -574,9 +543,6 @@ export class EchoServer {
 
     /**
      * Get the channel instance for a channel name.
-     *
-     * @param  {string}  channel
-     * @return {Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel}
      */
     getChannelInstance(channel: string): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
         if (Channel.isPresenceChannel(channel)) {
@@ -593,9 +559,6 @@ export class EchoServer {
     /**
      * Make sure if the socket connected
      * to a valid echo app.
-     *
-     * @param  {Socket}  socket
-     * @return {Promise<Socket>}
      */
     protected checkForValidEchoApp(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
@@ -644,9 +607,6 @@ export class EchoServer {
     /**
      * Make sure the socket connection did not
      * reach the app limit.
-     *
-     * @param  {Socket}  socket
-     * @return {Promise<Socket>}
      */
     protected checkAppConnectionLimit(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
@@ -703,8 +663,6 @@ export class EchoServer {
 
     /**
      * Generate a Pusher-like socket id.
-     *
-     * @return {string}
      */
     protected generateSocketId(): string {
         let min = 0;

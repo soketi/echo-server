@@ -26,12 +26,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Create a new channel instance.
-     *
-     * @param {SocketIoServer} io
-     * @param {Stats} stats
-     * @param {Prometheus} prometheus
-     * @param {RateLimiter} rateLimiter
-     * @param {Options} options
      */
     constructor(
         protected io: SocketIoServer,
@@ -47,10 +41,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Join a given channel.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<Member|{ socket: Socket; data: EmittedData }|null>}
      */
     join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return this.signatureIsValid(socket, data).then(isValid => {
@@ -116,10 +106,6 @@ export class PresenceChannel extends PrivateChannel {
      * Leave a channel. Remove a member from a
      * presenece channel and broadcast they have left
      * only if not other presence channel instances exist.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @return {void}
      */
     leave(socket: Socket, channel: string): void {
         this.presenceStorage.whoLeft(socket, Utils.getNspForSocket(socket), channel).then(memberWhoLeft => {
@@ -143,11 +129,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle joins.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @param  {Member}  member
-     * @return {void}
      */
     onJoin(socket: Socket, channel: string, member: Member): void {
         super.onJoin(socket, channel, member);
@@ -167,11 +148,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle leaves.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @param  {Member}  member
-     * @return {void}
      */
     onLeave(socket: Socket, channel: string, member: Member): void {
         this.io.of(Utils.getNspForSocket(socket))
@@ -191,11 +167,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Handle subscriptions.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @param  {Member[]}  members
-     * @return {void}
      */
     onSubscribed(socket: Socket, channel: string, members: Member[]): void {
         this.io.of(Utils.getNspForSocket(socket))
@@ -215,10 +186,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Get the members of a presence channel.
-     *
-     * @param  {string}  namespace
-     * @param  {string}  channel
-     * @return {Promise<Member[]>}
      */
     getMembers(namespace: string, channel: string): Promise<Member[]> {
         return this.presenceStorage.getMembersFromChannel(namespace, channel);
@@ -226,10 +193,6 @@ export class PresenceChannel extends PrivateChannel {
 
     /**
      * Get the data to sign for the token.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {string}
      */
     protected getDataToSignForToken(socket: Socket, data: EmittedData): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;

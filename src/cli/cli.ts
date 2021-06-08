@@ -102,8 +102,6 @@ export class Cli {
 
     /**
      * Inject the .env vars into options if they exist.
-     *
-     * @return {void}
      */
     protected overwriteOptionsFromEnv(): void {
         require('dotenv').config();
@@ -134,8 +132,6 @@ export class Cli {
 
     /**
      * Start the Echo server.
-     *
-     * @return {Promise<any>}
      */
     start(yargs: any): Promise<any> {
         this.overwriteOptionsFromEnv();
@@ -154,8 +150,6 @@ export class Cli {
 
     /**
      * Stop the server.
-     *
-     * @return {Promise<void>}
      */
     stop(): Promise<void> {
         return echo.stop();

@@ -35,8 +35,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Initialize the local stats driver.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         //
@@ -45,9 +43,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Mark in the stats a new connection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markNewConnection(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -69,10 +64,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Mark in the stats a socket disconnection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @param  {string|null}  reason
-     * @return {Promise<number>}
      */
     markDisconnection(app: App, reason?: string): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -87,9 +78,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Mark in the stats a new API message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markApiMessage(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -104,9 +92,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Mark in the stats a whisper message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markWsMessage(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -120,9 +105,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Get the compiled stats for a given app.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<StatsElement>}
      */
     getStats(app: App|string|number): Promise<StatsElement> {
         let appKey = app instanceof App ? app.key : app;
@@ -140,10 +122,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Take a snapshot of the current stats
      * for a given time.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  time
-     * @return {Promise<TimedStatsElement>}
      */
     takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement> {
         let appKey = app instanceof App ? app.key : app;
@@ -195,14 +173,8 @@ export class LocalStats implements StatsDriver {
     }
 
     /**
-     * Get the list of stats snapshots
-     * for a given interval. Defaults to
-     * the last 7 days.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  start
-     * @param  {number|null}  end
-     * @return {Promise<AppSnapshottedPoints>}
+     * Get the list of stats snapshots for a given interval.
+     * Defaults to the last 7 days.
      */
     getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         let appKey = app instanceof App ? app.key : app;
@@ -216,10 +188,6 @@ export class LocalStats implements StatsDriver {
     /**
      * Delete points that are outside of the desired range
      * of keeping the history of.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  time
-     * @return {Promise<boolean>}
      */
     deleteStalePoints(app: App|string|number, time?: number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
@@ -237,9 +205,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Register the app to know we have metrics for it.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<boolean>}
      */
     registerApp(app: App|string|number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
@@ -255,8 +220,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Get the list of registered apps into stats.
-     *
-     * @return {Promise<string[]>}
      */
     getRegisteredApps(): Promise<string[]> {
         return new Promise(resolve => resolve(this.registeredApps));
@@ -264,10 +227,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Increment a given stat.
-     *
-     * @param  {App}  app
-     * @param  {string}  stat
-     * @return {Promise<number>}
      */
     protected increment(app: App, stat: string): Promise<number> {
         return new Promise(resolve => {
@@ -287,10 +246,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Decrement a given stat.
-     *
-     * @param  {App}  app
-     * @param  {string}  stat
-     * @return {Promise<number>}
      */
     protected decrement(app: App, stat: string): Promise<number> {
         return new Promise(resolve => {
@@ -310,11 +265,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Set a metric to a certain number.
-     *
-     * @param  {App}  app
-     * @param  {string}  stat
-     * @param  {number}  value
-     * @return {Promise<number>}
      */
     protected set(app: App, stat: string, value: number): Promise<number> {
         return new Promise(resolve => {
@@ -330,9 +280,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Reset the messages counters after each snapshot.
-     *
-     * @param  {App|string|number}  app
-     * @return {void}
      */
     protected resetMessagesStats(app: App|string|number): void {
         let appKey = app instanceof App ? app.key : app;
@@ -344,9 +291,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Reset all app traces from the stats system.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<boolean>}
      */
     protected resetAppTraces(app: App|string|number): Promise<boolean> {
         return new Promise(resolve => {
@@ -363,9 +307,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Check if the app still has activity.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<boolean>}
      */
     protected hasActivity(app: App|string|number): Promise<boolean> {
         return this.getSnapshots(app, 0, Infinity).then(snapshots => {
@@ -377,9 +318,6 @@ export class LocalStats implements StatsDriver {
 
     /**
      * Check if the given app can register stats.
-     *
-     * @param  {App}  app
-     * @return {boolean}
      */
     protected canRegisterStats(app: App): boolean {
         return this.options.stats.enabled && !!app.enableStats;

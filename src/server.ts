@@ -27,8 +27,6 @@ export class Server {
 
     /**
      * Create a new server instance.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         //
@@ -36,8 +34,6 @@ export class Server {
 
     /**
      * Initialize the server.
-     *
-     * @return {Promise<SocketIoServer>}
      */
     initialize(): Promise<SocketIoServer> {
         return this.buildServer(this.options.httpApi.protocol === 'https').then(() => {
@@ -55,8 +51,6 @@ export class Server {
     /**
      * Load SSL 'key' & 'cert' files if HTTPS is enabled.
      * Return the parameters needs for the SSL.
-     *
-     * @return {any}
      */
     protected configureSecurity(): { [key: string]: string|number; } {
         if (!this.options.ssl.certPath || !this.options.ssl.keyPath) {
@@ -73,9 +67,6 @@ export class Server {
 
     /**
      * Create Socket.IO & HTTP(S) servers.
-     *
-     * @param  {boolean}  secure
-     * @return {Promise<SocketIoServer>}
      */
     protected buildServer(secure: boolean): Promise<SocketIoServer> {
         return new Promise(resolve => {
@@ -110,8 +101,6 @@ export class Server {
 
     /**
      * Configure the Socket.IO adapters.
-     *
-     * @return {void}
      */
     protected configureAdapters(): void {
         if (this.options.replication.driver === 'redis') {
@@ -128,8 +117,6 @@ export class Server {
 
     /**
      * Configure the Socket.IO ID generation.
-     *
-     * @return {void}
      */
     protected configureSocketIdGeneration(): void {
         let min = 0;

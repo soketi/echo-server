@@ -32,12 +32,6 @@ export class Channel {
 
     /**
      * Create a new channel instance.
-     *
-     * @param {SocketIoServer} io
-     * @param {Stats} stats
-     * @param {Prometheus} prometheus
-     * @param {RateLimiter} rateLimiter
-     * @param {Options} options
      */
     constructor(
         protected io: SocketIoServer,
@@ -51,10 +45,6 @@ export class Channel {
 
     /**
      * Join a given channel.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<Member|{ socket: Socket; data: EmittedData }|null>}
      */
     join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return new Promise((resolve, reject) => {
@@ -67,11 +57,6 @@ export class Channel {
 
     /**
      * Leave a channel.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @param  {string}  reason
-     * @return {void}
      */
     leave(socket: Socket, channel: string, reason: string): void {
         if (channel) {
@@ -91,11 +76,6 @@ export class Channel {
 
     /**
      * Handle joins.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @param  {Member}  member
-     * @return {void}
      */
     onJoin(socket: Socket, channel: string, member: Member): void {
         socket.emit('channel:joined', channel);
@@ -123,10 +103,6 @@ export class Channel {
 
     /**
      * Trigger a client message.
-     *
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {any}
      */
     onClientEvent(socket: Socket, data: EmittedData): any {
         if (this.options.development) {
@@ -197,9 +173,6 @@ export class Channel {
 
     /**
      * Check if client is a client event.
-     *
-     * @param  {string}  event
-     * @return {boolean}
      */
     isClientEvent(event: string): boolean {
         let isClientEvent = false;
@@ -217,10 +190,6 @@ export class Channel {
 
     /**
      * Check if a socket has joined a channel.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @return {boolean}
      */
     isInChannel(socket: Socket, channel: string): boolean {
         // TODO: Check this line? It throw error in ESLint.
@@ -230,10 +199,6 @@ export class Channel {
 
     /**
      * Create alias for static.
-     *
-     * @param  {Socket}  socket
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isInChannel(socket: Socket, channel: string): boolean {
         return this.isInChannel(socket, channel);
@@ -241,9 +206,6 @@ export class Channel {
 
     /**
      * Check if the given channel name is private.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isPrivateChannel(channel: string): boolean {
         let isPrivate = false;
@@ -261,9 +223,6 @@ export class Channel {
 
     /**
      * Check if the given channel name is a presence channel.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isPresenceChannel(channel: string): boolean {
         return channel.lastIndexOf('presence-', 0) === 0;
@@ -271,9 +230,6 @@ export class Channel {
 
     /**
      * Check if the given channel name is a encrypted private channel.
-     *
-     * @param  {string}  channel
-     * @return {boolean}
      */
     static isEncryptedPrivateChannel(channel: string): boolean {
         return channel.lastIndexOf('private-encrypted-', 0) === 0;

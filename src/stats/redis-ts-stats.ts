@@ -31,8 +31,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
 
     /**
      * Initialize the Redis stats driver.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         this.redisTimeSeries = (new RedisTimeSeriesFactory(options.database.redisTs)).create();
@@ -42,9 +40,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Mark in the stats a new connection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markNewConnection(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -64,10 +59,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Mark in the stats a socket disconnection.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @param  {string|null}  reason
-     * @return {Promise<number>}
      */
     markDisconnection(app: App, reason?: string): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -87,9 +78,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Mark in the stats a new API message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markApiMessage(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -109,9 +97,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Mark in the stats a whisper message.
      * Returns a number within a promise.
-     *
-     * @param  {App}  app
-     * @return {Promise<number>}
      */
     markWsMessage(app: App): Promise<number> {
         if (!this.canRegisterStats(app)) {
@@ -130,9 +115,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
 
     /**
      * Get the compiled stats for a given app.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<StatsElement>}
      */
     getStats(app: App|string|number): Promise<StatsElement> {
         return new Promise(resolve => resolve({}));
@@ -141,10 +123,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Take a snapshot of the current stats
      * for a given time.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  time
-     * @return {Promise<TimedStatsElement>}
      */
     takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement> {
         return new Promise(resolve => resolve({
@@ -154,14 +132,8 @@ export class RedisTimeSeriesStats implements StatsDriver {
     }
 
     /**
-     * Get the list of stats snapshots
-     * for a given interval.
+     * Get the list of stats snapshots for a given interval.
      * Defaults to the last 7 days.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  start
-     * @param  {number|null}  end
-     * @return {Promise<AppSnapshottedPoints>}
      */
     getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         start = start ? start : dayjs().subtract(7, 'day').unix(),
@@ -225,10 +197,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
     /**
      * Delete points that are outside of the desired range
      * of keeping the history of.
-     *
-     * @param  {App|string|number}  app
-     * @param  {number|null}  time
-     * @return {Promise<boolean>}
      */
     deleteStalePoints(app: App|string|number, time?: number): Promise<boolean> {
         return new Promise(resolve => resolve(true));
@@ -236,9 +204,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
 
     /**
      * Register the app to know we have metrics for it.
-     *
-     * @param  {App|string|number}  app
-     * @return {Promise<boolean>}
      */
     registerApp(app: App|string|number): Promise<boolean> {
         let appKey = app instanceof App ? app.key : app;
@@ -261,8 +226,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
 
     /**
      * Get the list of registered apps into stats.
-     *
-     * @return {Promise<string[]>}
      */
     getRegisteredApps(): Promise<string[]> {
         return new Promise(resolve => resolve([]));
@@ -270,9 +233,6 @@ export class RedisTimeSeriesStats implements StatsDriver {
 
     /**
      * Check if the given app can register stats.
-     *
-     * @param  {App}  app
-     * @return {boolean}
      */
     protected canRegisterStats(app: App): boolean {
         return this.options.stats.enabled && !!app.enableStats;

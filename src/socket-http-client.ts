@@ -7,8 +7,6 @@ const request = require('request');
 export class SocketHttpClient {
     /**
      * Initialize the requester.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         //
@@ -16,11 +14,6 @@ export class SocketHttpClient {
 
     /**
      * Send a request to the server.
-     *
-     * @param  {string}  method
-     * @param  {Socket}  socket
-     * @param  {any}  options
-     * @return {Promise<{ [key: string]: any; }>}
      */
     request(socket: Socket, options: any): Promise<{ [key: string]: any; }> {
         return new Promise((resolve, reject) => {
@@ -72,10 +65,6 @@ export class SocketHttpClient {
 
     /**
      * Prepare headers for request to app server.
-     *
-     * @param  {Socket}  socket
-     * @param  {Options}  options
-     * @return {any}
      */
     protected prepareHeaders(socket: Socket, options: Options): { [key: string]: any; } {
         let headers = {

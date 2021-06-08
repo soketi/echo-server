@@ -24,14 +24,6 @@ const v8 = require('v8');
 export class HttpApi {
     /**
      * Create new instance of HTTP API.
-     *
-     * @param {EchoServer} server
-     * @param {SocketIoServer} io
-     * @param {Application} express
-     * @param {Options} options
-     * @param {AppManager} appManager
-     * @param {Stats} stats
-     * @param {Prometheus} prometheus
      */
     constructor(
         protected server: EchoServer,
@@ -48,8 +40,6 @@ export class HttpApi {
 
     /**
      * Initialize the HTTP API.
-     *
-     * @return {void}
      */
     initialize(): void {
         this.registerCorsMiddleware();
@@ -83,8 +73,6 @@ export class HttpApi {
 
     /**
      * Add CORS middleware if applicable.
-     *
-     * @return {void}
      */
     protected registerCorsMiddleware(): void {
         this.express.use((req: Request, res: Response, next) => {
@@ -98,8 +86,6 @@ export class HttpApi {
 
     /**
      * Configure the headers from the settings.
-     *
-     * @return {void}
      */
     protected configureHeaders(): void {
         if (this.options.httpApi.trustProxies) {
@@ -117,8 +103,6 @@ export class HttpApi {
 
     /**
      * Configure the JSON body parser.
-     *
-     * @return {void}
      */
     protected configureJsonBody(): void {
         this.express.use(bodyParser.json({
@@ -132,8 +116,6 @@ export class HttpApi {
 
     /**
      * Attach the App instance to the request object.
-     *
-     * @return {void}
      */
     protected configureAppAttachmentToRequest(): void {
         this.express.use('/apps/*', (req: Request, res: Response, next) => {
@@ -170,8 +152,6 @@ export class HttpApi {
 
     /**
      * Attach global protection to HTTP routes, to verify the API key.
-     *
-     * @return {void}
      */
     protected configurePusherAuthentication(): void {
         this.express.param('appId', (req: Request, res: Response, next) => {
@@ -185,11 +165,6 @@ export class HttpApi {
 
     /**
      * Create a rate limiter for the /events endpoint.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @param  {function}  next
-     * @return {void}
      */
     protected broadcastEventRateLimiter(req: Request, res: Response, next): void {
         let app = req.echoApp;
@@ -213,11 +188,6 @@ export class HttpApi {
 
     /**
      * Create a rate limiter for any read-only endpoint.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @param  {function}  next
-     * @return {void}
      */
     protected readRateLimiter(req: Request, res: Response, next): void {
         let app = req.echoApp;
@@ -235,10 +205,6 @@ export class HttpApi {
 
     /**
      * Outputs a simple message to show that the server is running.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {void}
      */
     protected getHealth(req: Request, res: Response): void {
         res.send('OK');
@@ -246,10 +212,6 @@ export class HttpApi {
 
     /**
      * Outputs a simple message to check if the server accepts new connections.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {void}
      */
     protected getReadiness(req: Request, res: Response): void {
         if (this.server.closing) {
@@ -261,10 +223,6 @@ export class HttpApi {
 
     /**
      * Get details regarding the process usage.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {void}
      */
     protected getUsage(req: Request, res: Response): void {
         let { rss, heapTotal, external, arrayBuffers } = process.memoryUsage();
@@ -286,10 +244,6 @@ export class HttpApi {
 
     /**
      * Get a list of the open channels on the server.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {void}
      */
     protected getChannels(req: Request, res: Response): void {
         let appKey = req.echoApp.key;
@@ -317,10 +271,6 @@ export class HttpApi {
 
     /**
      * Get a information about a channel.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {void}
      */
     protected getChannel(req: Request, res: Response): void {
         let appKey = req.echoApp.key;
@@ -350,10 +300,6 @@ export class HttpApi {
 
     /**
      * Get the users of a channel.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected getChannelUsers(req: Request, res: Response): boolean {
         let appKey = req.echoApp.key;
@@ -379,10 +325,6 @@ export class HttpApi {
 
     /**
      * Broadcast an event.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected broadcastEvent(req: Request, res: Response): boolean {
         if (
@@ -431,10 +373,6 @@ export class HttpApi {
 
     /**
      * Retrieve the statistics for a given app.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected getStats(req, res): boolean {
         let start = req.query.start || dayjs().subtract(7, 'day').unix();
@@ -453,10 +391,6 @@ export class HttpApi {
 
     /**
      * Retrieve the current statistics for a given app.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected getCurrentStats(req, res): boolean {
         if (!req.echoApp.enableStats) {
@@ -472,10 +406,6 @@ export class HttpApi {
 
     /**
      * Get the registered Prometheus metrics.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected getPrometheusMetrics(req, res): boolean {
         res.set('Content-Type', this.prometheus.register.contentType);
@@ -495,10 +425,6 @@ export class HttpApi {
 
     /**
      * Find a Socket by Id in a given namespace.
-     *
-     * @param  {string}  namespace
-     * @param  {string}  socketId
-     * @return {Promise<RemoteSocket>}
      */
     protected findSocketInNamespace(namespace: string, socketId: string): Promise<RemoteSocket> {
         return this.io.of(namespace).fetchSockets().then((sockets: any) => {
@@ -521,12 +447,6 @@ export class HttpApi {
     /**
      * Send the events from the request to given namespace,
      * with the broadcasting of a socket (if any).
-     *
-     * @param  {string}  namespace
-     * @param  {string[]}  channels
-     * @param  {Request}  req
-     * @param  {RemoteSocket|null}  socket
-     * @return {void}
      */
     protected sendEventToChannels(namespace: string, channels: string[], req: Request, socket: RemoteSocket = null): void
     {
@@ -568,9 +488,6 @@ export class HttpApi {
 
     /**
      * Get the app ID from the URL.
-     *
-     * @param  {Request}  req
-     * @return {string|null}
      */
     protected getAppId(req: Request): string|null {
         return req.params.appId || null;
@@ -578,9 +495,6 @@ export class HttpApi {
 
     /**
      * Get the app key from the request.
-     *
-     * @param  {Request}  req
-     * @return {string|null}
      */
     protected getAppKey(req: Request): string|null {
         return (req.query.auth_key || null) as string|null;
@@ -588,10 +502,6 @@ export class HttpApi {
 
     /**
      * Check is an incoming request can access the api.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {Promise<boolean>}
      */
     protected signatureIsValid(req: Request, res: Response): Promise<boolean> {
         return this.getSignedToken(req).then(token => {
@@ -601,9 +511,6 @@ export class HttpApi {
 
     /**
      * Get the signed token from the given request.
-     *
-     * @param  {Request}  req
-     * @return {Promise<string>}
      */
     protected getSignedToken(req: Request): Promise<string> {
         let app = req.echoApp;
@@ -646,11 +553,6 @@ export class HttpApi {
 
     /**
      * Throw 400 response.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @param  {string}  message
-     * @return {boolean}
      */
     protected badResponse(req: Request, res: Response, message: string): boolean {
         res.statusCode = 400;
@@ -661,10 +563,6 @@ export class HttpApi {
 
     /**
      * Throw 403 response.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected unauthorizedResponse(req: Request, res: Response): boolean {
         res.statusCode = 403;
@@ -675,10 +573,6 @@ export class HttpApi {
 
     /**
      * Throw 404 response.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected notFoundResponse(req: Request, res: Response): boolean {
         let appId = this.getAppId(req);
@@ -691,10 +585,6 @@ export class HttpApi {
 
     /**
      * Throw 429 response.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected tooManyRequestsResponse(req: Request, res: Response): boolean {
         res.statusCode = 429;
@@ -705,10 +595,6 @@ export class HttpApi {
 
     /**
      * Throw 503 response.
-     *
-     * @param  {Request}  req
-     * @param  {Response}  res
-     * @return {boolean}
      */
     protected serviceUnavailableResponse(req, res): boolean {
         res.statusCode = 503;

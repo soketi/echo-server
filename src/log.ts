@@ -18,9 +18,6 @@ colors.setTheme({
 export class Log {
     /**
      * Console log heading 1.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static title(message: any): void {
         console.log(colors.bold(message));
@@ -28,9 +25,6 @@ export class Log {
 
     /**
      * Console log heaing 2.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static subtitle(message: any): void {
         console.log(colors.h2.bold(message));
@@ -38,9 +32,6 @@ export class Log {
 
     /**
      * Console log info.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static info(message: any): void {
         console.log(colors.info(message));
@@ -48,9 +39,6 @@ export class Log {
 
     /**
      * Console log success.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static success(message: any): void {
         console.log(colors.green(message));
@@ -58,9 +46,6 @@ export class Log {
 
     /**
      * Console log info.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static error(message: any): void {
         console.log(colors.error(message));
@@ -68,9 +53,6 @@ export class Log {
 
     /**
      * Console log warning.
-     *
-     * @param  {string|object}  message
-     * @return {void}
      */
     static warning(message: any): void {
         console.log(colors.warn(message));

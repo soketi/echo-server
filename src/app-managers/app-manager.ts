@@ -20,8 +20,6 @@ export class AppManager implements AppManagerDriver {
 
     /**
      * Create a new database instance.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         if (options.appManager.driver === 'array') {
@@ -39,11 +37,6 @@ export class AppManager implements AppManagerDriver {
 
     /**
      * Find an app by given ID.
-     *
-     * @param  {string|number}  id
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<App|null>}
      */
     findById(id: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.driver.findById(id, socket, data);
@@ -51,11 +44,6 @@ export class AppManager implements AppManagerDriver {
 
     /**
      * Find an app by given key.
-     *
-     * @param  {string|number}  key
-     * @param  {Socket}  socket
-     * @param  {EmittedData}  data
-     * @return {Promise<App|null>}
      */
     findByKey(key: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.driver.findByKey(key, socket, data);

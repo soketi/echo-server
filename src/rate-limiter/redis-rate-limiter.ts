@@ -7,8 +7,6 @@ const Redis = require('ioredis');
 export class RedisRateLimiter extends LocalRateLimiter {
     /**
      * Initialize the Redis rate limiter driver.
-     *
-     * @param {Options} options
      */
     constructor(protected options: Options) {
         super(options);

@@ -61,8 +61,6 @@ export class App implements AppInterface {
 
     /**
      * Create a new app from object.
-     *
-     * @param {any} app
      */
     constructor(app: { [key: string]: any; }) {
         this.id = app.id;

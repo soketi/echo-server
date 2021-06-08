@@ -3,9 +3,6 @@ import { Socket } from "./socket";
 export class Utils {
     /**
      * Get the amount of bytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
      */
     static dataToBytes(...data: any): number {
         return data.reduce((totalBytes, element) => {
@@ -21,9 +18,6 @@ export class Utils {
 
     /**
      * Get the amount of kilobytes from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
      */
     static dataToKilobytes(...data: any): number {
         return this.dataToBytes(...data) / 1024;
@@ -31,9 +25,6 @@ export class Utils {
 
     /**
      * Extract the namespace from socket.
-     *
-     * @param  {Socket}  socket
-     * @return {string}
      */
     static getNspForSocket(socket: Socket): string {
         return socket.nsp.name;
