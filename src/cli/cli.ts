@@ -155,11 +155,9 @@ export class Cli {
     /**
      * Stop the server.
      *
-     * @return {Promise<any>}
+     * @return {Promise<void>}
      */
-    stop(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            echo.stop();
-        });
+    stop(): Promise<void> {
+        return echo.stop();
     }
 }

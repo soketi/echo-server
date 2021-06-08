@@ -10,9 +10,9 @@ export interface PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    getMembersFromChannel(nsp: string, channel: string): Promise<any>;
+    getMembersFromChannel(nsp: string, channel: string): Promise<Member[]>;
 
     /**
      * Add a new member to a given channel.
@@ -21,9 +21,9 @@ export interface PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any>;
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]>;
 
     /**
      * Remove a member from a given channel.
@@ -32,9 +32,9 @@ export interface PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any>;
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]>;
 
     /**
      * Check if the given member exists in a channel.
@@ -54,7 +54,7 @@ export interface PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member>}
      */
-    whoLeft(socket: Socket, nsp: string, channel: string): Promise<any>;
+    whoLeft(socket: Socket, nsp: string, channel: string): Promise<Member>;
 }

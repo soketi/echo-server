@@ -1,6 +1,6 @@
 import { App } from './../app';
+import { AppSnapshottedPoints, StatsDriver, StatsElement, TimedStatsElement } from './stats-driver';
 import { Options } from './../options';
-import { StatsDriver } from './stats-driver';
 import {
     Aggregation,
     AggregationType,
@@ -132,14 +132,10 @@ export class RedisTimeSeriesStats implements StatsDriver {
      * Get the compiled stats for a given app.
      *
      * @param  {App|string|number}  app
-     * @return {Promise<any>}
+     * @return {Promise<StatsElement>}
      */
-    getStats(app: App|string|number): Promise<any> {
-        return new Promise(resolve => resolve({
-            connections: { points: [] },
-            api_messages: { points: [] },
-            ws_messages: { points: [] },
-        }));
+    getStats(app: App|string|number): Promise<StatsElement> {
+        return new Promise(resolve => resolve({}));
     }
 
     /**
@@ -148,10 +144,13 @@ export class RedisTimeSeriesStats implements StatsDriver {
      *
      * @param  {App|string|number}  app
      * @param  {number|null}  time
-     * @return {Promise<any>}
+     * @return {Promise<TimedStatsElement>}
      */
-    takeSnapshot(app: App|string|number, time?: number): Promise<any> {
-        return new Promise(resolve => resolve({}));
+    takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement> {
+        return new Promise(resolve => resolve({
+            time: new Date().toISOString(),
+            stats: { },
+        }));
     }
 
     /**
@@ -162,9 +161,9 @@ export class RedisTimeSeriesStats implements StatsDriver {
      * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
-     * @return {Promise<any>}
+     * @return {Promise<AppSnapshottedPoints>}
      */
-    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         start = start ? start : dayjs().subtract(7, 'day').unix(),
         end = end ? end : dayjs().unix();
 
@@ -181,7 +180,12 @@ export class RedisTimeSeriesStats implements StatsDriver {
             this.redisTimeSeries.multiRange(timestampRange, filter, undefined, maxAgg, false),
         ]).then(result => {
             let [sums, averages, maximums] = result;
-            let stats = {};
+
+            let stats: AppSnapshottedPoints = {
+                connections: { points: [] },
+                api_messages: { points: [] },
+                ws_messages: { points: [] },
+            };
 
             sums.forEach((label, labelIndex) => {
                 if (label.key === appKey) {

@@ -83,7 +83,7 @@ export class PresenceChannel extends PrivateChannel {
                  * This avoids duplicated tabs for users, as well as minimizing impact on the network.
                  */
                 if (!exists) {
-                    if (this.dataToKilobytes(member) > this.options.presence.maxMemberSizeInKb) {
+                    if (Utils.dataToKilobytes(member) > parseFloat(this.options.presence.maxMemberSizeInKb as string)) {
                         socket.emit('socket:error', { message: `The member size exceeds ${this.options.presence.maxMemberSizeInKb} KB.`, code: 4100 });
                     } else {
                         member.socket_id = socket.id;
@@ -218,9 +218,9 @@ export class PresenceChannel extends PrivateChannel {
      *
      * @param  {string}  namespace
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    getMembers(namespace: string, channel: string): Promise<any> {
+    getMembers(namespace: string, channel: string): Promise<Member[]> {
         return this.presenceStorage.getMembersFromChannel(namespace, channel);
     }
 
@@ -233,23 +233,5 @@ export class PresenceChannel extends PrivateChannel {
      */
     protected getDataToSignForToken(socket: Socket, data: EmittedData): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;
-    }
-
-    /**
-     * Get the amount of kb from given parameters.
-     *
-     * @param  {any}  data
-     * @return {number}
-     */
-    protected dataToKilobytes(...data: any): number {
-        return data.reduce((totalKilobytes, element) => {
-            element = typeof element === 'string' ? element : JSON.stringify(element);
-
-            try {
-                return totalKilobytes += Buffer.byteLength(element, 'utf8') / 1024;
-            } catch (e) {
-                return totalKilobytes;
-            }
-        }, 0);
     }
 }

@@ -42,9 +42,9 @@ export interface StatsDriver {
      * Get the compiled stats for a given app.
      *
      * @param  {App|string|number}  app
-     * @return {Promise<any>}
+     * @return {Promise<StatsElement>}
      */
-    getStats(app: App|string|number): Promise<any>;
+    getStats(app: App|string|number): Promise<StatsElement>;
 
     /**
      * Take a snapshot of the current stats
@@ -52,9 +52,9 @@ export interface StatsDriver {
      *
      * @param  {App|string|number}  app
      * @param  {number|null}  time
-     * @return {Promise<any>}
+     * @return {Promise<TimedStatsElement>}
      */
-    takeSnapshot(app: App|string|number, time?: number): Promise<any>;
+    takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement>;
 
     /**
      * Get the list of stats snapshots
@@ -64,9 +64,9 @@ export interface StatsDriver {
      * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
-     * @return {Promise<any>}
+     * @return {Promise<AppSnapshottedPoints>}
      */
-    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any>;
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints>;
 
     /**
      * Delete points that are outside of the desired range
@@ -92,4 +92,37 @@ export interface StatsDriver {
      * @return {Promise<string[]>}
      */
     getRegisteredApps(): Promise<string[]>;
+}
+
+export interface StatsElement {
+    connections?: number;
+    peak_connections?: number;
+    api_messages?: number;
+    ws_messages?: number;
+}
+
+export interface AppsStats {
+    [key: string]: StatsElement;
+}
+
+export interface TimedStatsElement {
+    time?: string|number;
+    stats: StatsElement;
+}
+
+export interface SnapshotPoint {
+    time?: number|string;
+    avg?: number|string;
+    max?: number|string;
+    value?: number|string;
+}
+
+export interface AppSnapshottedPoints {
+    connections: { points: SnapshotPoint[] };
+    api_messages: { points: SnapshotPoint[] };
+    ws_messages: { points: SnapshotPoint[] };
+}
+
+export interface Snapshots {
+    [key: string]: AppSnapshottedPoints;
 }

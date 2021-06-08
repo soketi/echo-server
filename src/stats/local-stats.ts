@@ -1,6 +1,6 @@
 import { App } from './../app';
 import { Options } from './../options';
-import { StatsDriver } from './stats-driver';
+import { AppsStats, AppSnapshottedPoints, Snapshots, StatsDriver, StatsElement, TimedStatsElement } from './stats-driver';
 import * as dot from 'dot-wild';
 
 const dayjs = require('dayjs');
@@ -9,18 +9,18 @@ export class LocalStats implements StatsDriver {
     /**
      * The stored stats.
      *
-     * @type {any}
+     * @type {Stats}
      */
-    protected stats: any = {
+    protected stats: AppsStats = {
         //
     };
 
     /**
      * The stored snapshots, keyed by time.
      *
-     * @type {any}
+     * @type {Snapshots}
      */
-    protected snapshots: any = {
+    protected snapshots: Snapshots = {
         //
     };
 
@@ -122,9 +122,9 @@ export class LocalStats implements StatsDriver {
      * Get the compiled stats for a given app.
      *
      * @param  {App|string|number}  app
-     * @return {Promise<any>}
+     * @return {Promise<StatsElement>}
      */
-    getStats(app: App|string|number): Promise<any> {
+    getStats(app: App|string|number): Promise<StatsElement> {
         let appKey = app instanceof App ? app.key : app;
 
         return new Promise(resolve => {
@@ -143,9 +143,9 @@ export class LocalStats implements StatsDriver {
      *
      * @param  {App|string|number}  app
      * @param  {number|null}  time
-     * @return {Promise<any>}
+     * @return {Promise<TimedStatsElement>}
      */
-    takeSnapshot(app: App|string|number, time?: number): Promise<any> {
+    takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement> {
         let appKey = app instanceof App ? app.key : app;
 
         if (!this.snapshots[appKey]) {
@@ -156,7 +156,7 @@ export class LocalStats implements StatsDriver {
             };
         }
 
-        return this.getStats(app).then(stats => {
+        return this.getStats(app).then((stats: StatsElement) => {
             this.snapshots[appKey].connections.points.push({
                 time,
                 avg: stats.connections,
@@ -177,7 +177,7 @@ export class LocalStats implements StatsDriver {
                 time,
                 stats,
             };
-        }).then(record => {
+        }).then((record: TimedStatsElement) => {
             return this.hasActivity(app).then(hasActivity => {
                 if (!hasActivity) {
                     return this.resetAppTraces(app).then(() => record);
@@ -202,9 +202,9 @@ export class LocalStats implements StatsDriver {
      * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
-     * @return {Promise<any>}
+     * @return {Promise<AppSnapshottedPoints>}
      */
-    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         let appKey = app instanceof App ? app.key : app;
 
         start = start ? start : dayjs().subtract(7, 'day').unix();

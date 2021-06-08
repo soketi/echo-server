@@ -2,7 +2,7 @@ import { Member } from '../channels/presence-channel';
 import { Options } from './../options';
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Socket } from './../socket';
-import { Server as SocketIoServer } from 'socket.io';
+import { RemoteSocket, Server as SocketIoServer } from 'socket.io';
 
 export class SocketStorage implements PresenceStorageDriver {
     /**
@@ -23,7 +23,8 @@ export class SocketStorage implements PresenceStorageDriver {
      * @return {Promise<Member[]>}
      */
     getMembersFromChannel(nsp: string, channel: string): Promise<Member[]> {
-        return this.io.of(nsp).adapter.fetchSockets({ rooms: new Set([channel]), except: new Set([]) }).then(sockets => {
+        // @ts-ignore
+        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then((sockets: RemoteSocket[]) => {
             return sockets.map(socket => socket?.data?.presence?.[channel]).filter(member => !!member);
         });
     }
@@ -35,9 +36,9 @@ export class SocketStorage implements PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         if (!socket.data) {
             socket.data = {};
         }
@@ -58,9 +59,9 @@ export class SocketStorage implements PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         if (socket.data && socket.data.presence) {
             delete socket.data.presence[channel];
         }
@@ -94,11 +95,9 @@ export class SocketStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member>}
      */
-    whoLeft(socket: Socket, nsp: string, channel: string): Promise<any> {
-        return new Promise(resolve => {
-            resolve(socket.data.presence[channel]);
-        });
+    whoLeft(socket: Socket, nsp: string, channel: string): Promise<Member> {
+        return new Promise(resolve => resolve(socket.data.presence[channel]));
     }
 }

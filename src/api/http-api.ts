@@ -1,10 +1,11 @@
 import { App } from './../app';
 import { Application, Response } from 'express';
 import { AppManager } from './../app-managers';
+import { ConsumptionResponse } from '../rate-limiter/rate-limiter-driver';
 import { EchoServer } from '../echo-server';
 import { Log } from './../log';
 import { Options } from './../options';
-import { PresenceChannel } from './../channels/presence-channel';
+import { Member, PresenceChannel } from './../channels/presence-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { RemoteSocket } from '../socket';
@@ -199,7 +200,7 @@ export class HttpApi {
 
         let channels = req.body.channels || [req.body.channel];
 
-        this.rateLimiter.forApp(app).consumeBackendEventPoints(channels.length).then(rateLimitData => {
+        this.rateLimiter.forApp(app).consumeBackendEventPoints(channels.length).then((rateLimitData: ConsumptionResponse) => {
             for (let header in rateLimitData.headers) {
                 res.setHeader(header, rateLimitData.headers[header]);
             }
@@ -221,7 +222,7 @@ export class HttpApi {
     protected readRateLimiter(req: Request, res: Response, next): void {
         let app = req.echoApp;
 
-        this.rateLimiter.forApp(app).consumeReadRequestsPoints(1).then(rateLimitData => {
+        this.rateLimiter.forApp(app).consumeReadRequestsPoints(1).then((rateLimitData: ConsumptionResponse) => {
             for (let header in rateLimitData.headers) {
                 res.header(header, rateLimitData.headers[header]);
             }
@@ -334,7 +335,7 @@ export class HttpApi {
         };
 
         if (channel instanceof PresenceChannel) {
-            channel.getMembers(`/${appKey}`, channelName).then(members => {
+            channel.getMembers(`/${appKey}`, channelName).then((members: Member[]) => {
                 res.json({
                     ...result,
                     ...{
@@ -367,7 +368,7 @@ export class HttpApi {
             );
         }
 
-        channel.getMembers(`/${appKey}`, channelName).then(members => {
+        channel.getMembers(`/${appKey}`, channelName).then((members: Member[]) => {
             res.json({ users: members });
         }, error => {
             res.json({ users: [] });

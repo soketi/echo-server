@@ -20,6 +20,16 @@ export class Utils {
     }
 
     /**
+     * Get the amount of kilobytes from given parameters.
+     *
+     * @param  {any}  data
+     * @return {number}
+     */
+    static dataToKilobytes(...data: any): number {
+        return this.dataToBytes(...data) / 1024;
+    }
+
+    /**
      * Extract the namespace from socket.
      *
      * @param  {Socket}  socket

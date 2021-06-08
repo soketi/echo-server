@@ -1,3 +1,4 @@
+import { App } from './app';
 import { AppManager } from './app-managers/app-manager';
 import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
@@ -428,7 +429,7 @@ export class EchoServer {
             // @ts-ignore
             socket.id = this.generateSocketId();
 
-            this.checkForValidEchoApp(socket).then(socket => {
+            this.checkForValidEchoApp(socket).then((socket: Socket) => {
                 next();
             }, error => {
                 next(error);
@@ -454,7 +455,7 @@ export class EchoServer {
                 return socket.disconnect();
             }
 
-            this.checkAppConnectionLimit(socket).then(socket => {
+            this.checkAppConnectionLimit(socket).then((socket: Socket) => {
                 this.onSubscribe(socket);
                 this.onUnsubscribe(socket);
                 this.onDisconnecting(socket);
@@ -478,7 +479,7 @@ export class EchoServer {
             setInterval(() => {
                 let time = dayjs().unix();
 
-                this.stats.getRegisteredApps().then(apps => {
+                this.stats.getRegisteredApps().then((apps: string[]) => {
                     apps.forEach(name => {
                         if (this.options.development) {
                             Log.info({
@@ -604,7 +605,7 @@ export class EchoServer {
 
             let appKey = this.getAppKey(socket);
 
-            this.appManager.findByKey(appKey, socket, {}).then(app => {
+            this.appManager.findByKey(appKey, socket, {}).then((app: App|null) => {
                 if (!app) {
                     if (this.options.development) {
                         Log.error({
@@ -619,7 +620,7 @@ export class EchoServer {
 
                     reject({ reason: `The app ${appKey} does not exist` });
                 } else {
-                    socket.data.echoApp = app;
+                    socket.data.echoApp = app as App;
                     resolve(socket);
                 }
             }, error => {

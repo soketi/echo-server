@@ -39,9 +39,9 @@ export class PresenceStorage implements PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    getMembersFromChannel(nsp: string, channel: string): Promise<any> {
+    getMembersFromChannel(nsp: string, channel: string): Promise<Member[]> {
         return this.storage.getMembersFromChannel(nsp, channel);
     }
 
@@ -52,9 +52,9 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         return this.storage.addMemberToChannel(socket, nsp, channel, member);
     }
 
@@ -65,9 +65,9 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @param  {string}  nsp
      * @param  {string}  channel
      * @param  {Member}  member
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<Member[]> {
         return this.storage.removeMemberFromChannel(socket, nsp, channel, member);
     }
 
@@ -91,9 +91,9 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member>}
      */
-    whoLeft(socket: Socket, nsp: string, channel: string): Promise<any> {
+    whoLeft(socket: Socket, nsp: string, channel: string): Promise<Member> {
         return this.storage.whoLeft(socket, nsp, channel);
     }
 }

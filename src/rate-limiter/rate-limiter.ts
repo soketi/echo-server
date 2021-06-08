@@ -1,8 +1,8 @@
 import { App } from './../app';
+import { ConsumptionResponse, RateLimiterDriver } from './rate-limiter-driver';
 import { LocalRateLimiter } from './local-rate-limiter';
 import { Log } from './../log';
 import { Options } from './../options';
-import { RateLimiterDriver } from './rate-limiter-driver';
 import { RedisRateLimiter } from './redis-rate-limiter';
 import { Socket } from './../socket';
 
@@ -33,9 +33,9 @@ export class RateLimiter implements RateLimiterDriver {
      * Consume the points for backend-received events.
      *
      * @param  {number}  points
-     * @return {Promise<any>}
+     * @return {Promise<ConsumptionResponse>}
      */
-    consumeBackendEventPoints(points: number): Promise<any> {
+    consumeBackendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeBackendEventPoints(points);
     }
 
@@ -43,9 +43,9 @@ export class RateLimiter implements RateLimiterDriver {
      * Consume the points for frontend-received events.
      *
      * @param  {number}  points
-     * @return {Promise<any>}
+     * @return {Promise<ConsumptionResponse>}
      */
-    consumeFrontendEventPoints(points: number): Promise<any> {
+    consumeFrontendEventPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeFrontendEventPoints(points);
     }
 
@@ -53,9 +53,9 @@ export class RateLimiter implements RateLimiterDriver {
       * Consume the points for HTTP read requests.
       *
       * @param  {number}  points
-      * @return {Promise<any>}
+      * @return {Promise<ConsumptionResponse>}
       */
-    consumeReadRequestsPoints(points: number): Promise<any> {
+    consumeReadRequestsPoints(points: number): Promise<ConsumptionResponse> {
         return this.driver.consumeReadRequestsPoints(points);
     }
 

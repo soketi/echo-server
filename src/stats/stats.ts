@@ -1,10 +1,10 @@
 import { App } from './../app';
+import { AppSnapshottedPoints, StatsDriver, StatsElement, TimedStatsElement } from './stats-driver';
 import { LocalStats } from './local-stats';
 import { Log } from './../log';
 import { Options } from './../options';
 import { PrometheusStats } from './prometheus-stats';
 import { RedisTimeSeriesStats } from './redis-ts-stats';
-import { StatsDriver } from './stats-driver';
 
 export class Stats implements StatsDriver {
     /**
@@ -80,9 +80,9 @@ export class Stats implements StatsDriver {
      * Get the compiled stats for a given app.
      *
      * @param  {App|string|number}  app
-     * @return {Promise<any>}
+     * @return {Promise<StatsElement>}
      */
-    getStats(app: App|string|number): Promise<any> {
+    getStats(app: App|string|number): Promise<StatsElement> {
         return this.driver.getStats(app);
     }
 
@@ -92,9 +92,9 @@ export class Stats implements StatsDriver {
      *
      * @param  {App|string|number}  app
      * @param  {number|null}  time
-     * @return {Promise<any>}
+     * @return {Promise<TimedStatsElement>}
      */
-    takeSnapshot(app: App|string|number, time?: number): Promise<any> {
+    takeSnapshot(app: App|string|number, time?: number): Promise<TimedStatsElement> {
         return this.driver.takeSnapshot(app, time);
     }
 
@@ -106,9 +106,9 @@ export class Stats implements StatsDriver {
      * @param  {App|string|number}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
-     * @return {Promise<any>}
+     * @return {Promise<AppSnapshottedPoints>}
      */
-    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string|number, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         return this.driver.getSnapshots(app, start, end);
     }
 

@@ -1,7 +1,7 @@
 import { App } from './../app';
+import { AppSnapshottedPoints, StatsDriver, StatsElement, TimedStatsElement } from './stats-driver';
 import { Options } from './../options';
 import { PrometheusDriver } from 'prometheus-query';
-import { StatsDriver } from './stats-driver';
 
 const dayjs = require('dayjs');
 
@@ -76,9 +76,9 @@ export class PrometheusStats implements StatsDriver {
      * Get the compiled stats for a given app.
      *
      * @param  {App|string}  app
-     * @return {Promise<any>}
+     * @return {Promise<StatsElement>}
      */
-    getStats(app: App|string): Promise<any> {
+    getStats(app: App|string): Promise<StatsElement> {
         return new Promise(resolve => resolve({}));
     }
 
@@ -88,10 +88,13 @@ export class PrometheusStats implements StatsDriver {
      *
      * @param  {App|string}  app
      * @param  {number|null}  time
-     * @return {Promise<any>}
+     * @return {Promise<TimedStatsElement>}
      */
-    takeSnapshot(app: App|string, time?: number): Promise<any> {
-        return new Promise(resolve => resolve({}));
+    takeSnapshot(app: App|string, time?: number): Promise<TimedStatsElement> {
+        return new Promise(resolve => resolve({
+            time: new Date().toISOString(),
+            stats: { },
+        }));
     }
 
     /**
@@ -102,9 +105,9 @@ export class PrometheusStats implements StatsDriver {
      * @param  {App|string}  app
      * @param  {number|null}  start
      * @param  {number|null}  end
-     * @return {Promise<any>}
+     * @return {Promise<AppSnapshottedPoints>}
      */
-    getSnapshots(app: App|string, start?: number, end?: number): Promise<any> {
+    getSnapshots(app: App|string, start?: number, end?: number): Promise<AppSnapshottedPoints> {
         start = start ? start : dayjs().subtract(7, 'day').unix();
         end = end ? end : dayjs().unix();
 
