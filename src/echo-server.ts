@@ -15,6 +15,21 @@ import { v4 as uuidv4 } from 'uuid';
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
 
+export interface EmittedData {
+    channel?: string;
+    event?: string;
+    data?: {
+        [key: string]: any;
+    };
+    token?: string;
+    channel_data?: string;
+    auth?: {
+        headers?: {
+            [key: string]: any;
+        };
+    };
+}
+
 /**
  * Echo server class.
  */

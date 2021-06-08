@@ -2,6 +2,7 @@ import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
 import { ArrayAppManager } from './array-app-manager';
 import { ApiAppManager } from './api-app-manager';
+import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { MysqlAppManager } from './mysql-app-manager';
 import { PostgresAppManager } from './postgres-app-manager';
@@ -40,10 +41,10 @@ export class AppManager implements AppManagerDriver {
      *
      * @param  {string|number}  id
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string|number, socket: Socket, data: any): Promise<App|null> {
+    findById(id: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.driver.findById(id, socket, data);
     }
 
@@ -52,10 +53,10 @@ export class AppManager implements AppManagerDriver {
      *
      * @param  {string|number}  key
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string|number, socket: Socket, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.driver.findByKey(key, socket, data);
     }
 }

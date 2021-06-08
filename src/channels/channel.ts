@@ -1,3 +1,4 @@
+import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { Member } from './presence-channel';
 import { Prometheus } from './../prometheus';
@@ -51,10 +52,10 @@ export class Channel {
      * Join a given channel.
      *
      * @param  {Socket}  socket
-     * @param  {any}  data
-     * @return {Promise<any>}
+     * @param  {EmittedData}  data
+     * @return {Promise<Member|{ socket: Socket; data: EmittedData }|null>}
      */
-    join(socket: Socket, data: any): Promise<any> {
+    join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return new Promise((resolve, reject) => {
             socket.join(data.channel);
             this.onJoin(socket, data.channel, null);
@@ -123,16 +124,10 @@ export class Channel {
      * Trigger a client message.
      *
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {any}
      */
-    onClientEvent(socket: Socket, data: any): any {
-        try {
-            data = JSON.parse(data);
-        } catch (e) {
-            //
-        }
-
+    onClientEvent(socket: Socket, data: EmittedData): any {
         if (this.options.development) {
             Log.info({
                 time: new Date().toISOString(),

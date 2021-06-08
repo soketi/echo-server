@@ -1,5 +1,6 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
+import { EmittedData } from '../echo-server';
 import { Socket } from './../socket';
 
 export class ArrayAppManager implements AppManagerDriver {
@@ -17,10 +18,10 @@ export class ArrayAppManager implements AppManagerDriver {
      *
      * @param  {string|number}  id
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string|number, socket: Socket, data: any): Promise<App|null> {
+    findById(id: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return new Promise((resolve, reject) => {
             let app = this.options.appManager.array.apps.find(app => app.id == id);
 
@@ -37,10 +38,10 @@ export class ArrayAppManager implements AppManagerDriver {
      *
      * @param  {string|number}  key
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string|number, socket: Socket, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         return new Promise((resolve, reject) => {
             let app = this.options.appManager.array.apps.find(app => app.key == key);
 

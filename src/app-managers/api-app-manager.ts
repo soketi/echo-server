@@ -1,5 +1,6 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
+import { EmittedData } from '../echo-server';
 import { Socket } from './../socket';
 import { SocketHttpClient } from './../socket-http-client';
 
@@ -25,10 +26,10 @@ export class ApiAppManager implements AppManagerDriver {
      *
      * @param  {string|number}  id
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string|number, socket: Socket, data: any): Promise<App|null> {
+    findById(id: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         let options = {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appId=${id}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},
@@ -48,10 +49,10 @@ export class ApiAppManager implements AppManagerDriver {
      *
      * @param  {string|number}  key
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string|number, socket: Socket, data: any): Promise<App|null> {
+    findByKey(key: string|number, socket: Socket, data: EmittedData): Promise<App|null> {
         let options = {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appKey=${key}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},

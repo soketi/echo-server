@@ -22,7 +22,7 @@ export class Cli {
      *
      * @type {any}
      */
-    envVariables: any = {
+    envVariables: { [key: string]: string; } = {
         APP_DEFAULT_ENABLE_STATS: 'appManager.array.apps.0.enableStats',
         APP_DEFAULT_ENABLE_CLIENT_MESSAGES: 'appManager.array.apps.0.enableClientMessages',
         APP_DEFAULT_ID: 'appManager.array.apps.0.id',

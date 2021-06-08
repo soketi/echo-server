@@ -1,5 +1,6 @@
-import { PresenceStorage } from './../presence-storage';
+import { EmittedData } from '../echo-server';
 import { Log } from './../log';
+import { PresenceStorage } from './../presence-storage';
 import { PrivateChannel } from './private-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
@@ -47,19 +48,20 @@ export class PresenceChannel extends PrivateChannel {
      * Join a given channel.
      *
      * @param  {Socket}  socket
-     * @param  {any}  data
-     * @return {Promise<any>}
+     * @param  {EmittedData}  data
+     * @return {Promise<Member|{ socket: Socket; data: EmittedData }|null>}
      */
-    join(socket: Socket, data: any): Promise<any> {
+    join(socket: Socket, data: EmittedData): Promise<Member|{ socket: Socket; data: EmittedData }|null> {
         return this.signatureIsValid(socket, data).then(isValid => {
             if (!isValid) {
-                return;
+                return null;
             }
 
-            let member = data.channel_data;
+            let member: Member = null;
+            let memberAsString: string = data.channel_data;
 
             try {
-                member = JSON.parse(member);
+                member = JSON.parse(memberAsString) as Member;
             } catch (e) {
                 //
             }
@@ -71,7 +73,7 @@ export class PresenceChannel extends PrivateChannel {
 
                 socket.emit('socket:error', { message: 'The member received from the HTTP API request is not JSONable.', code: 4303 });
 
-                return;
+                return null;
             }
 
             return this.presenceStorage.memberExistsInChannel(Utils.getNspForSocket(socket), data.channel, member).then(exists => {
@@ -103,6 +105,8 @@ export class PresenceChannel extends PrivateChannel {
                 return member;
             }, error => {
                 socket.emit('socket:error', { message: 'There is an internal problem.', code: 4304 });
+
+                return null;
             });
         });
     }
@@ -223,10 +227,10 @@ export class PresenceChannel extends PrivateChannel {
      * Get the data to sign for the token.
      *
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {string}
      */
-    protected getDataToSignForToken(socket: Socket, data: any): string {
+    protected getDataToSignForToken(socket: Socket, data: EmittedData): string {
         return `${socket.id}:${data.channel}:${data.channel_data}`;
     }
 

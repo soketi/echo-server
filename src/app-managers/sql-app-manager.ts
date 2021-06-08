@@ -1,5 +1,6 @@
 import { App } from './../app';
 import { AppManagerDriver } from './app-manager-driver';
+import { EmittedData } from './../echo-server';
 import { Knex, knex } from 'knex';
 import { Socket } from './../socket';
 
@@ -43,10 +44,10 @@ export abstract class SqlAppManager implements AppManagerDriver {
      *
      * @param  {string}  id
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findById(id: string, socket: Socket, data: any): Promise<App|null> {
+    findById(id: string, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.selectById(id).then(apps => {
             return apps.length === 0
                 ? null
@@ -59,10 +60,10 @@ export abstract class SqlAppManager implements AppManagerDriver {
      *
      * @param  {string}  key
      * @param  {Socket}  socket
-     * @param  {any}  data
+     * @param  {EmittedData}  data
      * @return {Promise<App|null>}
      */
-    findByKey(key: string, socket: Socket, data: any): Promise<App|null> {
+    findByKey(key: string, socket: Socket, data: EmittedData): Promise<App|null> {
         return this.selectByKey(key).then(apps => {
             return apps.length === 0
                 ? null

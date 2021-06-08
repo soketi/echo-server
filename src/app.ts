@@ -64,7 +64,7 @@ export class App {
      *
      * @param {any} app
      */
-    constructor(app: any) {
+    constructor(app: { [key: string]: any; }) {
         this.id = app.id;
         this.key = app.key;
         this.secret = app.secret;
