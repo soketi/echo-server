@@ -1,3 +1,4 @@
+import { Member } from '../channels/presence-channel';
 import { Socket } from './../socket';
 
 /**
@@ -19,10 +20,10 @@ export interface PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any>;
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any>;
 
     /**
      * Remove a member from a given channel.
@@ -30,20 +31,20 @@ export interface PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any>;
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any>;
 
     /**
      * Check if the given member exists in a channel.
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<boolean>}
      */
-    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean>;
+    memberExistsInChannel(nsp: string, channel: string, member: Member): Promise<boolean>;
 
     /**
      * Check for presence members that share the same socket_id

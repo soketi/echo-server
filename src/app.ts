@@ -1,9 +1,16 @@
+import { Namespace } from 'socket.io';
+import { Server as SocketIoServer } from 'socket.io';
+
 export interface App {
     id: string|number;
     key: string|number;
     secret: string;
-    maxConnections: number;
+    maxConnections: string|number;
     enableStats: boolean;
+    enableClientMessages: boolean;
+    maxBackendEventsPerMinute: string|number;
+    maxClientEventsPerMinute: string|number;
+    maxReadRequestsPerMinute: string|number;
 }
 
 export class App {
@@ -25,7 +32,7 @@ export class App {
     /**
      * @type {number}
      */
-    public maxConnections: number;
+    public maxConnections: string|number;
 
     /**
      * @type {boolean}
@@ -40,17 +47,17 @@ export class App {
     /**
      * @type {number}
      */
-    public maxBackendEventsPerMinute: number;
+    public maxBackendEventsPerMinute: string|number;
 
     /**
      * @type {number}
      */
-    public maxClientEventsPerMinute: number;
+    public maxClientEventsPerMinute: string|number;
 
     /**
      * @type {number}
      */
-    public maxReadRequestsPerMinute: number;
+    public maxReadRequestsPerMinute: string|number;
 
     /**
      * Create a new app from object.
@@ -61,11 +68,11 @@ export class App {
         this.id = app.id;
         this.key = app.key;
         this.secret = app.secret;
-        this.maxConnections = app.maxConnections || app.max_connections || -1;
+        this.maxConnections = parseInt(app.maxConnections || app.max_connections || -1);
         this.enableStats = app.enableStats || app.enable_stats || false;
         this.enableClientMessages = app.enableClientMessages || app.enable_client_messages || true;
-        this.maxBackendEventsPerMinute = app.maxBackendEventsPerMinute || app.max_backend_events_per_min || -1;
-        this.maxClientEventsPerMinute = app.maxClientEventsPerMinute || app.max_client_events_per_min || -1;
-        this.maxReadRequestsPerMinute = app.maxReadRequestsPerMinute || app.max_read_req_per_min || -1;
+        this.maxBackendEventsPerMinute = parseInt(app.maxBackendEventsPerMinute || app.max_backend_events_per_min || -1);
+        this.maxClientEventsPerMinute = parseInt(app.maxClientEventsPerMinute || app.max_client_events_per_min || -1);
+        this.maxReadRequestsPerMinute = parseInt(app.maxReadRequestsPerMinute || app.max_read_req_per_min || -1);
     }
 }

@@ -2,11 +2,14 @@ import { AppManager } from './app-managers/app-manager';
 import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Namespace } from 'socket.io';
 import { Prometheus } from './prometheus';
 import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
 import { Socket } from './socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './stats';
+import { Utils } from './utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const { constants } = require('crypto');
@@ -262,9 +265,9 @@ export class EchoServer {
      * Start the Echo Server.
      *
      * @param  {any}  options
-     * @return {Promise<any>}
+     * @return {Promise<EchoServer>}
      */
-    start(options: any = {}): Promise<any> {
+    start(options: any = {}): Promise<EchoServer> {
         this.options = Object.assign(this.options, options);
         this.server = new Server(this.options);
 
@@ -274,7 +277,7 @@ export class EchoServer {
             Log.info('Starting the server...\n')
         }
 
-        return this.server.initialize().then(io => {
+        return this.server.initialize().then((io: SocketIoServer) => {
             return this.initialize(io).then(() => {
                 this.closing = false;
 
@@ -285,18 +288,26 @@ export class EchoServer {
                 }
 
                 return this;
-            }, error => Log.error(error));
-        }, error => Log.error(error));
+            }, error => {
+                Log.error(error);
+
+                return this;
+            });
+        }, error => {
+            Log.error(error);
+
+            return this;
+        });
     }
 
     /**
      * Initialize the websockets server.
      *
-     * @param  {any}  io
-     * @return {Promise<void>}
+     * @param  {SocketIoServer}  io
+     * @return {Promise<SocketIoServer>}
      */
-    initialize(io: any): Promise<void> {
-        return new Promise((resolve, reject) => {
+    initialize(io: SocketIoServer): Promise<SocketIoServer> {
+        return new Promise((resolve) => {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
@@ -326,7 +337,7 @@ export class EchoServer {
             this.registerConnectionCallbacks(nsp);
             this.registerStatsSnapshotter();
 
-            resolve();
+            resolve(io);
         });
     }
 
@@ -358,33 +369,24 @@ export class EchoServer {
     }
 
     /**
-     * Extract the namespace from socket.
-     *
-     * @param  {Socket}  socket
-     * @return {string}
-     */
-    getNspForSocket(socket: Socket): string {
-        return socket.nsp.name;
-    }
-
-    /**
      * Get the App Key from the socket connection.
      *
      * @param  {Socket}  socket
      * @return {string|undefined}
      */
     protected getAppKey(socket: Socket): string|undefined {
-        return this.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
+        return Utils.getNspForSocket(socket).replace(/^\//g, ''); // remove the starting slash
     }
 
     /**
      * Register the Socket.IO middleware.
      *
-     * @param  {any}  nsp
+     * @param  {Namespace}  nsp
      * @return {void}
      */
-    protected registerSocketMiddleware(nsp: any): void {
-        nsp.use((socket, next) => {
+    protected registerSocketMiddleware(nsp: Namespace): void {
+        nsp.use((socket: Socket, next) => {
+            // @ts-ignore
             socket.id = this.generateSocketId();
 
             this.checkForValidEchoApp(socket).then(socket => {
@@ -398,11 +400,11 @@ export class EchoServer {
     /**
      * Register callbacks for on('connection') events.
      *
-     * @param  {any}  nsp
+     * @param  {Namespace}  nsp
      * @return {void}
      */
-    protected registerConnectionCallbacks(nsp: any): void {
-        nsp.on('connection', socket => {
+    protected registerConnectionCallbacks(nsp: Namespace): void {
+        nsp.on('connection', (socket: Socket) => {
             this.stats.markNewConnection(socket.data.echoApp);
 
             if (this.options.prometheus.enabled) {
@@ -536,7 +538,7 @@ export class EchoServer {
      * @param  {string}  channel
      * @return {Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel}
      */
-    getChannelInstance(channel): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
+    getChannelInstance(channel: string): Channel|PrivateChannel|EncryptedPrivateChannel|PresenceChannel {
         if (Channel.isPresenceChannel(channel)) {
             return this.presenceChannel;
         } else if (Channel.isEncryptedPrivateChannel(channel)) {
@@ -553,9 +555,9 @@ export class EchoServer {
      * to a valid echo app.
      *
      * @param  {Socket}  socket
-     * @return {Promise<any>}
+     * @return {Promise<Socket>}
      */
-    protected checkForValidEchoApp(socket: Socket): Promise<any> {
+    protected checkForValidEchoApp(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
             if (socket.data.echoApp) {
                 return resolve(socket);
@@ -604,9 +606,9 @@ export class EchoServer {
      * reach the app limit.
      *
      * @param  {Socket}  socket
-     * @return {Promise<any>}
+     * @return {Promise<Socket>}
      */
-    protected checkAppConnectionLimit(socket: Socket): Promise<any> {
+    protected checkAppConnectionLimit(socket: Socket): Promise<Socket> {
         return new Promise((resolve, reject) => {
             if (socket.disconnected || !socket.data.echoApp) {
                 if (this.options.development) {
@@ -625,8 +627,8 @@ export class EchoServer {
                 return reject({ reason: 'The app connection limit cannot be checked because the socket is not authenticated.' });
             }
 
-            this.server.io.of(this.getNspForSocket(socket)).allSockets().then(clients => {
-                let maxConnections = parseInt(socket.data.echoApp.maxConnections) || -1;
+            this.server.io.of(Utils.getNspForSocket(socket)).allSockets().then(clients => {
+                let maxConnections = parseInt(socket.data.echoApp.maxConnections as string) || -1;
 
                 if (maxConnections < 0) {
                     return resolve(socket);

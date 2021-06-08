@@ -1,7 +1,9 @@
 import { Log } from './../log';
+import { Member } from './presence-channel';
 import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
 import { Utils } from '../utils';
 
@@ -29,14 +31,14 @@ export class Channel {
     /**
      * Create a new channel instance.
      *
-     * @param {any} io
+     * @param {SocketIoServer} io
      * @param {Stats} stats
      * @param {Prometheus} prometheus
      * @param {RateLimiter} rateLimiter
      * @param {any} options
      */
     constructor(
-        protected io: any,
+        protected io: SocketIoServer,
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
@@ -90,10 +92,10 @@ export class Channel {
      *
      * @param  {Socket}  socket
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {void}
      */
-    onJoin(socket: Socket, channel: string, member: any): void {
+    onJoin(socket: Socket, channel: string, member: Member): void {
         socket.emit('channel:joined', channel);
 
         /**
@@ -101,7 +103,7 @@ export class Channel {
          * this one will be present here to mark an outgoing WS message.
          */
         if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', channel);
+            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', channel);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -168,7 +170,7 @@ export class Channel {
                      * this one will be present here to mark an outgoing WS message.
                      */
                     if (this.options.prometheus.enabled) {
-                        this.prometheus.markWsMessage(this.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                        this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
                     }
 
                     if (this.options.development) {
@@ -225,6 +227,8 @@ export class Channel {
      * @return {boolean}
      */
     isInChannel(socket: Socket, channel: string): boolean {
+        // TODO: Check this line? It throw error in ESLint.
+        // @ts-ignore
         return socket.adapter.rooms.has(channel);
     }
 
@@ -237,26 +241,6 @@ export class Channel {
      */
     static isInChannel(socket: Socket, channel: string): boolean {
         return this.isInChannel(socket, channel);
-    }
-
-    /**
-     * Extract the namespace from socket.
-     *
-     * @param  {Socket}  socket
-     * @return {string}
-     */
-    getNspForSocket(socket: Socket): string {
-        return socket.nsp.name;
-    }
-
-    /**
-     * Create alias for static.
-     *
-     * @param  {Socket}  socket
-     * @return {string}
-     */
-    static getNspForSocket(socket: Socket): string {
-        return this.getNspForSocket(socket);
     }
 
     /**

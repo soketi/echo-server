@@ -15,7 +15,7 @@ export class PostgresAppManager extends SqlAppManager {
      *
      * @return {any}
      */
-    protected knexConnectionDetails(): any {
+    protected knexConnectionDetails(): { [key: string]: any; } {
         return {
             ...this.options.database.postgres,
         };

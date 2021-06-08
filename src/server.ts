@@ -1,27 +1,27 @@
+import { createServer as createHttpServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
+import express, { Application } from 'express';
 import { Log } from './log';
+import { Server as SocketIoServer } from 'socket.io';
 
-const express = require('express');
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
 const Redis = require('ioredis');
-const io = require('socket.io');
 const redisAdapter = require('socket.io-redis');
 
 export class Server {
     /**
-     * The http server.
+     * The Express.js HTTP server.
      *
-     * @type {any}
+     * @type {Application}
      */
-    public express: any;
+    public express: Application;
 
     /**
      * Socket.io client.
      *
-     * @type {object}
+     * @type {SocketIoServer}
      */
-    public io: any;
+    public io: SocketIoServer;
 
     /**
      * Create a new server instance.
@@ -35,10 +35,10 @@ export class Server {
     /**
      * Initialize the server.
      *
-     * @return {Promise<any>}
+     * @return {Promise<SocketIoServer>}
      */
-    initialize(): Promise<any> {
-        return this.serverProtocol().then(() => {
+    initialize(): Promise<SocketIoServer> {
+        return this.buildServer(this.options.httpApi.protocol === 'https').then(() => {
             let host = this.options.host || '127.0.0.1';
             Log.success(`Running at ${host} on port ${this.options.port}`);
 
@@ -46,71 +46,67 @@ export class Server {
             this.configureSocketIdGeneration();
 
             return this.io;
-        }, error => Log.error(error));
+        }, error => {
+            Log.error(error);
+
+            return this.io;
+        });
     }
 
     /**
-     * Select the http protocol to run on.
+     * Load SSL 'key' & 'cert' files if HTTPS is enabled.
+     * Return the parameters needs for the SSL.
      *
-     * @return {Promise<any>}
+     * @return {any}
      */
-    protected serverProtocol(): Promise<any> {
-        if (this.options.httpApi.protocol === 'https') {
-            return this.configureSecurity().then(() => {
-                return this.buildServer(true);
-            }, error => Log.error(error));
+    protected configureSecurity(): { [key: string]: string|number; } {
+        if (!this.options.ssl.certPath || !this.options.ssl.keyPath) {
+            Log.error('SSL paths are missing in server config.');
         }
 
-        return new Promise(resolve => {
-            resolve(this.buildServer(false));
-        });
-    }
-
-    /**
-     * Load SSL 'key' & 'cert' files if https is enabled.
-     *
-     * @return {Promise<any>}
-     */
-    protected configureSecurity(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (!this.options.ssl.certPath || !this.options.ssl.keyPath) {
-                reject('SSL paths are missing in server config.');
-            }
-
-            Object.assign(this.options, {
-                cert: fs.readFileSync(this.options.ssl.certPath),
-                key: fs.readFileSync(this.options.ssl.keyPath),
-                ca: (this.options.ssl.caPath) ? fs.readFileSync(this.options.ssl.caPath) : '',
-                passphrase: this.options.ssl.passphrase,
-            });
-
-            resolve(this.options);
-        });
+        return {
+            cert: fs.readFileSync(this.options.ssl.certPath),
+            key: fs.readFileSync(this.options.ssl.keyPath),
+            ca: (this.options.ssl.caPath) ? fs.readFileSync(this.options.ssl.caPath) : '',
+            passphrase: this.options.ssl.passphrase,
+        };
     }
 
     /**
      * Create Socket.IO & HTTP(S) servers.
      *
      * @param  {boolean}  secure
-     * @return {any}
+     * @return {Promise<SocketIoServer>}
      */
-    protected buildServer(secure: boolean): any {
-        this.express = express();
+    protected buildServer(secure: boolean): Promise<SocketIoServer> {
+        return new Promise(resolve => {
+            this.express = express();
+            let httpOptions = this.options;
 
-        let httpServer = secure
-            ? https.createServer(this.options, this.express)
-            : http.createServer(this.express);
+            if (secure) {
+                httpOptions = {
+                    ...httpOptions,
+                    ...this.configureSecurity(),
+                };
+            }
 
-        httpServer.listen(this.options.port, this.options.host);
+            let server = secure
+                ? createHttpsServer(httpOptions, this.express)
+                : createHttpServer(this.express);
 
-        this.options.socketIoOptions = {
-            ...this.options.socketIoOptions,
-            ...{
-                cors: this.options.cors,
-            },
-        };
+            server.listen(this.options.port, this.options.host);
 
-        return this.io = io(httpServer, this.options.socketIoOptions);
+            this.options.socketIoOptions = {
+                ...this.options.socketIoOptions,
+                ...{
+                    cors: this.options.cors,
+                },
+            };
+
+            resolve(
+                this.io = new SocketIoServer(server, this.options.socketIoOptions)
+            );
+        });
     }
 
     /**
@@ -125,8 +121,8 @@ export class Server {
 
             this.io.adapter(redisAdapter({
                 key: 'redis-adapter',
-                pubClient: pubClient,
-                subClient: subClient,
+                pubClient,
+                subClient,
             }));
         }
     }

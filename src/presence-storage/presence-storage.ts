@@ -1,7 +1,9 @@
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Log } from './../log';
+import { Member } from '../channels/presence-channel';
 import { RedisStorage } from './redis-storage';
 import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { SocketStorage } from './socket-storage';
 
 /**
@@ -19,9 +21,9 @@ export class PresenceStorage implements PresenceStorageDriver {
      * Create a new storage instance.
      *
      * @param {any} options
-     * @param {any} io
+     * @param {SocketIoServer} io
      */
-    constructor(protected options: any, protected io: any) {
+    constructor(protected options: any, protected io: SocketIoServer) {
         if (options.presence.storage.database === 'redis') {
             this.storage = new RedisStorage(options, io);
         } else if (options.presence.storage.database === 'socket') {
@@ -48,10 +50,10 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         return this.storage.addMemberToChannel(socket, nsp, channel, member);
     }
 
@@ -61,10 +63,10 @@ export class PresenceStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         return this.storage.removeMemberFromChannel(socket, nsp, channel, member);
     }
 
@@ -73,10 +75,10 @@ export class PresenceStorage implements PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<boolean>}
      */
-    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+    memberExistsInChannel(nsp: string, channel: string, member: Member): Promise<boolean> {
         return this.storage.memberExistsInChannel(nsp, channel, member);
     }
 

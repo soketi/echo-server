@@ -1,14 +1,16 @@
+import { Member } from '../channels/presence-channel';
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 
 export class SocketStorage implements PresenceStorageDriver {
     /**
      * Create a new cache instance.
      *
      * @param {any} options
-     * @param {any} io
+     * @param {SocketIoServer} io
      */
-    constructor(protected options: any, protected io: any) {
+    constructor(protected options: any, protected io: SocketIoServer) {
         //
     }
 
@@ -17,13 +19,11 @@ export class SocketStorage implements PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @return {Promise<any>}
+     * @return {Promise<Member[]>}
      */
-    getMembersFromChannel(nsp: string, channel: string): Promise<any> {
-        return this.io.of(nsp).adapter.fetchSockets({ rooms: [channel], except: [] }).then(sockets => {
-            return sockets.map(socket => {
-                return socket?.data?.presence?.[channel];
-            }).filter(member => !!member);
+    getMembersFromChannel(nsp: string, channel: string): Promise<Member[]> {
+        return this.io.of(nsp).adapter.fetchSockets({ rooms: new Set([channel]), except: new Set([]) }).then(sockets => {
+            return sockets.map(socket => socket?.data?.presence?.[channel]).filter(member => !!member);
         });
     }
 
@@ -33,10 +33,10 @@ export class SocketStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         if (!socket.data) {
             socket.data = {};
         }
@@ -56,10 +56,10 @@ export class SocketStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         if (socket.data && socket.data.presence) {
             delete socket.data.presence[channel];
         }
@@ -72,10 +72,10 @@ export class SocketStorage implements PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<boolean>}
      */
-    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+    memberExistsInChannel(nsp: string, channel: string, member: Member): Promise<boolean> {
         return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
             let memberInChannel = existingMembers.find(existingMember => {
                 return existingMember.user_id === member.user_id;

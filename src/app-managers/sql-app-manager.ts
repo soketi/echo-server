@@ -106,7 +106,7 @@ export abstract class SqlAppManager implements AppManagerDriver {
       *
       * @return {any}
       */
-     protected abstract knexConnectionDetails(): any;
+     protected abstract knexConnectionDetails(): { [key: string]: any; };
 
      /**
       * Get the connection version for Knex.

@@ -69,7 +69,7 @@ export class LocalRateLimiter implements RateLimiterDriver {
      * @return {Promise<any>}
      */
     consumeBackendEventPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxBackendEventsPerMinute;
+        this.rateLimiter.points = this.app.maxBackendEventsPerMinute as number;
 
         return this.consumeForKey(`backend:events:${this.app.id}`, points);
     }
@@ -81,7 +81,7 @@ export class LocalRateLimiter implements RateLimiterDriver {
      * @return {Promise<any>}
      */
     consumeFrontendEventPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxClientEventsPerMinute;
+        this.rateLimiter.points = this.app.maxClientEventsPerMinute as number;
 
         return this.consumeForKey(`frontend:events:${this.socket.id}:${this.app.id}`, points);
     }
@@ -93,7 +93,7 @@ export class LocalRateLimiter implements RateLimiterDriver {
      * @return {Promise<any>}
      */
     consumeReadRequestsPoints(points: number): Promise<any> {
-        this.rateLimiter.points = this.app.maxReadRequestsPerMinute;
+        this.rateLimiter.points = this.app.maxReadRequestsPerMinute as number;
 
         return this.consumeForKey(`backend:request_read:${this.app.id}`, points);
     }

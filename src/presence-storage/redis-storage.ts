@@ -1,5 +1,7 @@
+import { Member } from '../channels/presence-channel';
 import { PresenceStorageDriver } from './presence-storage-driver';
 import { Socket } from './../socket';
+import { Server as SocketIoServer } from 'socket.io';
 
 const Redis = require('ioredis');
 
@@ -15,9 +17,9 @@ export class RedisStorage implements PresenceStorageDriver {
      * Create a new cache instance.
      *
      * @param {any} options
-     * @param {any} io
+     * @param {SocketIoServer} io
      */
-    constructor(protected options: any, protected io: any) {
+    constructor(protected options: any, protected io: SocketIoServer) {
         this.redis = new Redis(options.database.redis);
     }
 
@@ -38,10 +40,10 @@ export class RedisStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    addMemberToChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         return this.getMembersFromChannel(nsp, channel).then(members => {
             members.push(member);
 
@@ -57,10 +59,10 @@ export class RedisStorage implements PresenceStorageDriver {
      * @param  {Socket}  socket
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<any>}
      */
-    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: any): Promise<any> {
+    removeMemberFromChannel(socket: Socket, nsp: string, channel: string, member: Member): Promise<any> {
         return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
             let newMembers = existingMembers.filter(existingMember => {
                 return member.socket_id !== existingMember.socket_id;
@@ -77,10 +79,10 @@ export class RedisStorage implements PresenceStorageDriver {
      *
      * @param  {string}  nsp
      * @param  {string}  channel
-     * @param  {any}  member
+     * @param  {Member}  member
      * @return {Promise<boolean>}
      */
-    memberExistsInChannel(nsp: string, channel: string, member: any): Promise<boolean> {
+    memberExistsInChannel(nsp: string, channel: string, member: Member): Promise<boolean> {
         return this.getMembersFromChannel(nsp, channel).then(existingMembers => {
             let memberInChannel = existingMembers.find(existingMember => {
                 return existingMember.user_id === member.user_id;

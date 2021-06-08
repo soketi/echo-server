@@ -19,10 +19,10 @@ export class SocketHttpClient {
      * @param  {string}  method
      * @param  {Socket}  socket
      * @param  {any}  options
-     * @return {Promise<any>}
+     * @return {Promise<{ [key: string]: any; }>}
      */
-    request(socket: Socket, options: any): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    request(socket: Socket, options: any): Promise<{ [key: string]: any; }> {
+        return new Promise((resolve, reject) => {
             options = {
                 ...options,
                 ...{
@@ -76,7 +76,7 @@ export class SocketHttpClient {
      * @param  {any}  options
      * @return {any}
      */
-    protected prepareHeaders(socket: Socket, options: any): any {
+    protected prepareHeaders(socket: Socket, options: any): { [key: string]: any; } {
         let headers = {
             'X-Requested-With': 'XMLHttpRequest',
         };

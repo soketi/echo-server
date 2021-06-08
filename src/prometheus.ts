@@ -1,63 +1,78 @@
 import * as prom from 'prom-client';
+import { Request } from './request';
 import { Socket } from './socket';
+import { Server as SocketIoServer } from 'socket.io';
 import { Utils } from './utils';
+
+interface PrometheusMetrics {
+    connectedSockets: prom.Gauge<'namespace'|'node_id'|'pod_id'>;
+    newConnectionsTotal: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    newDisconnectionsTotal: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    clientToServerReceivedEventsTotal: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    serverToClientSentEventsTotal: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    socketBytesReceived: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    socketBytesTransmitted: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    httpBytesReceived: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    httpBytesTransmitted: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+    httpCallsReceived: prom.Counter<'namespace'|'node_id'|'pod_id'>;
+}
 
 export class Prometheus {
     /**
      * The list of metrics that will register.
      *
-     * @type {any}
+     * @type {PrometheusMetrics}
      */
-    protected metrics: any = {
+    protected metrics: PrometheusMetrics = {
         connectedSockets: new prom.Gauge({
             name: 'socket_io_connected',
             help: 'The number of currently connected sockets.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         newConnectionsTotal: new prom.Counter({
             name: 'socket_io_new_connections_total',
             help: 'Total amount of Socket.IO connection requests.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         newDisconnectionsTotal: new prom.Counter({
             name: 'socket_io_new_disconnections_total',
             help: 'Total amount of Socket.IO disconnections.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         clientToServerReceivedEventsTotal: new prom.Counter({
             name: 'socket_io_server_events_received_total',
             help: 'Total events received from the Socket.IO client.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         serverToClientSentEventsTotal: new prom.Counter({
             name: 'socket_io_server_to_client_events_sent_total',
             help: 'Total amount of sent events by Socket.IO.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         socketBytesReceived: new prom.Counter({
             name: 'socket_io_socket_received_bytes',
             help: 'Total amount of bytes that Socket.IO received.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         socketBytesTransmitted: new prom.Counter({
             name: 'socket_io_socket_transmitted_bytes',
             help: 'Total amount of bytes that Socket.IO transmitted.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         httpBytesReceived: new prom.Counter({
             name: 'socket_io_http_received_bytes',
             help: 'Total amount of bytes that Socket.IO\'s REST API received.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         httpBytesTransmitted: new prom.Counter({
             name: 'socket_io_http_transmitted_bytes',
             help: 'Total amount of bytes that Socket.IO\'s REST API sent back.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
         httpCallsReceived: new prom.Counter({
             name: 'socket_io_http_events_received_total',
             help: 'Total amount of received REST API calls.',
-            labelNames: ['namespace'],
+            labelNames: ['namespace', 'node_id', 'pod_id'],
         }),
     };
 
@@ -71,10 +86,10 @@ export class Prometheus {
     /**
      * Initialize the Prometheus exporter.
      *
-     * @param {any} io
+     * @param {SocketIoServer} io
      * @param {any} options
      */
-    constructor(protected io: any, protected options: any) {
+    constructor(protected io: SocketIoServer, protected options: any) {
         this.register = prom.register;
 
         prom.collectDefaultMetrics({
@@ -125,11 +140,11 @@ export class Prometheus {
      * Handle a new API message event being received and sent out.
      *
      * @param  {string}  namespace
-     * @param  {any}  req
+     * @param  {Request}  req
      * @param  {any}  responseData
      * @return {void}
      */
-    markApiMessage(namespace: string, req: any, ...responseData: any): void {
+    markApiMessage(namespace: string, req: Request, ...responseData: any): void {
         this.metrics.httpBytesReceived.inc({ namespace }, req.socket.bytesRead);
         this.metrics.httpBytesTransmitted.inc({ namespace }, req.socket.bytesRead + Utils.dataToBytes(...responseData));
         this.metrics.httpCallsReceived.inc({ namespace });
