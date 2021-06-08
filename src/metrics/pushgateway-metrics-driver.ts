@@ -8,7 +8,12 @@ import { Socket } from '../socket';
 const http = require('http');
 
 export class PushgatewayMetricsDriver extends PrometheusMetricsDriver {
-    protected pushgateway;
+    /**
+     * The Pushgateway client.
+     *
+     * @type {prom.Pushgateway}
+     */
+    protected pushgateway: prom.Pushgateway;
 
     /**
      * Initialize the Pushgateway exporter.
