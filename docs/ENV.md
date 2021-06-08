@@ -16,6 +16,7 @@
     - [Presence Channel Storage](#presence-channel-storage)
     - [Channels Soft Limits](#channels-soft-limits)
   - [Statsitics](#statsitics)
+  - [Metrics](#metrics)
   - [Databases](#databases)
     - [Redis Configuration](#redis-configuration)
     - [Prometheus Configuration](#prometheus-configuration)
@@ -194,7 +195,17 @@ For non-distributed systems:
 For distributed systems:
 
 - `redis-ts` - Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
-- `prometheus` - Stats are read from a Prometheus server REST API (`PROMETHEUS_ENABLED` should be `true` and you should have the Prometheus server scrape metrics from the `/metrics` endpoint); [see Prometheus configuration](#prometheus)). **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
+- `prometheus` - Stats are read from a Prometheus server REST API (`METRICS_ENABLED` should be `true`); [see Prometheus configuration](#prometheus) and [Metrics configuration](#metrics)). **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them. You can also use Pushgateway as alternative to scraping.**
+
+## Metrics
+
+Statistics are app-by-app statistics for the users, while the metrics settings are related to how metrics are stored from Echo Server. Some examples are Prometheus scraping or Pushgateway event sending.
+
+| Environment variable | Object dot-path | Default | Available values | Description |
+| - | - | - | - | - |
+| `METRICS_ENABLED` | `metrics.enabled` | `false` | `true`, `false` | Wether to enable metrics collection. For Pusher, this will expose a `/metrics` endpoint. |
+| `METRICS_DRIVER` | `metrics.driver` | `prometheus` | `prometheus`, `pushgateway` | The driver used to collect the metrics from. |
+| `PROMETHEUS_PREFIX` | `metrics.prometheus.prefix` | `echo_server_` | - | The prefix to append to Prometheus metrics names. |
 
 ## Databases
 
@@ -224,8 +235,7 @@ Echo Server embeds a Prometheus client that can be accessed on the `/metrics` en
 
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
-| `PROMETHEUS_ENABLED` | `prometheus.enabled` | `false` | `true`, `false` | Wether to enable `/metrics` endpoint. |
-| `PROMETHEUS_PREFIX` | `prometheus.prefix` | `echo_server_` | - | The prefix to append to Prometheus metrics names. |
+| ~~`PROMETHEUS_ENABLED`~~ | ~~`prometheus.enabled`~~ | ~~`false`~~ | ~~`true`, `false`~~ | ~~Wether to enable `/metrics` endpoint.~~ Deprecated. See: `METRICS_ENABLED` |
 | `PROMETHEUS_HOST` | `prometheus.host` | `127.0.0.1` | - | The host of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PORT` | `prometheus.port` | `9090` | - | The port of the Prometheus server to read statistics from. |
 | `PROMETHEUS_PROTOCOL` | `prometheus.protocol` | `http` | `http`, `https` | The protocol of the Prometheus server to read statistics from. |

@@ -1,8 +1,8 @@
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { Member } from './presence-channel';
+import { MetricsDriver } from './../metrics';
 import { Options } from './../options';
-import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
@@ -36,7 +36,7 @@ export class Channel {
     constructor(
         protected io: SocketIoServer,
         protected stats: Stats,
-        protected prometheus: Prometheus,
+        protected metrics: MetricsDriver,
         protected rateLimiter: RateLimiter,
         protected options: Options,
     ) {
@@ -84,8 +84,8 @@ export class Channel {
          * We can't intercept the socket.emit() function, so
          * this one will be present here to mark an outgoing WS message.
          */
-        if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', channel);
+        if (this.options.metrics.enabled) {
+            this.metrics.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', channel);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -141,8 +141,8 @@ export class Channel {
                      * We can't intercept the socket.emit() function, so
                      * this one will be present here to mark an outgoing WS message.
                      */
-                    if (this.options.prometheus.enabled) {
-                        this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
+                    if (this.options.metrics.enabled) {
+                        this.metrics.markWsMessage(Utils.getNspForSocket(socket), 'channel:joined', data.channel, data.data);
                     }
 
                     if (this.options.development) {

@@ -103,7 +103,7 @@ jobs:
         env:
           DEBUG: true
           PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
-          PROMETHEUS_ENABLED: true
+          METRICS_ENABLED: true
           REPLICATION_DRIVER: ${{ matrix.replication_driver }}
           APPS_MANAGER_DRIVER: ${{ matrix.apps_manager_driver }}
           APPS_MANAGER_HOST: http://127.0.0.1:3000

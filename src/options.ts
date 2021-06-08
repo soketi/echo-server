@@ -15,6 +15,12 @@ interface KnexConnection {
     database: string;
 }
 
+interface Prometheus {
+    host: string;
+    port: number;
+    protocol: string;
+};
+
 export interface Options {
     appManager: {
         driver: string;
@@ -51,11 +57,8 @@ export interface Options {
         mysql: KnexConnection;
         postgres: KnexConnection;
         local: {};
-        prometheus: {
-            host: string;
-            port: number;
-            protocol: string;
-        };
+        prometheus: Prometheus;
+        pushgateway: Prometheus;
     };
     databasePooling: {
         enabled: boolean;
@@ -80,6 +83,13 @@ export interface Options {
         process_id: string|number;
         pod_id: string|number|null;
     };
+    metrics: {
+        enabled: boolean;
+        driver: string;
+        prometheus: {
+            prefix: string;
+        };
+    },
     port: number;
     presence: {
         storage: {
@@ -87,10 +97,6 @@ export interface Options {
         };
         maxMembersPerChannel: string|number;
         maxMemberSizeInKb: string|number;
-    };
-    prometheus: {
-        enabled: boolean;
-        prefix: string;
     };
     rateLimiter: {
         driver: string;
