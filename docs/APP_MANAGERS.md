@@ -140,7 +140,13 @@ An example response looks like this, and the structure must be maintained:
         "enableClientMessages": true,
         "maxBackendEventsPerMinute": -1,
         "maxClientEventsPerMinute": -1,
-        "maxReadRequestsPerMinute": -1
+        "maxReadRequestsPerMinute": -1,
+        "webhooks": [
+            {
+                "url": "...",
+                "event_type": "..."
+            }
+        ]
     }
 }
 ```

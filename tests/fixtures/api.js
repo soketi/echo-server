@@ -34,6 +34,7 @@ app.get('/echo-server/app', (req, res) => {
             maxBackendEventsPerMinute: -1,
             maxClientEventsPerMinute: -1,
             maxReadRequestsPerMinute: -1,
+            webhooks: [],
         },
     });
 });

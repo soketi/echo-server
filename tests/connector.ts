@@ -1,7 +1,5 @@
-import { decode as decodeBase64 } from '@stablelib/base64';
 import Soketi from '@soketi/soketi-js';
 
-const crypto = require('crypto');
 const Pusher = require('pusher');
 
 export class Connector {

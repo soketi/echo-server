@@ -1,8 +1,7 @@
+import axios from 'axios';
 import { Log } from './log';
 import { Options } from './options';
 import { Socket } from './socket';
-
-const request = require('request');
 
 export class SocketHttpClient {
     /**
@@ -17,15 +16,33 @@ export class SocketHttpClient {
      */
     request(socket: Socket, options: any): Promise<{ [key: string]: any; }> {
         return new Promise((resolve, reject) => {
-            options = {
-                ...options,
-                ...{
-                    headers: this.prepareHeaders(socket, options),
-                },
-            };
+            options = this.prepareOptions(socket, options);
 
-            request(options, (error, response, body, next) => {
-                if (error) {
+            axios(options).then(response => {
+                let data;
+
+                try {
+                    data = JSON.parse(response.data);
+                } catch (e) {
+                    data = response.data;
+                }
+
+                resolve(data);
+            }).catch(error => {
+                if (error.response.status !== 200) {
+                    if (this.options.development) {
+                        Log.warning({
+                            time: new Date().toISOString(),
+                            socketId: socket ? socket.id : null,
+                            options,
+                            action: 'request',
+                            status: 'non_200',
+                            body: error.response.data,
+                        });
+                    }
+
+                    reject({ reason: `The HTTP request got status ${error.response.status}` });
+                } else {
                     Log.error({
                         time: new Date().toISOString(),
                         socketId: socket ? socket.id : null,
@@ -35,32 +52,27 @@ export class SocketHttpClient {
                         error,
                     });
 
-                    reject({ reason: 'Error sending authentication request.', status: null });
-                } else if (response.statusCode !== 200) {
-                    if (this.options.development) {
-                        Log.warning({
-                            time: new Date().toISOString(),
-                            socketId: socket ? socket.id : null,
-                            options,
-                            action: 'request',
-                            status: 'non_200',
-                            body: response.body,
-                            error,
-                        });
-                    }
-
-                    reject({ reason: `The HTTP request got status ${response.statusCode}` });
-                } else {
-                    try {
-                        body = JSON.parse(response.body);
-                    } catch (e) {
-                        body = response.body
-                    }
-
-                    resolve(body);
+                    reject({ reason: 'Error sending HTTP request.', status: null });
                 }
             });
         });
+    }
+
+    /**
+     * Prepare options for request to app server.
+     */
+    protected prepareOptions(socket: Socket, options: Options): any {
+        return {
+            ...options,
+            ...{
+                headers: {
+                    ...(options.headers || {}),
+                    ...this.prepareHeaders(socket, options)
+                },
+                maxContentLength: 2000,
+                maxBodyLength: 2000,
+            },
+        };
     }
 
     /**
