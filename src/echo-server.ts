@@ -3,9 +3,9 @@ import { AppManager } from './app-managers/app-manager';
 import { Channel, EncryptedPrivateChannel, PresenceChannel, PrivateChannel } from './channels';
 import { HttpApi } from './api';
 import { Log } from './log';
+import { Metrics } from './metrics';
 import { Namespace } from 'socket.io';
 import { Options } from './options';
-import { Prometheus } from './prometheus';
 import { RateLimiter } from './rate-limiter';
 import { Server } from './server';
 import { Socket } from './socket';
@@ -128,6 +128,11 @@ export class EchoServer {
                 port: 9090,
                 protocol: 'http',
             },
+            pushgateway: {
+                host: '127.0.0.1',
+                port: 9091,
+                protocol: 'http',
+            },
         },
         databasePooling: {
             enabled: false,
@@ -154,6 +159,13 @@ export class EchoServer {
             process_id: process.pid || uuidv4(),
             pod_id: null,
         },
+        metrics: {
+            enabled: false,
+            driver: 'prometheus',
+            prometheus: {
+                prefix: 'echo_server_',
+            },
+        },
         port: 6001,
         presence: {
             storage: {
@@ -161,10 +173,6 @@ export class EchoServer {
             },
             maxMembersPerChannel: 100,
             maxMemberSizeInKb: 2,
-        },
-        prometheus: {
-            enabled: false,
-            prefix: 'echo_server_',
         },
         rateLimiter: {
             driver: 'local',
@@ -244,11 +252,11 @@ export class EchoServer {
     protected appManager: AppManager;
 
     /**
-     * The Prometheus client that handles export.
+     * The metrics client that handles export.
      *
-     * @type {Prometheus}
+     * @type {Metrics}
      */
-    protected prometheus: Prometheus;
+    protected metrics: Metrics;
 
      /**
      * The RateLimiter client.
@@ -335,13 +343,13 @@ export class EchoServer {
         return new Promise((resolve) => {
             this.appManager = new AppManager(this.options);
             this.stats = new Stats(this.options);
-            this.prometheus = new Prometheus(io, this.options);
+            this.metrics = new Metrics(io, this.options);
             this.rateLimiter = new RateLimiter(this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.publicChannel = new Channel(io, this.stats, this.metrics, this.rateLimiter, this.options);
+            this.privateChannel = new PrivateChannel(io, this.stats, this.metrics, this.rateLimiter, this.options);
+            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.metrics, this.rateLimiter, this.options);
+            this.presenceChannel = new PresenceChannel(io, this.stats, this.metrics, this.rateLimiter, this.options);
 
             this.httpApi = new HttpApi(
                 this,
@@ -350,7 +358,7 @@ export class EchoServer {
                 this.options,
                 this.appManager,
                 this.stats,
-                this.prometheus,
+                this.metrics,
                 this.rateLimiter,
             );
 
@@ -430,8 +438,8 @@ export class EchoServer {
         nsp.on('connection', (socket: Socket) => {
             this.stats.markNewConnection(socket.data.echoApp);
 
-            if (this.options.prometheus.enabled) {
-                this.prometheus.markNewConnection(socket);
+            if (this.options.metrics.enabled) {
+                this.metrics.markNewConnection(socket);
             }
 
             if (this.closing) {
@@ -526,8 +534,8 @@ export class EchoServer {
         });
 
         socket.on('disconnect', reason => {
-            if (this.options.prometheus.enabled) {
-                this.prometheus.markDisconnection(socket);
+            if (this.options.metrics.enabled) {
+                this.metrics.markDisconnection(socket);
             }
         });
     }

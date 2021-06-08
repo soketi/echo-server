@@ -6,7 +6,7 @@ import { EchoServer } from '../echo-server';
 import { Log } from './../log';
 import { Options } from './../options';
 import { Member, PresenceChannel } from './../channels/presence-channel';
-import { Prometheus } from './../prometheus';
+import { MetricsDriver, PrometheusMetricsDriver } from './../metrics';
 import { RateLimiter } from '../rate-limiter';
 import { RemoteSocket } from '../socket';
 import { Request } from './../request';
@@ -32,7 +32,7 @@ export class HttpApi {
         protected options: Options,
         protected appManager: AppManager,
         protected stats: Stats,
-        protected prometheus: Prometheus,
+        protected metrics: MetricsDriver,
         protected rateLimiter: RateLimiter,
     ) {
         //
@@ -66,7 +66,7 @@ export class HttpApi {
             this.express.get('/apps/:appId/stats/current', readRateLimiter, (req: Request, res: Response) => this.getCurrentStats(req, res));
         }
 
-        if (this.options.prometheus.enabled) {
+        if (this.options.metrics.enabled && this.options.metrics.driver === 'prometheus') {
             this.express.get('/metrics', (req: Request, res: Response) => this.getPrometheusMetrics(req, res));
         }
     }
@@ -362,8 +362,8 @@ export class HttpApi {
             this.sendEventToChannels(`/${appKey}`, channels, req);
         }
 
-        if (this.options.prometheus.enabled) {
-            this.prometheus.markApiMessage(`/${appKey}`, req, { message: 'ok' });
+        if (this.options.metrics.enabled) {
+            this.metrics.markApiMessage(`/${appKey}`, req, { message: 'ok' });
         }
 
         res.json({ message: 'ok' });
@@ -408,19 +408,21 @@ export class HttpApi {
      * Get the registered Prometheus metrics.
      */
     protected getPrometheusMetrics(req, res): boolean {
-        res.set('Content-Type', this.prometheus.register.contentType);
+        if (this.metrics instanceof PrometheusMetricsDriver) {
+            res.set('Content-Type', this.metrics.register.contentType);
+        }
 
         if (req.query.json) {
-            this.prometheus.register.getMetricsAsJSON().then(metrics => {
+            this.metrics.getMetricsAsJson().then(metrics => {
                 res.json({ data: metrics });
             });
         } else {
-            this.prometheus.register.metrics().then(content => {
+            this.metrics.getMetricsAsPlaintext().then(content => {
                 res.end(content);
             });
         }
 
-        return true;
+        return res.json({});
     }
 
     /**
@@ -476,8 +478,8 @@ export class HttpApi {
                     .emit(req.body.name, channel, JSON.parse(req.body.data));
             }
 
-            if (this.options.prometheus.enabled) {
-                this.prometheus.markWsMessage(namespace, req.body.name, channel, req.body.data);
+            if (this.options.metrics.enabled) {
+                this.metrics.markWsMessage(namespace, req.body.name, channel, req.body.data);
             }
 
             this.stats.markWsMessage(req.echoApp);

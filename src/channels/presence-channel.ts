@@ -1,9 +1,9 @@
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
+import { MetricsDriver } from './../metrics';
 import { Options } from './../options';
 import { PresenceStorage } from './../presence-storage';
 import { PrivateChannel } from './private-channel';
-import { Prometheus } from './../prometheus';
 import { RateLimiter } from '../rate-limiter';
 import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
@@ -30,11 +30,11 @@ export class PresenceChannel extends PrivateChannel {
     constructor(
         protected io: SocketIoServer,
         protected stats: Stats,
-        protected prometheus: Prometheus,
+        protected metrics: MetricsDriver,
         protected rateLimiter: RateLimiter,
         protected options: Options,
     ) {
-        super(io, stats, prometheus, rateLimiter, options);
+        super(io, stats, metrics, rateLimiter, options);
 
         this.presenceStorage = new PresenceStorage(options, io);
     }
@@ -139,8 +139,8 @@ export class PresenceChannel extends PrivateChannel {
          * We can't intercept the socket.emit() function, so
          * this one will be present here to mark an outgoing WS message.
          */
-        if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:joining', channel, member);
+        if (this.options.metrics.enabled) {
+            this.metrics.markWsMessage(Utils.getNspForSocket(socket), 'presence:joining', channel, member);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -158,8 +158,8 @@ export class PresenceChannel extends PrivateChannel {
          * We can't intercept the socket.emit() function, so
          * this one will be present here to mark an outgoing WS message.
          */
-        if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:leaving', channel, member);
+        if (this.options.metrics.enabled) {
+            this.metrics.markWsMessage(Utils.getNspForSocket(socket), 'presence:leaving', channel, member);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);
@@ -177,8 +177,8 @@ export class PresenceChannel extends PrivateChannel {
          * We can't intercept the socket.emit() function, so
          * this one will be present here to mark an outgoing WS message.
          */
-        if (this.options.prometheus.enabled) {
-            this.prometheus.markWsMessage(Utils.getNspForSocket(socket), 'presence:subscribed', channel, members);
+        if (this.options.metrics.enabled) {
+            this.metrics.markWsMessage(Utils.getNspForSocket(socket), 'presence:subscribed', channel, members);
         }
 
         this.stats.markWsMessage(socket.data.echoApp);

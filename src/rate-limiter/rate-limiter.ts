@@ -23,7 +23,7 @@ export class RateLimiter implements RateLimiterDriver {
         } else if (options.rateLimiter.driver === 'redis') {
             this.driver = new RedisRateLimiter(options);
         } else {
-            Log.error('No stats driver specified.');
+            Log.error('No rate limiter driver specified.');
         }
     }
 

@@ -1,9 +1,10 @@
 import * as prom from 'prom-client';
-import { Options } from './options';
-import { Request } from './request';
-import { Socket } from './socket';
+import { MetricsDriver } from './metrics-driver';
+import { Options } from './../options';
+import { Request } from './../request';
 import { Server as SocketIoServer } from 'socket.io';
-import { Utils } from './utils';
+import { Socket } from './../socket';
+import { Utils } from './../utils';
 
 interface PrometheusMetrics {
     connectedSockets: prom.Gauge<'namespace'|'node_id'|'pod_id'>;
@@ -18,7 +19,16 @@ interface PrometheusMetrics {
     httpCallsReceived: prom.Counter<'namespace'|'node_id'|'pod_id'>;
 }
 
-export class Prometheus {
+interface InfraMetadata {
+    [key: string]: any;
+}
+
+interface NamespaceTags {
+    namespace: string;
+    [key: string]: any;
+}
+
+export class PrometheusMetricsDriver implements MetricsDriver {
     /**
      * The list of metrics that will register.
      *
@@ -80,23 +90,34 @@ export class Prometheus {
     /**
      * Prometheus register repo.
      *
-     * @type {prom.register}
+     * @type {prom.Registry}
      */
-    register: typeof prom.register;
+    register: prom.Registry;
+
+    /**
+     * The infra-related metadata.
+     *
+     * @type {InfraMetadata}
+     */
+    protected infraMetadata: InfraMetadata = {
+        //
+    };
 
     /**
      * Initialize the Prometheus exporter.
      */
     constructor(protected io: SocketIoServer, protected options: Options) {
-        this.register = prom.register;
+        this.register = new prom.Registry();
+
+        this.infraMetadata = {
+            node_id: options.instance.node_id,
+            pod_id: options.instance.pod_id,
+        };
 
         prom.collectDefaultMetrics({
             prefix: options.prometheus.prefix,
             register: this.register,
-            labels: {
-                node_id: options.instance.node_id,
-                pod_id: options.instance.pod_id,
-            },
+            labels: this.infraMetadata,
         });
     }
 
@@ -107,13 +128,13 @@ export class Prometheus {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 
-        this.metrics.connectedSockets.set({ namespace }, nsp.sockets.size);
-        this.metrics.newConnectionsTotal.inc({ namespace });
+        this.metrics.connectedSockets.set(this.getTags(namespace), nsp.sockets.size);
+        this.metrics.newConnectionsTotal.inc(this.getTags(namespace));
 
         socket.onAny((event, ...args) => {
-            this.metrics.clientToServerReceivedEventsTotal.inc({ namespace });
-            this.metrics.socketBytesReceived.inc({ namespace }, Utils.dataToBytes(event, args));
-            this.metrics.serverToClientSentEventsTotal.inc({ namespace });
+            this.metrics.clientToServerReceivedEventsTotal.inc(this.getTags(namespace));
+            this.metrics.socketBytesReceived.inc(this.getTags(namespace), Utils.dataToBytes(event, args));
+            this.metrics.serverToClientSentEventsTotal.inc(this.getTags(namespace));
         });
     }
 
@@ -124,23 +145,47 @@ export class Prometheus {
         let namespace = socket.nsp.name;
         let nsp = this.io.of(namespace);
 
-        this.metrics.connectedSockets.set({ namespace }, nsp.sockets.size);
-        this.metrics.newDisconnectionsTotal.inc({ namespace });
+        this.metrics.connectedSockets.set(this.getTags(namespace), nsp.sockets.size);
+        this.metrics.newDisconnectionsTotal.inc(this.getTags(namespace));
     }
 
     /**
      * Handle a new API message event being received and sent out.
      */
     markApiMessage(namespace: string, req: Request, ...responseData: any): void {
-        this.metrics.httpBytesReceived.inc({ namespace }, req.socket.bytesRead);
-        this.metrics.httpBytesTransmitted.inc({ namespace }, req.socket.bytesRead + Utils.dataToBytes(...responseData));
-        this.metrics.httpCallsReceived.inc({ namespace });
+        this.metrics.httpBytesReceived.inc(this.getTags(namespace), req.socket.bytesRead);
+        this.metrics.httpBytesTransmitted.inc(this.getTags(namespace), req.socket.bytesRead + Utils.dataToBytes(...responseData));
+        this.metrics.httpCallsReceived.inc(this.getTags(namespace));
     }
 
     /**
      * Handle a new WS client message event being received.
      */
     markWsMessage(namespace: string, event: string, ...data: any): void {
-        this.metrics.socketBytesTransmitted.inc({ namespace }, Utils.dataToBytes(namespace, event, ...data));
+        this.metrics.socketBytesTransmitted.inc(this.getTags(namespace), Utils.dataToBytes(namespace, event, ...data));
+    }
+
+    /**
+     * Get the stored metrics as plain text, if possible.
+     */
+    getMetricsAsPlaintext(): Promise<string> {
+        return this.register.metrics();
+    }
+
+     /**
+      * Get the stored metrics as JSON.
+      */
+    getMetricsAsJson(): Promise<prom.metric[]> {
+        return this.register.getMetricsAsJSON();
+    }
+
+    /**
+     * Get the tags for Prometheus.
+     */
+    protected getTags(namespace: string): NamespaceTags {
+        return {
+            namespace,
+            ...this.infraMetadata,
+        };
     }
 }
