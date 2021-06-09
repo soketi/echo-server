@@ -111,7 +111,7 @@ jobs:
           APP_DEFAULT_ENABLE_STATS: true
           STATS_DRIVER: ${{ matrix.stats_driver }}
           POSTGRES_USERNAME: postgres2
-          APP_DEFAULT_WEBHOOKS: '[{"event_type":"client-event","url":"http://127.0.0.1:3000/webhook1"}]',
+          APP_DEFAULT_WEBHOOKS: '[{"event_type":"client-event","url":"http://127.0.0.1:3000/webhook1"}]'
 
       - name: Execute tests
         run: |
