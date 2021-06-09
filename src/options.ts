@@ -47,7 +47,6 @@ export interface Options {
     };
     database: {
         redis: Redis;
-        redisTs: Redis;
         mysql: KnexConnection;
         postgres: KnexConnection;
         local: {};

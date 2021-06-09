@@ -4,7 +4,6 @@ import { LocalStats } from './local-stats';
 import { Log } from './../log';
 import { Options } from './../options';
 import { PrometheusStats } from './prometheus-stats';
-import { RedisTimeSeriesStats } from './redis-ts-stats';
 
 export class Stats implements StatsDriver {
     /**
@@ -20,8 +19,6 @@ export class Stats implements StatsDriver {
     constructor(protected options: Options) {
         if (options.stats.driver === 'local') {
             this.driver = new LocalStats(options);
-        } else if (options.stats.driver === 'redis-ts') {
-            this.driver = new RedisTimeSeriesStats(options);
         } else if (options.stats.driver === 'prometheus') {
             this.driver = new PrometheusStats(options);
         } else {

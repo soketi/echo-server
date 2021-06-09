@@ -32,7 +32,6 @@ jobs:
           - postgres
         stats_driver:
           - local
-          # - redis-ts # TODO: Deprecated?
           - prometheus
 
     name: Node.js ${{ matrix.node }} (stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})

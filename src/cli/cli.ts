@@ -53,7 +53,6 @@ export class Cli {
         EVENT_MAX_NAME_LENGTH: 'eventLimits.maxNameLength',
         EVENT_MAX_SIZE_IN_KB: 'eventLimits.maxPayloadInKb',
         HTTP_EXTRA_HEADERS: 'httpApi.extraHeaders',
-        HTTP_MAX_PAYLOAD_SIZE: 'eventLimits.maxPayloadInKb', // TODO: DEPRECATED
         HTTP_MAX_REQUEST_SIZE: 'httpApi.requestLimitInMb',
         HTTP_PROTOCOL: 'httpApi.protocol',
         HTTP_TRUST_PROXIES: 'httpApi.trustProxies',
@@ -82,10 +81,6 @@ export class Cli {
         REDIS_PORT: 'database.redis.port',
         REDIS_PASSWORD: 'database.redis.password',
         REDIS_PREFIX: 'database.redis.keyPrefix',
-        REDIS_TS_HOST: 'database.redisTs.host',
-        REDIS_TS_PORT: 'database.redisTs.port',
-        REDIS_TS_PASSWORD: 'database.redisTs.password',
-        REDIS_TS_PREFIX: 'database.redisTs.keyPrefix',
         SOCKET_HOST: 'host',
         SOCKET_PORT: 'port',
         SOCKET_PROTOCOL: 'protocol',
