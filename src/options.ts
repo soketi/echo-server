@@ -98,7 +98,6 @@ export interface Options {
         driver: string;
     };
     secureOptions: Options;
-    socketIoOptions: { [key:string]: any; };
     ssl: {
         certPath: string;
         keyPath: string;

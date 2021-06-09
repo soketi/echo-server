@@ -167,9 +167,6 @@ export class EchoServer {
             driver: 'local',
         },
         secureOptions: constants.SSL_OP_NO_TLSv1,
-        socketIoOptions: {
-            //
-        },
         ssl: {
             certPath: '',
             keyPath: '',
