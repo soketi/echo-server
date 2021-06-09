@@ -33,6 +33,6 @@ INSERT INTO echo_apps (
     -1,
     -1,
     '[
-        {"event_type": "client-event","url": "http://127.0.0.1:3000/webhook1"}
+        {"event_type":"client-event","url":"http://127.0.0.1:3000/webhook1"}
     ]'
 );
