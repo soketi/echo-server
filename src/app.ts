@@ -91,6 +91,10 @@ export class App implements AppInterface {
         this.maxClientEventsPerMinute = parseInt(app.maxClientEventsPerMinute || app.max_client_events_per_min || -1);
         this.maxReadRequestsPerMinute = parseInt(app.maxReadRequestsPerMinute || app.max_read_req_per_min || -1);
         this.webhooks = app.webhooks || [];
+
+        if (! (this.webhooks instanceof Array)) {
+            this.webhooks = [];
+        }
     }
 
     /**
