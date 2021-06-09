@@ -66,7 +66,6 @@ export class Cli {
         POD_ID: 'instance.pod_id',
         PRESENCE_MAX_MEMBER_SIZE: 'presence.maxMemberSizeInKb',
         PRESENCE_MAX_MEMBERS: 'presence.maxMembersPerChannel',
-        PRESENCE_STORAGE_DATABASE: 'presence.storage.database',
         PROMETHEUS_ENABLED: 'prometheus.enabled',
         PROMETHEUS_PREFIX: 'prometheus.prefix',
         PROMETHEUS_HOST: 'prometheus.host',
