@@ -148,7 +148,13 @@ export class Connector {
     }
 
     static getWebhooks(): TestWebhookResponse[] {
-        let webhooks = fs.readFileSync('webhooks.json', 'utf8');
+        let webhooks = null;
+
+        try {
+            webhooks = fs.readFileSync('webhooks.json', 'utf8');
+        } catch (e) {
+            //
+        }
 
         return webhooks ? JSON.parse(webhooks) : [];
     }
