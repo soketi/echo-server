@@ -49,7 +49,9 @@ export interface Options {
         redis: Redis;
         mysql: KnexConnection;
         postgres: KnexConnection;
-        local: {};
+        local: {
+            //
+        };
         prometheus: {
             host: string;
             port: number;
