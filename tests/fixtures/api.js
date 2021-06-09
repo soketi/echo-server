@@ -1,6 +1,10 @@
 const express = require('express');
+const fs = require('fs');
 const app = express();
+const bodyParser = require('body-parser');
 const port = 3000;
+
+app.use(bodyParser.json({ strict: true }));
 
 app.get('/echo-server/app', (req, res) => {
     if (req.query.token !== process.env.APPS_MANAGER_TOKEN) {
@@ -29,13 +33,43 @@ app.get('/echo-server/app', (req, res) => {
             key: 'echo-app-key',
             secret: 'echo-app-secret',
             maxConnections: 100,
-            enableStats: false,
+            enableStats: true,
             enableClientMessages: true,
             maxBackendEventsPerMinute: -1,
             maxClientEventsPerMinute: -1,
             maxReadRequestsPerMinute: -1,
-            webhooks: [],
+            webhooks: [{
+                event_type: 'client-event',
+                url: 'http://127.0.0.1:3000/webhook1',
+            }],
         },
+    });
+});
+
+app.post('/webhook1', (req, res) => {
+    fs.readFile('webhooks.json', 'utf8', (err, data) => {
+        let json = [];
+
+        if (data) {
+            json = JSON.parse(data);
+        }
+
+        let content = {
+            query: req.query,
+            body: req.body,
+            headers: req.headers,
+            type: 'client-event',
+        };
+
+        json.push(content);
+
+        fs.writeFile('webhooks.json', JSON.stringify(json), () => {
+            //
+        });
+    });
+
+    res.json({
+        ok: true,
     });
 });
 

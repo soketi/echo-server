@@ -28,7 +28,6 @@ export class ApiAppManager implements AppManagerDriver {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appId=${id}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},
             method: 'get',
-            rejectUnauthorized: false,
         };
 
         return new Promise((resolve, reject) => {
@@ -46,7 +45,6 @@ export class ApiAppManager implements AppManagerDriver {
             url: `${this.options.appManager.api.host}${this.options.appManager.api.endpoint}?appKey=${key}&token=${this.options.appManager.api.token}`,
             headers: (data && data.auth && data.auth.headers) ? data.auth.headers : {},
             method: 'get',
-            rejectUnauthorized: false,
         };
 
         return new Promise((resolve, reject) => {

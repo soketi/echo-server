@@ -61,7 +61,7 @@ export class SocketHttpClient {
     /**
      * Prepare options for request to app server.
      */
-    protected prepareOptions(socket: Socket, options: Options): any {
+    protected prepareOptions(socket: Socket, options: any): any {
         return {
             ...options,
             ...{
@@ -78,16 +78,20 @@ export class SocketHttpClient {
     /**
      * Prepare headers for request to app server.
      */
-    protected prepareHeaders(socket: Socket, options: Options): { [key: string]: any; } {
+    protected prepareHeaders(socket: Socket, options: any): { [key: string]: any; } {
         let headers = {
             'X-Requested-With': 'XMLHttpRequest',
         };
 
+        if (! options.headers) {
+            options.headers = {};
+        }
+
         if (socket) {
             let socketHeaders = {
-                'X-Forwarded-For': socket.request.headers['x-forwarded-for'] || socket.handshake.headers['x-forwarded-for'] || socket.handshake.address || socket.conn.remoteAddress,
-                'User-Agent': socket.request.headers['user-agent'] || socket.handshake.headers['user-agent'],
-                'Cookie': options.headers['Cookie'] || socket.request.headers.cookie || socket.handshake.headers.cookie,
+                'X-Forwarded-For': socket.request?.headers?.['x-forwarded-for'] || socket.handshake?.headers?.['x-forwarded-for'] || socket.handshake.address || socket.conn.remoteAddress,
+                'User-Agent': socket.request?.headers?.['user-agent'] || socket.handshake?.headers?.['user-agent'],
+                'Cookie': options.headers?.['Cookie'] || socket.request?.headers?.cookie || socket.handshake?.headers?.cookie,
             }
 
             for (let headerName in socketHeaders) {
