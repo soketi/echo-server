@@ -41,7 +41,6 @@ Configuration needed to specify the protocol, port and host for the server.
 | `HTTP_PROTOCOL` | `httpApi.protocol` | `http` | `http`, `https` | The protocol used for the HTTP API. |
 | `HTTP_TRUST_PROXIES` | `trustProxies` | `false` | `true`, `false` | Wether to trust proxies at the HTTP API level. |
 | `EXTRA_HEADERS` | `httpApi.extraHeaders` | `[]` | - | Extra headers to attach to HTTP API responses. |
-| ~~`HTTP_MAX_PAYLOAD_SIZE`~~ | ~~`eventLimits.maxPayloadInKb`~~ | ~~`100`~~ | - | ~~The maximum size, in KB, for the broadcasted payloads incoming from the clients. Set this according to your needs.~~ Deprecated, please see `EVENT_MAX_SIZE_IN_KB` |
 | `HTTP_MAX_REQUEST_SIZE` | `httpApi.requestLimitInMb` | `100` | - | The maximum size, in MB, for the total size of the request. A hard limit has been set to 100 MB. |
 
 ### SSL Settings
@@ -164,10 +163,6 @@ When dealing with presence channel, connection details must be stored within the
 | - | - | - | - | - |
 | `PRESENCE_MAX_MEMBER_SIZE` | `presence.maxMemberSizeInKb` | `2` | - | The maximum member size, in KB, for each member in a presence channel. |
 | `PRESENCE_MAX_MEMBERS` | `presence.maxMembersPerChannel` | `100` | - | The maximum amount of members that can simultaneously be connected in a presence channel. |
-| `PRESENCE_STORAGE_DATABASE` | `presence.storage.database` | `socket` | `redis`, `socket` | The database driver for storing presence channel data. |
-
-- `redis` - Presence channels members are stored in key-value store.
-- `socket` - Presence channels members are stored locally, in-memory, in each socket connection. Also works with the multi-node configuration.
 
 ### Channels Soft Limits
 
@@ -185,7 +180,7 @@ Statistics are globally enabled by default, but they are disabled on the default
 | Environment variable | Object dot-path | Default | Available values | Description |
 | - | - | - | - | - |
 | `STATS_ENABLED` | `stats.enabled` | `true` | `true`, `false` | Wether to enable the stats store. |
-| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `redis-ts`, `promethus` | The stats driver used to store the stats to. |
+| `STATS_DRIVER` | `stats.driver` | `local` | `local`, `promethus` | The stats driver used to store the stats to. |
 | `STATS_SNAPSHOTS_INTERVAL` | `stats.snapshots.interval` | `3600` | - | The amount of time to wait between taking stats snapshots, in seconds. |
 
 For non-distributed systems:
@@ -194,7 +189,6 @@ For non-distributed systems:
 
 For distributed systems:
 
-- `redis-ts` - Stats are stored in [Redis Time Series](https://oss.redislabs.com/redistimeseries/)-compatible database; use `STATS_SNAPSHOTS_INTERVAL` for time bucket between points
 - `prometheus` - Stats are read from a Prometheus server REST API (`PROMETHEUS_ENABLED` should be `true` and you should have the Prometheus server scrape metrics from the `/metrics` endpoint); [see Prometheus configuration](#prometheus)). **The scraping service is not provided and you should set up the Prometheus server to scrape `/metrics` in order to be able to read them.**
 
 ## Databases
@@ -209,15 +203,6 @@ Configuration needed to connect to a Redis server.
 | `REDIS_PORT` | `database.redis.port` | `6379` | - | The Redis port used for `redis` driver. |
 | `REDIS_PASSWORD` | `database.redis.password` | `null` | - | The Redis password used for `redis` driver. |
 | `REDIS_PREFIX` | `database.redis.keyPrefix` | `echo-server` | - | The key prefix for Redis. Only for `redis` driver. |
-
-For [Redis Time Series](https://oss.redislabs.com/redistimeseries), you may use the following variables:
-
-| Environment variable | Object dot-path | Default | Available values | Description |
-| - | - | - | - | - |
-| `REDIS_TS_HOST` | `database.redisTs.host` | `127.0.0.1` | - | The Redis host used for `redis-ts` driver. |
-| `REDIS_TS_PORT` | `database.redisTs.port` | `6381` | - | The Redis port used for `redis-ts` driver. |
-| `REDIS_TS_PASSWORD` | `database.redisTs.password` | `null` | - | The Redis password used for `redis-ts` driver. |
-| `REDIS_TS_PREFIX` | `database.redisTs.keyPrefix` | `echo-server` | - | The key prefix for Redis. Only for `redis-ts` driver. |
 
 ### Prometheus Configuration
 

@@ -22,9 +22,6 @@ jobs:
       matrix:
         node:
           - 14.x
-        presence_db:
-          # - redis # TODO: Deprecated
-          - socket
         replication_driver:
           - redis
           - local
@@ -35,10 +32,9 @@ jobs:
           - postgres
         stats_driver:
           - local
-          # - redis-ts # TODO: Deprecated?
           - prometheus
 
-    name: Node.js ${{ matrix.node }} (presence:${{ matrix.presence_db }} stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
+    name: Node.js ${{ matrix.node }} (stats:${{ matrix.stats_driver }} replication:${{ matrix.replication_driver }} manager:${{ matrix.apps_manager_driver }})
 
     steps:
       - uses: actions/checkout@v2
@@ -108,7 +104,6 @@ jobs:
           curl --silent -XGET --fail http://127.0.0.1:6001/metrics
         env:
           DEBUG: true
-          PRESENCE_STORAGE_DATABASE: ${{ matrix.presence_db }}
           PROMETHEUS_ENABLED: true
           REPLICATION_DRIVER: ${{ matrix.replication_driver }}
           APPS_MANAGER_DRIVER: ${{ matrix.apps_manager_driver }}
