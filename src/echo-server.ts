@@ -100,12 +100,6 @@ export class EchoServer {
                 password: null,
                 keyPrefix: '',
             },
-            redisTs: {
-                host: '127.0.0.1',
-                port: 6381,
-                password: null,
-                keyPrefix: '',
-            },
             mysql: {
                 host: '127.0.0.1',
                 port: 3306,
@@ -173,9 +167,6 @@ export class EchoServer {
             driver: 'local',
         },
         secureOptions: constants.SSL_OP_NO_TLSv1,
-        socketIoOptions: {
-            //
-        },
         ssl: {
             certPath: '',
             keyPath: '',

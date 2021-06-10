@@ -86,15 +86,14 @@ export class Server {
 
             server.listen(this.options.port, this.options.host);
 
-            this.options.socketIoOptions = {
-                ...this.options.socketIoOptions,
-                ...{
-                    cors: this.options.cors,
-                },
+            let socketIoOptions = {
+                cors: this.options.cors,
+                maxHttpBufferSize: parseFloat(this.options.eventLimits.maxPayloadInKb as string) * 1024,
+                transports: ['websocket'],
             };
 
             resolve(
-                this.io = new SocketIoServer(server, this.options.socketIoOptions)
+                this.io = new SocketIoServer(server, socketIoOptions as object)
             );
         });
     }

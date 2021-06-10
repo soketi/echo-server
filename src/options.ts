@@ -47,10 +47,11 @@ export interface Options {
     };
     database: {
         redis: Redis;
-        redisTs: Redis;
         mysql: KnexConnection;
         postgres: KnexConnection;
-        local: {};
+        local: {
+            //
+        };
         prometheus: {
             host: string;
             port: number;
@@ -99,7 +100,6 @@ export interface Options {
         driver: string;
     };
     secureOptions: Options;
-    socketIoOptions: { [key:string]: any; };
     ssl: {
         certPath: string;
         keyPath: string;

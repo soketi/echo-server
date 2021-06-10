@@ -15,9 +15,9 @@ Get the list of stats. Additional parameters may be used to narrow the results.
 
 Get the current stats (the latest ones). **This might not be available on all drivers!**
 
-# Local & Redis Time Series
+# Local Driver
 
-When retrieving the stats using `local` or `redis-ts` drivers, they are formatted like this:
+When retrieving the stats using `local` driver, they are formatted like this:
 
 ```json
 {
