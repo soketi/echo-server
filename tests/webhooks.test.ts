@@ -49,7 +49,7 @@ describe('webhooks test', () => {
             .listenForWhisper('webhook-for-private-whisper', whisper => {
                 expect(whisper.shouldTriggerWebhook).toBe(true);
 
-                Connector.wait(5000).then(() => {
+                Connector.wait(15000).then(() => {
                     let sentWebhook: TestWebhookResponse = Connector.getWebhooks().find(webhook => {
                         return webhook.body.events[0].channel === `private-${roomName}`;
                     });
