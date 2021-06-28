@@ -1,8 +1,29 @@
-import { decode as decodeBase64 } from '@stablelib/base64';
 import Soketi from '@soketi/soketi-js';
 
-const crypto = require('crypto');
+const fs = require('fs');
 const Pusher = require('pusher');
+
+export interface WebhookEmittedData {
+    name: string;
+    channel: string;
+    data: {
+        [key: string]: any;
+    };
+}
+
+export interface TestWebhookResponse {
+    query: {
+        [key: string]: string|number;
+    };
+    body: {
+        time_ms: number;
+        events: WebhookEmittedData[];
+    };
+    headers: {
+        [key: string]: string|number;
+    };
+    type: string;
+}
 
 export class Connector {
     static newClient(authorizer = null, host = '127.0.0.1', port = 6001, key = 'echo-app-key'): Soketi {
@@ -124,5 +145,17 @@ export class Connector {
 
     static randomChannelName(): string {
         return `channel-${Math.floor(Math.random() * 10000000)}`;
+    }
+
+    static getWebhooks(): TestWebhookResponse[] {
+        let webhooks = null;
+
+        try {
+            webhooks = fs.readFileSync('webhooks.json', 'utf8');
+        } catch (e) {
+            //
+        }
+
+        return webhooks ? JSON.parse(webhooks) : [];
     }
 }

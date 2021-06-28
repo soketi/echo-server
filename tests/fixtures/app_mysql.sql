@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `echo_apps` (
     `max_backend_events_per_min` integer(10) NOT NULL,
     `max_client_events_per_min` integer(10) NOT NULL,
     `max_read_req_per_min` integer(10) NOT NULL,
+    `webhooks` JSON NOT NULL,
     PRIMARY KEY (`id`)
 );
 
@@ -20,7 +21,8 @@ INSERT INTO echo_apps (
     enable_client_messages,
     max_backend_events_per_min,
     max_client_events_per_min,
-    max_read_req_per_min
+    max_read_req_per_min,
+    webhooks
 ) VALUES (
     'echo-app',
     'echo-app-key',
@@ -30,5 +32,8 @@ INSERT INTO echo_apps (
     1,
     -1,
     -1,
-    -1
+    -1,
+    '[
+        {"event_type":"client-event","url":"http://127.0.0.1:3000/webhook1"}
+    ]'
 );

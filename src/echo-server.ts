@@ -13,6 +13,7 @@ import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './stats';
 import { Utils } from './utils';
 import { v4 as uuidv4 } from 'uuid';
+import { WebhookSender } from './webhook-sender';
 
 const { constants } = require('crypto');
 const dayjs = require('dayjs');
@@ -61,6 +62,7 @@ export class EchoServer {
                         maxBackendEventsPerMinute: -1,
                         maxClientEventsPerMinute: -1,
                         maxReadRequestsPerMinute: -1,
+                        webhooks: [],
                     },
                 ],
             },
@@ -263,6 +265,13 @@ export class EchoServer {
     protected stats: Stats;
 
     /**
+     * The webhook sender manager.
+     *
+     * @type {WebhookSender}
+     */
+    protected webhookSender: WebhookSender;
+
+    /**
      * Create a new Echo Server instance.
      */
     constructor() {
@@ -328,11 +337,41 @@ export class EchoServer {
             this.stats = new Stats(this.options);
             this.prometheus = new Prometheus(io, this.options);
             this.rateLimiter = new RateLimiter(this.options);
+            this.webhookSender = new WebhookSender(this.options);
 
-            this.publicChannel = new Channel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.privateChannel = new PrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
-            this.presenceChannel = new PresenceChannel(io, this.stats, this.prometheus, this.rateLimiter, this.options);
+            this.publicChannel = new Channel(
+                io,
+                this.stats,
+                this.prometheus,
+                this.rateLimiter,
+                this.webhookSender,
+                this.options,
+            );
+
+            this.privateChannel = new PrivateChannel(io,
+                this.stats,
+                this.prometheus,
+                this.rateLimiter,
+                this.webhookSender,
+                this.options,
+            );
+
+            this.encryptedPrivateChannel = new EncryptedPrivateChannel(io,
+                this.stats,
+                this.prometheus,
+                this.rateLimiter,
+                this.webhookSender,
+                this.options,
+            );
+
+            this.presenceChannel = new PresenceChannel(io,
+                this.stats,
+                this.prometheus,
+                this.rateLimiter,
+                this.webhookSender,
+                this.options,
+            );
+
 
             this.httpApi = new HttpApi(
                 this,

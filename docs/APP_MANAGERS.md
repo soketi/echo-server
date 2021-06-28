@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `echo_apps` (
     `max_backend_events_per_min` integer(10) NOT NULL,
     `max_client_events_per_min` integer(10) NOT NULL,
     `max_read_req_per_min` integer(10) NOT NULL,
+    `webhooks` json DEFAULT "[]",
     PRIMARY KEY (`id`)
 );
 ```
@@ -61,7 +62,8 @@ CREATE TABLE IF NOT EXISTS echo_apps (
     enable_client_messages smallint NOT NULL,
     max_backend_events_per_min integer NOT NULL,
     max_client_events_per_min integer NOT NULL,
-    max_read_req_per_min integer NOT NULL
+    max_read_req_per_min integer NOT NULL,
+    webhooks json DEFAULT "[]"
 );
 ```
 
@@ -140,7 +142,13 @@ An example response looks like this, and the structure must be maintained:
         "enableClientMessages": true,
         "maxBackendEventsPerMinute": -1,
         "maxClientEventsPerMinute": -1,
-        "maxReadRequestsPerMinute": -1
+        "maxReadRequestsPerMinute": -1,
+        "webhooks": [
+            {
+                "url": "...",
+                "event_type": "..."
+            }
+        ]
     }
 }
 ```

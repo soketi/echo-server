@@ -32,6 +32,7 @@ export class Cli {
         APP_DEFAULT_MAX_BACKEND_EVENTS_PER_MIN: 'appManager.array.apps.0.maxBackendEventsPerMinute',
         APP_DEFAULT_MAX_CLIENT_EVENTS_PER_MIN: 'appManager.array.apps.0.maxClientEventsPerMinute',
         APP_DEFAULT_MAX_READ_REQ_PER_MIN: 'appManager.array.apps.0.maxReadRequestsPerMinute',
+        APP_DEFAULT_WEBHOOKS: 'appManager.array.apps.0.webhooks',
         APP_DEFAULT_SECRET: 'appManager.array.apps.0.secret',
         APPS_LIST: 'appManager.array.apps',
         APPS_MANAGER_DRIVER: 'appManager.driver',

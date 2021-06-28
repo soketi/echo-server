@@ -1,13 +1,15 @@
+import { App } from './../app';
 import { EmittedData } from '../echo-server';
 import { Log } from './../log';
 import { Member } from './presence-channel';
 import { Options } from './../options';
 import { Prometheus } from './../prometheus';
-import { RateLimiter } from '../rate-limiter';
+import { RateLimiter } from './../rate-limiter';
 import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
-import { Utils } from '../utils';
+import { Utils } from './../utils';
+import { WebhookSender } from './../webhook-sender';
 
 export class Channel {
     /**
@@ -38,6 +40,7 @@ export class Channel {
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
+        protected webhookSender: WebhookSender,
         protected options: Options,
     ) {
         //
@@ -133,6 +136,17 @@ export class Channel {
                 this.rateLimiter.forApp(socket.data.echoApp).forSocket(socket).consumeFrontendEventPoints(1).then(rateLimitData => {
                     socket.to(data.channel).emit(
                         data.event, data.channel, data.data
+                    );
+
+                    this.webhookSender.send(
+                        App.CLIENT_EVENT_WEBHOOK,
+                        (new Date).getTime(),
+                        [{
+                            name: data.event,
+                            channel: data.channel,
+                            data: data.data,
+                        }],
+                        socket,
                     );
 
                     this.stats.markWsMessage(socket.data.echoApp);

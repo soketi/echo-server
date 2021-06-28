@@ -12,12 +12,10 @@ import { RemoteSocket } from '../socket';
 import { Request } from './../request';
 import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
-import { Utils } from '../utils';
+import { Utils } from './../utils';
 
 const bodyParser = require('body-parser');
 const dayjs = require('dayjs');
-const pusherUtil = require('pusher/lib/util');
-const Pusher = require('pusher');
 const url = require('url');
 const v8 = require('v8');
 
@@ -513,42 +511,7 @@ export class HttpApi {
      * Get the signed token from the given request.
      */
     protected getSignedToken(req: Request): Promise<string> {
-        let app = req.echoApp;
-
-        return new Promise((resolve, reject) => {
-            if (! app) {
-                reject({ reason: 'The request is not authenticated.' });
-            }
-
-            let key = req.query.auth_key;
-            let token = new Pusher.Token(key, app.secret);
-
-            const params = {
-                auth_key: app.key,
-                auth_timestamp: req.query.auth_timestamp,
-                auth_version: req.query.auth_version,
-                ...req.query,
-                ...req.params,
-            };
-
-            delete params['auth_signature'];
-            delete params['body_md5']
-            delete params['appId'];
-            delete params['appKey'];
-            delete params['channelName'];
-
-            if (req.rawBody && Object.keys(req.body).length > 0) {
-                params['body_md5'] = pusherUtil.getMD5(req.rawBody);
-            }
-
-            resolve(
-                token.sign([
-                    req.method.toUpperCase(),
-                    req.path,
-                    pusherUtil.toOrderedArray(params).join('&'),
-                ].join("\n"))
-            );
-        });
+        return new Promise(resolve => resolve(req.echoApp.signingTokenFromRequest(req)));
     }
 
     /**

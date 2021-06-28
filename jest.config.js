@@ -6,4 +6,5 @@ module.exports = {
     testTimeout: 60 * 1000,
     collectCoverage: true,
     testRunner: 'jest-circus/runner',
+    maxWorkers: 1,
 };

@@ -9,6 +9,7 @@ import { Socket } from './../socket';
 import { Server as SocketIoServer } from 'socket.io';
 import { Stats } from './../stats';
 import { Utils } from './../utils';
+import { WebhookSender } from './../webhook-sender';
 
 export interface Member {
     user_id: number|string;
@@ -32,9 +33,10 @@ export class PresenceChannel extends PrivateChannel {
         protected stats: Stats,
         protected prometheus: Prometheus,
         protected rateLimiter: RateLimiter,
+        protected webhookSender: WebhookSender,
         protected options: Options,
     ) {
-        super(io, stats, prometheus, rateLimiter, options);
+        super(io, stats, prometheus, rateLimiter, webhookSender, options);
 
         this.presenceStorage = new PresenceStorage(options, io);
     }
