@@ -1,3 +1,9 @@
+### The application is now deprecated (security issues-only)
+
+It will not receive any new feature updates. Please consider using [soketi/pws](https://github.com/soketi/pws), an all-in-one Pusher server equivalent for Echo Server that is written in C and ported to Node.js by [the awesome guys at uNetworking/uWebSockets.js](https://github.com/uNetworking/uWebSockets.js/blob/master/src/uws.js).
+
+This application had implementation flaws by using both Pusher and Socket.IO and was a really bad idea. The versions before the deprecation announcement are still working and available for you to use.
+
 Echo Server
 ===========
 
